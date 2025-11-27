@@ -322,7 +322,7 @@ export default function MyPackagesPage() {
                               src={
                                 typeof item.photos[0] === 'string'
                                   ? item.photos[0]
-                                  : (item.photos[0] as any).url
+                                  : (item.photos[0] as any)?.url
                               }
                               alt="Package"
                               className="w-100 rounded mb-4"
@@ -426,7 +426,7 @@ export default function MyPackagesPage() {
                         src={
                           typeof selectedItem.photos[0] === 'string'
                             ? selectedItem.photos[0]
-                            : (selectedItem.photos[0] as any).url
+                            : (selectedItem.photos[0] as any)?.url
                         }
                         alt="Package"
                         className="w-100 rounded"
