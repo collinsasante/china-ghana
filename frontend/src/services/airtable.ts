@@ -588,6 +588,12 @@ export async function getSupportRequestsByCustomerId(customerId: string): Promis
 
     return records.map((record) => {
       const obj = recordToObject(record) as any;
+
+      // Map customerId from array to string
+      if (obj.customerId && Array.isArray(obj.customerId) && obj.customerId.length > 0) {
+        obj.customerId = obj.customerId[0];
+      }
+
       return {
         ...obj,
         message: obj.description || obj.message, // Map description to message
@@ -603,7 +609,15 @@ export async function getSupportRequestsByCustomerId(customerId: string): Promis
 
 export async function createSupportRequest(requestData: Omit<SupportRequest, 'id'>): Promise<SupportRequest> {
   try {
-    const record = await base(TABLES.SUPPORT_REQUESTS).create([{ fields: requestData }]);
+    // Map customerId to linked record format
+    const mappedData: any = { ...requestData };
+
+    if (requestData.customerId) {
+      // customerId must be sent as array for linked record field
+      mappedData.customerId = [requestData.customerId];
+    }
+
+    const record = await base(TABLES.SUPPORT_REQUESTS).create([{ fields: mappedData }]);
     return recordToObject(record[0]) as SupportRequest;
   } catch (error) {
     console.error('Error creating support request:', error);
