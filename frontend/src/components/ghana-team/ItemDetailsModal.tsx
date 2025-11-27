@@ -231,6 +231,8 @@ export default function ItemDetailsModal({
         email: newCustomerData.email.trim(),
         phone: newCustomerData.phone.trim() || undefined,
         role: 'customer',
+        password: tempPassword, // Save temp password to Airtable
+        // isFirstLogin: true is automatically set by createUser function
       });
 
       // Select the new customer

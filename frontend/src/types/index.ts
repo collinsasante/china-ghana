@@ -17,6 +17,7 @@ export interface User {
   role: UserRole;
   phone?: string;
   address?: string;
+  password?: string; // User's password (temp password for Ghana team created accounts)
   isFirstLogin?: boolean; // Flag for first-time login (Ghana team created accounts)
   passwordChangedAt?: string; // Timestamp of last password change
 }
