@@ -32,11 +32,25 @@ export default function TaggingPage() {
     }
   };
 
-  // Get items without customer assignment (untagged)
-  const untaggedItems = items.filter((item) => !item.customerId);
+  // Get items without customer assignment (untagged) - sorted by date/time
+  const untaggedItems = items
+    .filter((item) => !item.customerId)
+    .sort((a, b) => {
+      // Sort by createdAt descending (newest first)
+      const dateA = new Date(a.createdAt || a.receivingDate).getTime();
+      const dateB = new Date(b.createdAt || b.receivingDate).getTime();
+      return dateB - dateA;
+    });
 
-  // Get items with customer assignment (tagged)
-  const taggedItems = items.filter((item) => item.customerId);
+  // Get items with customer assignment (tagged) - sorted by date/time
+  const taggedItems = items
+    .filter((item) => item.customerId)
+    .sort((a, b) => {
+      // Sort by updatedAt descending (most recently tagged first)
+      const dateA = new Date(a.updatedAt || a.createdAt || a.receivingDate).getTime();
+      const dateB = new Date(b.updatedAt || b.createdAt || b.receivingDate).getTime();
+      return dateB - dateA;
+    });
 
   const getCustomerName = (customerId: string | string[]) => {
     const actualId = Array.isArray(customerId) ? customerId[0] : customerId;
