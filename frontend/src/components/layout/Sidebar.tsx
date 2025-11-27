@@ -10,6 +10,7 @@ interface MenuItem {
 
 const menuItems: MenuItem[] = [
   // Customer menu items
+  { path: '/packages', label: 'My Packages', icon: 'bi-box-seam', roles: ['customer'] },
   { path: '/status', label: 'Shipment Status', icon: 'bi-truck', roles: ['customer'] },
   { path: '/arrival', label: 'Estimated Arrival', icon: 'bi-calendar-event', roles: ['customer'] },
   { path: '/items', label: 'My Items', icon: 'bi-box', roles: ['customer'] },
@@ -18,17 +19,18 @@ const menuItems: MenuItem[] = [
   { path: '/support', label: 'Support', icon: 'bi-headset', roles: ['customer'] },
 
   // China Team menu items
-  { path: '/china/receiving', label: 'Item Receiving', icon: 'bi-box-arrow-in-down', roles: ['china_team', 'admin'] },
+  { path: '/china/dashboard', label: 'Dashboard', icon: 'bi-speedometer2', roles: ['china_team', 'admin'] },
+  { path: '/china/receiving', label: 'Upload Photos', icon: 'bi-camera', roles: ['china_team', 'admin'] },
   { path: '/china/packaging', label: 'Packaging', icon: 'bi-boxes', roles: ['china_team', 'admin'] },
+  { path: '/china/containers', label: 'Container Management', icon: 'bi-stack', roles: ['china_team', 'admin'] },
 
   // Ghana Team menu items
+  { path: '/ghana/tagging', label: 'Item Tagging', icon: 'bi-tag', roles: ['ghana_team', 'admin'] },
   { path: '/ghana/sorting', label: 'Sorting & Scanning', icon: 'bi-upc-scan', roles: ['ghana_team', 'admin'] },
-  { path: '/ghana/delivery', label: 'Delivery', icon: 'bi-truck', roles: ['ghana_team', 'admin'] },
+  { path: '/ghana/csv-import', label: 'CSV Import', icon: 'bi-file-earmark-spreadsheet', roles: ['ghana_team', 'admin'] },
 
   // Admin menu items
-  { path: '/admin/status-management', label: 'Status Management', icon: 'bi-gear', roles: ['admin'] },
-  { path: '/admin/customers', label: 'Customers', icon: 'bi-people', roles: ['admin'] },
-  { path: '/admin/containers', label: 'Containers', icon: 'bi-stack', roles: ['admin'] },
+  { path: '/admin/dashboard', label: 'Admin Dashboard', icon: 'bi-speedometer', roles: ['admin'] },
 ];
 
 export default function Sidebar() {
@@ -39,12 +41,30 @@ export default function Sidebar() {
     item.roles.includes(user?.role || '')
   );
 
+  // Determine dashboard path based on user role
+  const getDashboardPath = () => {
+    switch (user?.role) {
+      case 'customer':
+        return '/packages';
+      case 'china_team':
+        return '/china/dashboard';
+      case 'ghana_team':
+        return '/ghana/tagging';
+      case 'admin':
+        return '/admin/dashboard';
+      default:
+        return '/dashboard';
+    }
+  };
+
+  const dashboardPath = getDashboardPath();
+
   return (
     <div id="kt_app_sidebar" className="app-sidebar flex-column" data-kt-drawer="true" data-kt-drawer-name="app-sidebar" data-kt-drawer-activate="{default: true, lg: false}" data-kt-drawer-overlay="true" data-kt-drawer-width="225px" data-kt-drawer-direction="start" data-kt-drawer-toggle="#kt_app_sidebar_mobile_toggle">
       <div className="app-sidebar-logo px-6" id="kt_app_sidebar_logo">
-        <a href="/dashboard">
+        <Link to={dashboardPath}>
           <span className="text-white fw-bold fs-3">AFREQ</span>
-        </a>
+        </Link>
 
         <div id="kt_app_sidebar_toggle" className="app-sidebar-toggle btn btn-icon btn-shadow btn-sm btn-color-muted btn-active-color-primary h-30px w-30px position-absolute top-50 start-100 translate-middle rotate" data-kt-toggle="true" data-kt-toggle-state="active" data-kt-toggle-target="body" data-kt-toggle-name="app-sidebar-collapse">
           <i className="ki-duotone ki-black-left-line fs-3 rotate-180">
@@ -58,15 +78,6 @@ export default function Sidebar() {
         <div id="kt_app_sidebar_menu_wrapper" className="app-sidebar-wrapper">
           <div id="kt_app_sidebar_menu_scroll" className="scroll-y my-5 mx-3" data-kt-scroll="true" data-kt-scroll-activate="true" data-kt-scroll-height="auto" data-kt-scroll-dependencies="#kt_app_sidebar_logo, #kt_app_sidebar_footer" data-kt-scroll-wrappers="#kt_app_sidebar_menu" data-kt-scroll-offset="5px">
             <div className="menu menu-column menu-rounded menu-sub-indention fw-semibold fs-6" id="kt_app_sidebar_menu" data-kt-menu="true" data-kt-menu-expand="false">
-
-              <div className="menu-item">
-                <Link to="/dashboard" className={`menu-link ${location.pathname === '/dashboard' ? 'active' : ''}`}>
-                  <span className="menu-icon">
-                    <i className="bi bi-house fs-2"></i>
-                  </span>
-                  <span className="menu-title">Dashboard</span>
-                </Link>
-              </div>
 
               {filteredMenuItems.length > 0 && (
                 <div className="menu-item pt-5">

@@ -45,7 +45,7 @@ Address: Accra, Ghana
 |------------|------|-------------|----------|-------|
 | `name` | Single line text | Item description | ❌ No | Optional item name |
 | `trackingNumber` | Single line text | Unique tracking number | ✅ Yes | Primary identifier |
-| `customerId` | Link to another record | Link to Users table | ✅ Yes | **IMPORTANT: Must link to Users table** |
+| `customerId_old` | Link to another record | Link to Users table | ✅ Yes | **CRITICAL: Must be named exactly `customerId_old`** |
 | `containerNumber` | Single line text | Container assignment | ❌ No | Assigned when shipping to Ghana |
 | `receivingDate` | Date | Date received in China | ✅ Yes | |
 | `length` | Number | Length dimension | ✅ Yes | Decimal allowed |
@@ -75,7 +75,7 @@ Address: Accra, Ghana
 ```
 Name: Electronics Package
 Tracking Number: TRK123456
-Customer ID: [Link to user record]
+customerId_old: [Link to user record - Click to select from Users table]
 Receiving Date: 2025-11-20
 Length: 50, Width: 40, Height: 30
 Dimension Unit: cm
@@ -231,7 +231,13 @@ Created At: 2025-11-24
 
 When creating linked record fields, make sure to:
 
-1. **For `customerId` fields** (in Items, Invoices, SupportRequests):
+1. **For Items table → `customerId_old` field**:
+   - Type: "Link to another record"
+   - Field name: **MUST be exactly `customerId_old`** (not `customerId`)
+   - Link to: **Users** table
+   - Allow linking to multiple records: **NO** (single link only)
+
+2. **For Invoices and SupportRequests tables → `customerId` field**:
    - Type: "Link to another record"
    - Link to: **Users** table
    - Allow linking to multiple records: **NO** (single link only)
@@ -257,7 +263,7 @@ Role: customer
 ### Test Item:
 ```
 Tracking Number: TEST001
-Customer ID: [Link to test customer]
+customerId_old: [Link to test customer - Click the field and select "Test Customer"]
 Receiving Date: Today's date
 Length: 50, Width: 40, Height: 30
 Dimension Unit: cm
@@ -266,6 +272,8 @@ Shipping Method: sea
 Cost USD: 60.00
 Cost Cedis: 900.00
 Status: china_warehouse
+isDamaged: false (unchecked)
+isMissing: false (unchecked)
 ```
 
 ### Test Announcement:

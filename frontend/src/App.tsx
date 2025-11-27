@@ -18,7 +18,14 @@ import SupportPage from "./pages/user/SupportPage";
 
 import ReceivingPage from "./pages/china-team/ReceivingPage";
 import PackagingPage from "./pages/china-team/PackagingPage";
+import ChinaTeamDashboard from "./pages/china-team/DashboardPage";
+import ContainerManagementPage from "./pages/china-team/ContainerManagementPage";
+
 import SortingPage from "./pages/ghana-team/SortingPage";
+import TaggingPage from "./pages/ghana-team/TaggingPage";
+import CSVImportPage from "./pages/ghana-team/CSVImportPage";
+
+import MyPackagesPage from "./pages/customer/MyPackagesPage";
 
 function RootRedirect() {
   const { isAuthenticated, user } = useAuth();
@@ -30,11 +37,11 @@ function RootRedirect() {
   // Redirect authenticated users based on their role
   switch (user?.role) {
     case 'customer':
-      return <Navigate to="/dashboard" replace />;
+      return <Navigate to="/packages" replace />;
     case 'china_team':
-      return <Navigate to="/china/receiving" replace />;
+      return <Navigate to="/china/dashboard" replace />;
     case 'ghana_team':
-      return <Navigate to="/ghana/sorting" replace />;
+      return <Navigate to="/ghana/tagging" replace />;
     case 'admin':
       return <Navigate to="/admin/dashboard" replace />;
     default:
@@ -82,6 +89,14 @@ function App() {
             />
 
             {/* Customer Routes */}
+            <Route
+              path="packages"
+              element={
+                <ProtectedRoute allowedRoles={["customer"]}>
+                  <MyPackagesPage />
+                </ProtectedRoute>
+              }
+            />
             <Route
               path="status"
               element={
@@ -133,6 +148,14 @@ function App() {
 
             {/* China Team Routes */}
             <Route
+              path="china/dashboard"
+              element={
+                <ProtectedRoute allowedRoles={["china_team", "admin"]}>
+                  <ChinaTeamDashboard />
+                </ProtectedRoute>
+              }
+            />
+            <Route
               path="china/receiving"
               element={
                 <ProtectedRoute allowedRoles={["china_team", "admin"]}>
@@ -148,13 +171,37 @@ function App() {
                 </ProtectedRoute>
               }
             />
+            <Route
+              path="china/containers"
+              element={
+                <ProtectedRoute allowedRoles={["china_team", "admin"]}>
+                  <ContainerManagementPage />
+                </ProtectedRoute>
+              }
+            />
 
             {/* Ghana Team Routes */}
+            <Route
+              path="ghana/tagging"
+              element={
+                <ProtectedRoute allowedRoles={["ghana_team", "admin"]}>
+                  <TaggingPage />
+                </ProtectedRoute>
+              }
+            />
             <Route
               path="ghana/sorting"
               element={
                 <ProtectedRoute allowedRoles={["ghana_team", "admin"]}>
                   <SortingPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="ghana/csv-import"
+              element={
+                <ProtectedRoute allowedRoles={["ghana_team", "admin"]}>
+                  <CSVImportPage />
                 </ProtectedRoute>
               }
             />

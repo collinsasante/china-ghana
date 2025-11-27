@@ -161,14 +161,68 @@ export async function resetPassword(token: string, newPassword: string): Promise
 
 export async function getItemsByCustomerId(customerId: string): Promise<Item[]> {
   try {
-    const records = await base(TABLES.ITEMS)
+    console.log('🔍 getItemsByCustomerId called with:', customerId);
+
+    // First, get ALL items to see what's in the table
+    const allRecords = await base(TABLES.ITEMS)
       .select({
-        filterByFormula: `{customerId} = '${customerId}'`,
-        sort: [{ field: 'createdAt', direction: 'desc' }],
+        sort: [{ field: 'receivingDate', direction: 'desc' }],
       })
       .all();
 
-    return records.map((record) => recordToObject(record) as Item);
+    console.log('📦 Total items in table:', allRecords.length);
+
+    // Log first few items to see their structure
+    if (allRecords.length > 0) {
+      const firstItem = allRecords[0];
+      const fieldNames = Object.keys(firstItem.fields);
+
+      console.log('🔑 ALL FIELD NAMES in Items table:', fieldNames);
+      console.log('📄 First item complete fields:', firstItem.fields);
+
+      // Check the customerId_old field value
+      const customerIdOld = (firstItem.fields as any).customerId_old;
+      console.log('🎯 customerId_old field value:', customerIdOld);
+      console.log('🎯 customerId_old is array?', Array.isArray(customerIdOld));
+      if (Array.isArray(customerIdOld) && customerIdOld.length > 0) {
+        console.log('🎯 First value in customerId_old array:', customerIdOld[0]);
+      }
+
+      // Show what we're searching for
+      console.log('🔎 Searching for customer ID:', customerId);
+
+      // Show ALL items with their customer IDs to debug mismatch
+      console.log('\n📋 ALL ITEMS WITH CUSTOMER IDs:');
+      allRecords.forEach((record, index) => {
+        const custId = (record.fields as any).customerId_old;
+        const status = (record.fields as any).status;
+        const carton = (record.fields as any).cartonNumber;
+        console.log(`Item ${index + 1}:`, {
+          trackingNumber: (record.fields as any).trackingNumber,
+          customerId_old: custId,
+          status: status,
+          cartonNumber: carton,
+        });
+      });
+      console.log('');
+    }
+
+    // Now try to filter by customer
+    // IMPORTANT: Your Airtable field is called 'customerId_old' not 'customerId'
+
+    // Since Airtable's formula filtering for linked records can be tricky,
+    // let's fetch all items and filter in JavaScript for now
+    const filteredRecords = allRecords.filter((record) => {
+      const custId = (record.fields as any).customerId_old;
+      if (Array.isArray(custId) && custId.length > 0) {
+        return custId[0] === customerId;
+      }
+      return false;
+    });
+
+    console.log('✅ Filtered items for customer:', filteredRecords.length);
+
+    return filteredRecords.map((record) => recordToObject(record) as Item);
   } catch (error) {
     console.error('Error fetching items:', error);
     throw error;
@@ -236,10 +290,11 @@ export async function createItem(itemData: Omit<Item, 'id'>): Promise<Item> {
     };
 
     // Handle customerId - must be an Airtable record ID for linked records
+    // IMPORTANT: Your Airtable field is called 'customerId_old' not 'customerId'
     if (itemData.customerId) {
       if (itemData.customerId.startsWith('rec')) {
         // It's an Airtable record ID - send as linked record array
-        cleanData.customerId = [itemData.customerId];
+        cleanData.customerId_old = [itemData.customerId];
       } else {
         // It's NOT a record ID - need to look up the user first by email
         console.warn('customerId is not an Airtable record ID. Attempting to find user by email:', itemData.customerId);
@@ -255,7 +310,7 @@ export async function createItem(itemData: Omit<Item, 'id'>): Promise<Item> {
 
           if (userRecord.length > 0) {
             // Found user - use their Airtable record ID
-            cleanData.customerId = [userRecord[0].id];
+            cleanData.customerId_old = [userRecord[0].id];
             console.log('Found user record:', userRecord[0].id);
           } else {
             // User not found - throw error
@@ -331,6 +386,21 @@ export async function getItemsByContainerNumber(containerNumber: string): Promis
     return records.map((record) => recordToObject(record) as Item);
   } catch (error) {
     console.error('Error fetching items by container:', error);
+    throw error;
+  }
+}
+
+export async function getAllItems(): Promise<Item[]> {
+  try {
+    const records = await base(TABLES.ITEMS)
+      .select({
+        sort: [{ field: 'receivingDate', direction: 'desc' }],
+      })
+      .all();
+
+    return records.map((record) => recordToObject(record) as Item);
+  } catch (error) {
+    console.error('Error fetching all items:', error);
     throw error;
   }
 }

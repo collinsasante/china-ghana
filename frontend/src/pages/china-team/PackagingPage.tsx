@@ -1,16 +1,21 @@
 import { useState, useEffect } from 'react';
-import { getAllCustomers, getItemsByCustomerId, updateItem } from '../../services/airtable';
+import { getAllCustomers, getItemsByCustomerId, updateItem, getAllItems } from '../../services/airtable';
 import type { User, Item } from '../../types/index';
 
 export default function PackagingPage() {
   const [customers, setCustomers] = useState<User[]>([]);
   const [selectedCustomer, setSelectedCustomer] = useState<User | null>(null);
   const [items, setItems] = useState<Item[]>([]);
+  const [allItems, setAllItems] = useState<Item[]>([]);
   const [selectedItemIds, setSelectedItemIds] = useState<Set<string>>(new Set());
   const [cartonNumber, setCartonNumber] = useState('');
   const [loadingCustomers, setLoadingCustomers] = useState(true);
   const [loadingItems, setLoadingItems] = useState(false);
+  const [loadingAllItems, setLoadingAllItems] = useState(false);
   const [isPackaging, setIsPackaging] = useState(false);
+  const [viewMode, setViewMode] = useState<'packaging' | 'all-items'>('packaging');
+  const [expandedFolders, setExpandedFolders] = useState<Set<string>>(new Set());
+  const [searchQuery, setSearchQuery] = useState('');
 
   // Load customers on mount
   useEffect(() => {
@@ -40,15 +45,70 @@ export default function PackagingPage() {
     }
   };
 
+  const loadAllItems = async () => {
+    try {
+      setLoadingAllItems(true);
+      const items = await getAllItems();
+      setAllItems(items);
+    } catch (error) {
+      console.error('Failed to load all items:', error);
+      alert('Failed to load all items. Please try again.');
+    } finally {
+      setLoadingAllItems(false);
+    }
+  };
+
+  const toggleFolder = (date: string) => {
+    const newExpanded = new Set(expandedFolders);
+    if (newExpanded.has(date)) {
+      newExpanded.delete(date);
+    } else {
+      newExpanded.add(date);
+    }
+    setExpandedFolders(newExpanded);
+  };
+
+  const getFilteredItems = () => {
+    if (!searchQuery.trim()) {
+      return allItems;
+    }
+
+    const query = searchQuery.toLowerCase();
+    return allItems.filter((item) => {
+      return (
+        item.trackingNumber?.toLowerCase().includes(query) ||
+        item.name?.toLowerCase().includes(query) ||
+        item.cartonNumber?.toLowerCase().includes(query) ||
+        item.status?.toLowerCase().includes(query)
+      );
+    });
+  };
+
   const loadCustomerItems = async (customerId: string) => {
     try {
       setLoadingItems(true);
       const customerItems = await getItemsByCustomerId(customerId);
 
+      console.log('All customer items:', customerItems);
+      console.log('Items count:', customerItems.length);
+
+      // Log details about each item for debugging
+      customerItems.forEach((item, index) => {
+        console.log(`Item ${index + 1}:`, {
+          trackingNumber: item.trackingNumber,
+          status: item.status,
+          cartonNumber: item.cartonNumber,
+          hasCartonNumber: !!item.cartonNumber,
+          isInChinaWarehouse: item.status === 'china_warehouse'
+        });
+      });
+
       // Filter items that are in china_warehouse and don't have a carton number yet
       const availableItems = customerItems.filter(
         (item) => item.status === 'china_warehouse' && !item.cartonNumber
       );
+
+      console.log('Available items for packaging:', availableItems.length);
 
       setItems(availableItems);
       setSelectedItemIds(new Set());
@@ -163,8 +223,8 @@ export default function PackagingPage() {
 
     // Create a printable label
     const selectedItems = items.filter((item) => selectedItemIds.has(item.id));
-    const totalCBM = selectedItems.reduce((sum, item) => sum + item.cbm, 0);
-    const totalCost = selectedItems.reduce((sum, item) => sum + item.costUSD, 0);
+    const totalCBM = selectedItems.reduce((sum, item) => sum + (item.cbm || 0), 0);
+    const totalCost = selectedItems.reduce((sum, item) => sum + (item.costUSD || 0), 0);
 
     const printWindow = window.open('', '', 'width=800,height=600');
     if (printWindow) {
@@ -294,8 +354,8 @@ export default function PackagingPage() {
                         <td>${item.trackingNumber}</td>
                         <td>${item.name || 'N/A'}</td>
                         <td>${item.length} × ${item.width} × ${item.height} ${item.dimensionUnit}</td>
-                        <td>${item.cbm.toFixed(6)}</td>
-                        <td>$${item.costUSD.toFixed(2)}</td>
+                        <td>${item.cbm ? item.cbm.toFixed(6) : '0.000000'}</td>
+                        <td>$${item.costUSD ? item.costUSD.toFixed(2) : '0.00'}</td>
                       </tr>
                     `
                       )
@@ -328,9 +388,9 @@ export default function PackagingPage() {
     const selectedItems = items.filter((item) => selectedItemIds.has(item.id));
     return {
       count: selectedItems.length,
-      totalCBM: selectedItems.reduce((sum, item) => sum + item.cbm, 0),
-      totalCostUSD: selectedItems.reduce((sum, item) => sum + item.costUSD, 0),
-      totalCostCedis: selectedItems.reduce((sum, item) => sum + item.costCedis, 0),
+      totalCBM: selectedItems.reduce((sum, item) => sum + (item.cbm || 0), 0),
+      totalCostUSD: selectedItems.reduce((sum, item) => sum + (item.costUSD || 0), 0),
+      totalCostCedis: selectedItems.reduce((sum, item) => sum + (item.costCedis || 0), 0),
     };
   };
 
@@ -365,8 +425,42 @@ export default function PackagingPage() {
 
       <div id="kt_app_content" className="app-content flex-column-fluid">
         <div id="kt_app_content_container" className="app-container container-xxl">
-          {/* Step 1: Select Customer */}
+          {/* Tab Navigation */}
           <div className="card mb-5">
+            <div className="card-body p-0">
+              <ul className="nav nav-stretch nav-line-tabs nav-line-tabs-2x border-transparent fs-5 fw-bold">
+                <li className="nav-item">
+                  <button
+                    className={`nav-link text-active-primary py-5 px-6 ${viewMode === 'packaging' ? 'active' : ''}`}
+                    onClick={() => setViewMode('packaging')}
+                  >
+                    <i className="bi bi-box-seam fs-3 me-2"></i>
+                    Package Items
+                  </button>
+                </li>
+                <li className="nav-item">
+                  <button
+                    className={`nav-link text-active-primary py-5 px-6 ${viewMode === 'all-items' ? 'active' : ''}`}
+                    onClick={() => {
+                      setViewMode('all-items');
+                      if (allItems.length === 0) {
+                        loadAllItems();
+                      }
+                    }}
+                  >
+                    <i className="bi bi-list-ul fs-3 me-2"></i>
+                    All Items
+                  </button>
+                </li>
+              </ul>
+            </div>
+          </div>
+
+          {/* Packaging View */}
+          {viewMode === 'packaging' && (
+            <>
+              {/* Step 1: Select Customer */}
+              <div className="card mb-5">
             <div className="card-header">
               <h3 className="card-title">Step 1: Select Customer</h3>
             </div>
@@ -490,7 +584,11 @@ export default function PackagingPage() {
                             <td>
                               {item.photos && item.photos.length > 0 ? (
                                 <img
-                                  src={item.photos[0]}
+                                  src={
+                                    typeof item.photos[0] === 'string'
+                                      ? item.photos[0]
+                                      : (item.photos[0] as any).url
+                                  }
                                   alt="Item"
                                   className="rounded"
                                   style={{
@@ -518,15 +616,23 @@ export default function PackagingPage() {
                               </span>
                             </td>
                             <td>
-                              <span className="badge badge-light">{item.cbm.toFixed(6)} m³</span>
+                              {item.cbm ? (
+                                <span className="badge badge-light">{item.cbm.toFixed(6)} m³</span>
+                              ) : (
+                                <span className="text-muted">-</span>
+                              )}
                             </td>
                             <td>
-                              <span className={`badge badge-light-${item.shippingMethod === 'sea' ? 'info' : 'primary'}`}>
-                                {item.shippingMethod.toUpperCase()}
-                              </span>
+                              {item.shippingMethod ? (
+                                <span className={`badge badge-light-${item.shippingMethod === 'sea' ? 'info' : 'primary'}`}>
+                                  {item.shippingMethod.toUpperCase()}
+                                </span>
+                              ) : (
+                                <span className="text-muted">-</span>
+                              )}
                             </td>
-                            <td>${item.costUSD.toFixed(2)}</td>
-                            <td>₵{item.costCedis.toFixed(2)}</td>
+                            <td>${item.costUSD ? item.costUSD.toFixed(2) : '0.00'}</td>
+                            <td>₵{item.costCedis ? item.costCedis.toFixed(2) : '0.00'}</td>
                             <td className="text-muted">
                               {new Date(item.receivingDate).toLocaleDateString()}
                             </td>
@@ -627,6 +733,235 @@ export default function PackagingPage() {
                     )}
                   </button>
                 </div>
+              </div>
+            </div>
+          )}
+            </>
+          )}
+
+          {/* All Items View */}
+          {viewMode === 'all-items' && (
+            <div className="card">
+              <div className="card-header">
+                <h3 className="card-title">All Items</h3>
+                <div className="card-toolbar d-flex gap-3">
+                  {/* Search Input */}
+                  <div className="position-relative">
+                    <i className="bi bi-search position-absolute top-50 translate-middle-y ms-3 text-muted"></i>
+                    <input
+                      type="text"
+                      className="form-control form-control-sm ps-10"
+                      placeholder="Search by tracking, name, carton..."
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      style={{ minWidth: '280px' }}
+                    />
+                    {searchQuery && (
+                      <button
+                        className="btn btn-sm btn-icon position-absolute top-50 translate-middle-y end-0"
+                        onClick={() => setSearchQuery('')}
+                        style={{ background: 'none', border: 'none' }}
+                      >
+                        <i className="bi bi-x-lg fs-7"></i>
+                      </button>
+                    )}
+                  </div>
+
+                  {/* Refresh Button */}
+                  <button
+                    className="btn btn-sm btn-light-primary"
+                    onClick={loadAllItems}
+                    disabled={loadingAllItems}
+                  >
+                    {loadingAllItems ? (
+                      <>
+                        <span className="spinner-border spinner-border-sm me-2"></span>
+                        Loading...
+                      </>
+                    ) : (
+                      <>
+                        <i className="bi bi-arrow-clockwise me-2"></i>
+                        Refresh
+                      </>
+                    )}
+                  </button>
+                </div>
+              </div>
+              <div className="card-body">
+                {loadingAllItems ? (
+                  <div className="d-flex justify-content-center align-items-center py-10">
+                    <div className="spinner-border text-primary" role="status">
+                      <span className="visually-hidden">Loading...</span>
+                    </div>
+                  </div>
+                ) : allItems.length === 0 ? (
+                  <div className="text-center py-10">
+                    <i className="bi bi-inbox fs-3x text-muted mb-4"></i>
+                    <p className="text-muted">No items found</p>
+                  </div>
+                ) : (
+                  <>
+                    {/* Search results summary */}
+                    {searchQuery && (
+                      <div className="alert alert-primary d-flex align-items-center mb-4">
+                        <i className="bi bi-info-circle fs-3 me-3"></i>
+                        <div>
+                          <strong>{getFilteredItems().length}</strong> item{getFilteredItems().length !== 1 ? 's' : ''} found matching "{searchQuery}"
+                          {getFilteredItems().length === 0 && (
+                            <div className="text-muted fs-7 mt-1">Try searching by tracking number, item name, carton number, or status</div>
+                          )}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Group items by receiving date */}
+                    {getFilteredItems().length === 0 && searchQuery ? (
+                      <div className="text-center py-10">
+                        <i className="bi bi-search fs-3x text-muted mb-4"></i>
+                        <p className="text-muted">No items match your search</p>
+                      </div>
+                    ) : (
+                    Object.entries(
+                      getFilteredItems().reduce((groups, item) => {
+                        const date = new Date(item.receivingDate).toLocaleDateString();
+                        if (!groups[date]) {
+                          groups[date] = [];
+                        }
+                        groups[date].push(item);
+                        return groups;
+                      }, {} as Record<string, Item[]>)
+                    )
+                      .sort(([dateA], [dateB]) => new Date(dateB).getTime() - new Date(dateA).getTime())
+                      .map(([date, dateItems]) => (
+                        <div key={date} className="mb-6">
+                          {/* Date Folder Header */}
+                          <div
+                            className="d-flex align-items-center mb-4 cursor-pointer hover-bg-light p-3 rounded"
+                            onClick={() => toggleFolder(date)}
+                            style={{ cursor: 'pointer' }}
+                          >
+                            <i className={`bi ${expandedFolders.has(date) ? 'bi-folder2-open' : 'bi-folder2'} fs-2 text-warning me-3`}></i>
+                            <div className="flex-grow-1">
+                              <h4 className="mb-0">{date}</h4>
+                              <span className="text-muted fs-7">
+                                {dateItems.length} item{dateItems.length !== 1 ? 's' : ''}
+                              </span>
+                            </div>
+                            <i className={`bi ${expandedFolders.has(date) ? 'bi-chevron-up' : 'bi-chevron-down'} fs-4 text-muted`}></i>
+                          </div>
+
+                          {/* Items Table - Only show when expanded */}
+                          {expandedFolders.has(date) && (
+                          <div className="table-responsive ms-8">
+                    <table className="table table-row-bordered table-row-gray-100 align-middle gs-0 gy-3">
+                      <thead>
+                        <tr className="fw-bold text-muted">
+                          <th className="min-w-50px">Photo</th>
+                          <th className="min-w-120px">Tracking Number</th>
+                          <th className="min-w-120px">Item Name</th>
+                          <th className="min-w-100px">Dimensions</th>
+                          <th className="min-w-80px">CBM</th>
+                          <th className="min-w-80px">Shipping</th>
+                          <th className="min-w-80px">Cost USD</th>
+                          <th className="min-w-80px">Cost Cedis</th>
+                          <th className="min-w-100px">Status</th>
+                          <th className="min-w-120px">Carton Number</th>
+                          <th className="min-w-100px">Received</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {dateItems.map((item) => (
+                          <tr key={item.id}>
+                            <td>
+                              {item.photos && item.photos.length > 0 ? (
+                                <img
+                                  src={
+                                    typeof item.photos[0] === 'string'
+                                      ? item.photos[0]
+                                      : (item.photos[0] as any).url
+                                  }
+                                  alt="Item"
+                                  className="rounded"
+                                  style={{
+                                    width: '50px',
+                                    height: '50px',
+                                    objectFit: 'cover',
+                                  }}
+                                />
+                              ) : (
+                                <div
+                                  className="bg-light rounded d-flex align-items-center justify-content-center"
+                                  style={{ width: '50px', height: '50px' }}
+                                >
+                                  <i className="bi bi-image text-muted"></i>
+                                </div>
+                              )}
+                            </td>
+                            <td>
+                              <span className="fw-bold">{item.trackingNumber}</span>
+                            </td>
+                            <td>{item.name || <span className="text-muted">N/A</span>}</td>
+                            <td>
+                              <span className="text-muted">
+                                {item.length} × {item.width} × {item.height} {item.dimensionUnit}
+                              </span>
+                            </td>
+                            <td>
+                              {item.cbm ? (
+                                <span className="badge badge-light">{item.cbm.toFixed(6)} m³</span>
+                              ) : (
+                                <span className="text-muted">-</span>
+                              )}
+                            </td>
+                            <td>
+                              {item.shippingMethod ? (
+                                <span className={`badge badge-light-${item.shippingMethod === 'sea' ? 'info' : 'primary'}`}>
+                                  {item.shippingMethod.toUpperCase()}
+                                </span>
+                              ) : (
+                                <span className="text-muted">-</span>
+                              )}
+                            </td>
+                            <td>${item.costUSD ? item.costUSD.toFixed(2) : '0.00'}</td>
+                            <td>₵{item.costCedis ? item.costCedis.toFixed(2) : '0.00'}</td>
+                            <td>
+                              <span
+                                className={`badge ${
+                                  item.status === 'china_warehouse'
+                                    ? 'badge-light-warning'
+                                    : item.status === 'in_transit'
+                                    ? 'badge-light-info'
+                                    : item.status === 'arrived_ghana'
+                                    ? 'badge-light-primary'
+                                    : item.status === 'ready_for_pickup'
+                                    ? 'badge-light-success'
+                                    : 'badge-light-dark'
+                                }`}
+                              >
+                                {item.status.replace(/_/g, ' ').toUpperCase()}
+                              </span>
+                            </td>
+                            <td>
+                              {item.cartonNumber ? (
+                                <span className="badge badge-light-primary">{item.cartonNumber}</span>
+                              ) : (
+                                <span className="text-muted">-</span>
+                              )}
+                            </td>
+                            <td className="text-muted">
+                              {new Date(item.receivingDate).toLocaleDateString()}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                          )}
+                        </div>
+                      ))
+                    )}
+                  </>
+                )}
               </div>
             </div>
           )}

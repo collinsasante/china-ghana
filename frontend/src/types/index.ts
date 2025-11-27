@@ -26,6 +26,7 @@ export interface Item {
   customerId: string;
   containerNumber?: string; // Optional - assigned when shipping to Ghana
   receivingDate: string;
+  quantity?: number; // Number of items with same tracking number (default: 1)
 
   // Dimensions
   length: number;
