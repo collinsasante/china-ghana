@@ -115,7 +115,14 @@ export async function toggleUserFirstLogin(userId: string, isFirstLogin: boolean
 
 export async function createUser(userData: Omit<User, 'id'>): Promise<User> {
   try {
-    const record = await base(TABLES.USERS).create([{ fields: userData }]);
+    // Automatically set isFirstLogin: true for all new accounts created by Ghana team
+    // This forces customers to reset their password on first login
+    const userDataWithFirstLogin = {
+      ...userData,
+      isFirstLogin: true,
+    };
+
+    const record = await base(TABLES.USERS).create([{ fields: userDataWithFirstLogin }]);
     return recordToObject(record[0]) as User;
   } catch (error) {
     console.error('Error creating user:', error);
