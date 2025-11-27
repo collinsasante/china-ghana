@@ -197,14 +197,15 @@ export default function ItemsPage() {
                         <div className="card-body p-5">
                           {/* Item Photo */}
                           {item.photos && item.photos.length > 0 ? (
-                            <div
-                              className="rounded mb-4 cursor-pointer"
-                              style={{
-                                height: '200px',
-                                backgroundImage: `url(${item.photos[0]})`,
-                                backgroundSize: 'cover',
-                                backgroundPosition: 'center',
-                              }}
+                            <img
+                              src={
+                                typeof item.photos[0] === 'string'
+                                  ? item.photos[0]
+                                  : (item.photos[0] as any)?.url
+                              }
+                              alt="Item"
+                              className="w-100 rounded mb-4 cursor-pointer"
+                              style={{ height: '200px', objectFit: 'cover' }}
                               onClick={() => openItemDetails(item)}
                             />
                           ) : (

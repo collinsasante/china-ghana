@@ -242,14 +242,18 @@ export default function CustomerDashboard() {
                               <td>
                                 <div className="d-flex align-items-center">
                                   {item.photos && item.photos.length > 0 ? (
-                                    <div
-                                      className="symbol symbol-40px me-3"
-                                      style={{
-                                        backgroundImage: `url(${item.photos[0]})`,
-                                        backgroundSize: 'cover',
-                                        backgroundPosition: 'center',
-                                      }}
-                                    />
+                                    <div className="symbol symbol-40px me-3">
+                                      <img
+                                        src={
+                                          typeof item.photos[0] === 'string'
+                                            ? item.photos[0]
+                                            : (item.photos[0] as any)?.url
+                                        }
+                                        alt="Item"
+                                        className="symbol-label"
+                                        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                      />
+                                    </div>
                                   ) : (
                                     <div className="symbol symbol-40px me-3">
                                       <div className="symbol-label bg-light">
