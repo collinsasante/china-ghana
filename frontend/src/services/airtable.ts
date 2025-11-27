@@ -353,10 +353,48 @@ export async function createItem(itemData: Omit<Item, 'id'>): Promise<Item> {
 
 export async function updateItem(itemId: string, updates: Partial<Item>): Promise<Item> {
   try {
+    // Map fields to match Airtable schema
+    const mappedUpdates: any = { ...updates };
+
+    // Handle customerId - must be sent as array for linked record field
+    // IMPORTANT: Your Airtable field is called 'customerId_old' not 'customerId'
+    if (updates.customerId !== undefined) {
+      if (updates.customerId.startsWith('rec')) {
+        // It's an Airtable record ID - send as linked record array
+        mappedUpdates.customerId_old = [updates.customerId];
+      } else {
+        // It's NOT a record ID - need to look up the user first by email
+        console.warn('customerId is not an Airtable record ID. Attempting to find user by email:', updates.customerId);
+
+        try {
+          const userRecord = await base(TABLES.USERS)
+            .select({
+              filterByFormula: `{email} = '${updates.customerId}'`,
+              maxRecords: 1,
+            })
+            .firstPage();
+
+          if (userRecord.length > 0) {
+            // Found user - use their Airtable record ID
+            mappedUpdates.customerId_old = [userRecord[0].id];
+            console.log('Found user record:', userRecord[0].id);
+          } else {
+            // User not found - throw error
+            throw new Error(`Customer not found with email: ${updates.customerId}. Please create the customer in Airtable Users table first, or use their Airtable record ID (starts with 'rec').`);
+          }
+        } catch (lookupError) {
+          console.error('Failed to lookup customer:', lookupError);
+          throw new Error(`Customer lookup failed: ${lookupError}`);
+        }
+      }
+      // Remove the original customerId field as we've mapped it to customerId_old
+      delete mappedUpdates.customerId;
+    }
+
     const record = await base(TABLES.ITEMS).update([
       {
         id: itemId,
-        fields: updates,
+        fields: mappedUpdates,
       },
     ]);
     return recordToObject(record[0]) as Item;
