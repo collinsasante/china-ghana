@@ -135,8 +135,9 @@ export default function ItemDetailsModal({
       showNotification('warning', 'Missing Information', 'Please select a customer');
       return;
     }
-    if (!formData.length || !formData.width || !formData.height) {
-      showNotification('warning', 'Missing Information', 'Please enter all dimensions (Length, Width, Height)');
+    // Dimensions are only required for sea shipping
+    if (formData.shippingMethod === 'sea' && (!formData.length || !formData.width || !formData.height)) {
+      showNotification('warning', 'Missing Information', 'Please enter all dimensions (Length, Width, Height) for sea shipping');
       return;
     }
     // Weight is only required for air shipping
@@ -154,17 +155,21 @@ export default function ItemDetailsModal({
         customerId: formData.customerId,
         quantity: parseInt(formData.quantity) || 1,
         receivingDate: formData.receivingDate,
-        length: parseFloat(formData.length),
-        width: parseFloat(formData.width),
-        height: parseFloat(formData.height),
-        dimensionUnit: formData.dimensionUnit,
-        cbm,
         shippingMethod: formData.shippingMethod,
         costUSD: calculatedCostUSD,
         costCedis: calculatedCostCedis,
         photos: item.photos, // Preserve existing photos
         status: 'china_warehouse',
       };
+
+      // Only include dimensions for sea shipping
+      if (formData.shippingMethod === 'sea') {
+        itemData.length = parseFloat(formData.length);
+        itemData.width = parseFloat(formData.width);
+        itemData.height = parseFloat(formData.height);
+        itemData.dimensionUnit = formData.dimensionUnit;
+        itemData.cbm = cbm;
+      }
 
       // Only include weight for air shipping
       if (formData.shippingMethod === 'air' && formData.weight) {
@@ -485,75 +490,79 @@ export default function ItemDetailsModal({
                     </div>
                   </div>
 
-                  {/* Dimensions */}
-                  <div className="mb-4">
-                    <label className="form-label required">Dimensions (L × W × H)</label>
-                    <div className="row g-2">
-                      <div className="col-3">
-                        <input
-                          type="number"
-                          name="length"
-                          className="form-control form-control-lg"
-                          placeholder="Length"
-                          value={formData.length}
-                          onChange={handleChange}
-                          step="0.01"
-                          required
-                        />
-                        <div className="form-text">L</div>
-                      </div>
-                      <div className="col-3">
-                        <input
-                          type="number"
-                          name="width"
-                          className="form-control form-control-lg"
-                          placeholder="Width"
-                          value={formData.width}
-                          onChange={handleChange}
-                          step="0.01"
-                          required
-                        />
-                        <div className="form-text">W</div>
-                      </div>
-                      <div className="col-3">
-                        <input
-                          type="number"
-                          name="height"
-                          className="form-control form-control-lg"
-                          placeholder="Height"
-                          value={formData.height}
-                          onChange={handleChange}
-                          step="0.01"
-                          required
-                        />
-                        <div className="form-text">H</div>
-                      </div>
-                      <div className="col-3">
-                        <select
-                          name="dimensionUnit"
-                          className="form-select form-select-lg"
-                          value={formData.dimensionUnit}
-                          onChange={handleChange}
-                        >
-                          <option value="cm">cm</option>
-                          <option value="inches">inches</option>
-                        </select>
-                        <div className="form-text">Unit</div>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* CBM (Auto-calculated) */}
-                  {cbm > 0 && (
-                    <div className="mb-4">
-                      <div className="alert alert-light-success">
-                        <strong>CBM (Auto-calculated):</strong> {cbm.toFixed(6)} m³
-                        <div className="text-muted fs-7 mt-1">
-                          Formula: (L × W × H) /{' '}
-                          {formData.dimensionUnit === 'cm' ? '1,000,000' : '61,024'}
+                  {/* Dimensions - ONLY FOR SEA SHIPPING */}
+                  {formData.shippingMethod === 'sea' && (
+                    <>
+                      <div className="mb-4">
+                        <label className="form-label required">Dimensions (L × W × H)</label>
+                        <div className="row g-2">
+                          <div className="col-3">
+                            <input
+                              type="number"
+                              name="length"
+                              className="form-control form-control-lg"
+                              placeholder="Length"
+                              value={formData.length}
+                              onChange={handleChange}
+                              step="0.01"
+                              required
+                            />
+                            <div className="form-text">L</div>
+                          </div>
+                          <div className="col-3">
+                            <input
+                              type="number"
+                              name="width"
+                              className="form-control form-control-lg"
+                              placeholder="Width"
+                              value={formData.width}
+                              onChange={handleChange}
+                              step="0.01"
+                              required
+                            />
+                            <div className="form-text">W</div>
+                          </div>
+                          <div className="col-3">
+                            <input
+                              type="number"
+                              name="height"
+                              className="form-control form-control-lg"
+                              placeholder="Height"
+                              value={formData.height}
+                              onChange={handleChange}
+                              step="0.01"
+                              required
+                            />
+                            <div className="form-text">H</div>
+                          </div>
+                          <div className="col-3">
+                            <select
+                              name="dimensionUnit"
+                              className="form-select form-select-lg"
+                              value={formData.dimensionUnit}
+                              onChange={handleChange}
+                            >
+                              <option value="cm">cm</option>
+                              <option value="inches">inches</option>
+                            </select>
+                            <div className="form-text">Unit</div>
+                          </div>
                         </div>
                       </div>
-                    </div>
+
+                      {/* CBM (Auto-calculated) */}
+                      {cbm > 0 && (
+                        <div className="mb-4">
+                          <div className="alert alert-light-success">
+                            <strong>CBM (Auto-calculated):</strong> {cbm.toFixed(6)} m³
+                            <div className="text-muted fs-7 mt-1">
+                              Formula: (L × W × H) /{' '}
+                              {formData.dimensionUnit === 'cm' ? '1,000,000' : '61,024'}
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </>
                   )}
 
                   {/* Weight - ONLY FOR AIR SHIPPING */}
