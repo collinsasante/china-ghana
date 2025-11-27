@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { getItemsByCustomerId, getAllContainers } from '../../services/airtable';
 import { getFirstPhotoUrl } from '../../utils/photos';
+import ItemDetailsModal from '../../components/common/ItemDetailsModal';
 import type { Item, Container } from '../../types/index';
 
 export default function EstimatedArrivalPage() {
@@ -9,6 +10,8 @@ export default function EstimatedArrivalPage() {
   const [items, setItems] = useState<Item[]>([]);
   const [containers, setContainers] = useState<Container[]>([]);
   const [loading, setLoading] = useState(true);
+  const [selectedItem, setSelectedItem] = useState<Item | null>(null);
+  const [showItemModal, setShowItemModal] = useState(false);
 
   useEffect(() => {
     loadData();
@@ -31,6 +34,11 @@ export default function EstimatedArrivalPage() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleItemClick = (item: Item) => {
+    setSelectedItem(item);
+    setShowItemModal(true);
   };
 
   // Get containers that have customer items
@@ -284,7 +292,12 @@ export default function EstimatedArrivalPage() {
                               <h5 className="mb-3">Your Items in this Container</h5>
                               <div className="mh-300px overflow-auto">
                                 {containerItems.map((item) => (
-                                  <div key={item.id} className="d-flex align-items-center mb-3 p-3 rounded bg-light">
+                                  <div
+                                    key={item.id}
+                                    className="d-flex align-items-center mb-3 p-3 rounded bg-light"
+                                    onClick={() => handleItemClick(item)}
+                                    style={{ cursor: 'pointer' }}
+                                  >
                                     {item.photos && item.photos.length > 0 ? (
                                       <div
                                         className="symbol symbol-40px me-3"
@@ -392,7 +405,12 @@ export default function EstimatedArrivalPage() {
                     </thead>
                     <tbody>
                       {unassignedItems.map((item) => (
-                        <tr key={item.id}>
+                        <tr
+                          key={item.id}
+                          onClick={() => handleItemClick(item)}
+                          style={{ cursor: 'pointer' }}
+                          className="hover-bg-light-primary"
+                        >
                           <td>
                             <div className="d-flex align-items-center">
                               {item.photos && item.photos.length > 0 ? (
@@ -472,6 +490,13 @@ export default function EstimatedArrivalPage() {
           )}
         </div>
       </div>
+
+      {/* Item Details Modal */}
+      <ItemDetailsModal
+        item={selectedItem}
+        isOpen={showItemModal}
+        onClose={() => setShowItemModal(false)}
+      />
     </div>
   );
 }
