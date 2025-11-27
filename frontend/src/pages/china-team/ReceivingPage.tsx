@@ -69,9 +69,10 @@ export default function ReceivingPage() {
       });
 
       // Create placeholder items in Airtable with photos for Ghana team
+      // IMPORTANT: Assign order numbers to preserve upload sequence (close/open shot pattern)
       const itemCreationPromises = results.map((result, index) =>
         createItem({
-          photos: [result.secure_url],
+          photos: [{ url: result.secure_url, order: index }],
           receivingDate: receivingDate,
           status: 'china_warehouse',
           trackingNumber: `TEMP-${Date.now()}-${index}`, // Temporary tracking number - Ghana will update

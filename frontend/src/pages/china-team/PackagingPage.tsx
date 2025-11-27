@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { getAllCustomers, getItemsByCustomerId, updateItem, getAllItems } from '../../services/airtable';
+import { getFirstPhotoUrl } from '../../utils/photos';
 import type { User, Item } from '../../types/index';
 
 export default function PackagingPage() {
@@ -597,11 +598,7 @@ export default function PackagingPage() {
                             <td>
                               {item.photos && item.photos.length > 0 ? (
                                 <img
-                                  src={
-                                    typeof item.photos[0] === 'string'
-                                      ? item.photos[0]
-                                      : (item.photos[0] as any)?.url
-                                  }
+                                  src={getFirstPhotoUrl(item.photos) || ''}
                                   alt="Item"
                                   className="rounded"
                                   style={{
@@ -888,11 +885,7 @@ export default function PackagingPage() {
                             <td>
                               {item.photos && item.photos.length > 0 ? (
                                 <img
-                                  src={
-                                    typeof item.photos[0] === 'string'
-                                      ? item.photos[0]
-                                      : (item.photos[0] as any)?.url
-                                  }
+                                  src={getFirstPhotoUrl(item.photos) || ''}
                                   alt="Item"
                                   className="rounded"
                                   style={{

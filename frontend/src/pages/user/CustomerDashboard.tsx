@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { getItemsByCustomerId, getInvoicesByCustomerId, getSupportRequestsByCustomerId, getActiveAnnouncements } from '../../services/airtable';
+import { getFirstPhotoUrl } from '../../utils/photos';
 import type { Item, Invoice, SupportRequest, Announcement } from '../../types/index';
 
 export default function CustomerDashboard() {
@@ -244,11 +245,7 @@ export default function CustomerDashboard() {
                                   {item.photos && item.photos.length > 0 ? (
                                     <div className="symbol symbol-40px me-3">
                                       <img
-                                        src={
-                                          typeof item.photos[0] === 'string'
-                                            ? item.photos[0]
-                                            : (item.photos[0] as any)?.url
-                                        }
+                                        src={getFirstPhotoUrl(item.photos) || ''}
                                         alt="Item"
                                         className="symbol-label"
                                         style={{ width: '100%', height: '100%', objectFit: 'cover' }}

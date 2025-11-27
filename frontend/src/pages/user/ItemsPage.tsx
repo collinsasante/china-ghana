@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { getItemsByCustomerId } from '../../services/airtable';
+import { getFirstPhotoUrl } from '../../utils/photos';
 import type { Item } from '../../types/index';
 
 export default function ItemsPage() {
@@ -205,11 +206,7 @@ export default function ItemsPage() {
                           {/* Item Photo */}
                           {item.photos && item.photos.length > 0 ? (
                             <img
-                              src={
-                                typeof item.photos[0] === 'string'
-                                  ? item.photos[0]
-                                  : (item.photos[0] as any)?.url
-                              }
+                              src={getFirstPhotoUrl(item.photos) || ''}
                               alt="Item"
                               className="w-100 rounded mb-4 cursor-pointer"
                               style={{ height: '200px', objectFit: 'cover' }}

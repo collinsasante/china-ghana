@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import type { FormEvent } from 'react';
 import { calculateCBM } from '../../utils/calculations';
 import { createUser } from '../../services/airtable';
+import { getFirstPhotoUrl } from '../../utils/photos';
 import type { Item, User } from '../../types/index';
 
 interface ItemDetailsModalProps {
@@ -261,9 +262,9 @@ export default function ItemDetailsModal({
 
   if (!isOpen) return null;
 
-  // Get photo URL
+  // Get photo URL (uses first photo in sorted order)
   const photoUrl = item.photos && item.photos.length > 0
-    ? (typeof item.photos[0] === 'string' ? item.photos[0] : (item.photos[0] as any)?.url)
+    ? getFirstPhotoUrl(item.photos)
     : '';
 
   return (

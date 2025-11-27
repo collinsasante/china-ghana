@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { getItemsByCustomerId } from '../../services/airtable';
+import { getFirstPhotoUrl } from '../../utils/photos';
 import type { Item, ShipmentStatus } from '../../types/index';
 
 export default function StatusPage() {
@@ -283,7 +284,7 @@ export default function StatusPage() {
                                   <div
                                     className="symbol symbol-50px me-3"
                                     style={{
-                                      backgroundImage: `url(${item.photos[0]})`,
+                                      backgroundImage: `url(${getFirstPhotoUrl(item.photos)})`,
                                       backgroundSize: 'cover',
                                       backgroundPosition: 'center',
                                     }}

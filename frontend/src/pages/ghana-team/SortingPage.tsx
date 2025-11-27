@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { getAllItems, getAllCustomers, updateItem } from '../../services/airtable';
+import { getFirstPhotoUrl } from '../../utils/photos';
 import type { Item, User, ShipmentStatus } from '../../types/index';
 
 export default function SortingPage() {
@@ -394,7 +395,7 @@ export default function SortingPage() {
                           <td>
                             {item.photos && item.photos.length > 0 ? (
                               <img
-                                src={item.photos[0]}
+                                src={getFirstPhotoUrl(item.photos) || ''}
                                 alt="Item"
                                 className="rounded"
                                 style={{

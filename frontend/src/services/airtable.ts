@@ -355,7 +355,10 @@ export async function createItem(itemData: Omit<Item, 'id'>): Promise<Item> {
     // Handle photos array - Airtable attachments need specific format
     if (itemData.photos && itemData.photos.length > 0) {
       // Airtable expects attachments as array of objects with url property
-      cleanData.photos = itemData.photos.map((url: string) => ({ url }));
+      // Photos can be strings or objects with url and order
+      cleanData.photos = itemData.photos.map((photo: string | { url: string; order: number }) =>
+        typeof photo === 'string' ? { url: photo } : { url: photo.url }
+      );
     }
 
     console.log('Creating item in Airtable with data:', cleanData);

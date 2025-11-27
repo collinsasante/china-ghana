@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { getItemsByCustomerId, getAllContainers } from '../../services/airtable';
+import { getFirstPhotoUrl } from '../../utils/photos';
 import type { Item, Container } from '../../types/index';
 
 export default function EstimatedArrivalPage() {
@@ -288,7 +289,7 @@ export default function EstimatedArrivalPage() {
                                       <div
                                         className="symbol symbol-40px me-3"
                                         style={{
-                                          backgroundImage: `url(${item.photos[0]})`,
+                                          backgroundImage: `url(${getFirstPhotoUrl(item.photos)})`,
                                           backgroundSize: 'cover',
                                           backgroundPosition: 'center',
                                         }}

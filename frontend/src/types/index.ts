@@ -51,8 +51,8 @@ export interface Item {
   // Status
   status: ShipmentStatus;
 
-  // Photos
-  photos: string[];
+  // Photos - can be simple strings (legacy) or objects with order
+  photos: (string | { url: string; order: number })[];
 
   // Packaging
   cartonNumber?: string;
