@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { getAllItems, getAllCustomers, updateItem } from '../../services/airtable';
 import { getFirstPhotoUrl } from '../../utils/photos';
+import ItemDetailsModal from '../../components/common/ItemDetailsModal';
 import type { Item, User, ShipmentStatus } from '../../types/index';
 
 export default function SortingPage() {
@@ -11,6 +12,8 @@ export default function SortingPage() {
   const [statusFilter, setStatusFilter] = useState<ShipmentStatus | 'all'>('all');
   const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set());
   const [isUpdating, setIsUpdating] = useState(false);
+  const [selectedItem, setSelectedItem] = useState<Item | null>(null);
+  const [showItemModal, setShowItemModal] = useState(false);
 
   useEffect(() => {
     loadData();
@@ -137,6 +140,11 @@ export default function SortingPage() {
       console.error(`Failed to mark item as ${type}:`, error);
       alert(`Failed to mark item as ${type}. Please try again.`);
     }
+  };
+
+  const handleItemClick = (item: Item) => {
+    setSelectedItem(item);
+    setShowItemModal(true);
   };
 
   const getStatusBadge = (status: ShipmentStatus) => {
@@ -381,8 +389,13 @@ export default function SortingPage() {
                     </thead>
                     <tbody>
                       {filteredItems.map((item) => (
-                        <tr key={item.id}>
-                          <td>
+                        <tr
+                          key={item.id}
+                          onClick={() => handleItemClick(item)}
+                          style={{ cursor: 'pointer' }}
+                          className="hover-bg-light-primary"
+                        >
+                          <td onClick={(e) => e.stopPropagation()}>
                             <div className="form-check form-check-sm form-check-custom">
                               <input
                                 className="form-check-input"
@@ -459,7 +472,7 @@ export default function SortingPage() {
                               )}
                             </div>
                           </td>
-                          <td>
+                          <td onClick={(e) => e.stopPropagation()}>
                             <div className="dropdown">
                               <button
                                 className="btn btn-sm btn-light btn-icon"
@@ -493,6 +506,13 @@ export default function SortingPage() {
               )}
             </div>
           </div>
+
+          {/* Item Details Modal */}
+          <ItemDetailsModal
+            item={selectedItem}
+            isOpen={showItemModal}
+            onClose={() => setShowItemModal(false)}
+          />
         </div>
       </div>
     </div>

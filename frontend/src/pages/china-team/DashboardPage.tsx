@@ -1,11 +1,14 @@
 import { useState, useEffect } from 'react';
 import { getAllItems, getAllCustomers } from '../../services/airtable';
+import ItemDetailsModal from '../../components/common/ItemDetailsModal';
 import type { Item, User } from '../../types/index';
 
 export default function ChinaTeamDashboard() {
   const [items, setItems] = useState<Item[]>([]);
   const [customers, setCustomers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
+  const [selectedItem, setSelectedItem] = useState<Item | null>(null);
+  const [showItemModal, setShowItemModal] = useState(false);
 
   useEffect(() => {
     loadDashboardData();
@@ -25,6 +28,11 @@ export default function ChinaTeamDashboard() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleItemClick = (item: Item) => {
+    setSelectedItem(item);
+    setShowItemModal(true);
   };
 
   // Calculate statistics
@@ -325,7 +333,12 @@ export default function ChinaTeamDashboard() {
                               </tr>
                             ) : (
                               recentItems.map((item) => (
-                                <tr key={item.id}>
+                                <tr
+                                  key={item.id}
+                                  onClick={() => handleItemClick(item)}
+                                  style={{ cursor: 'pointer' }}
+                                  className="hover-bg-light-primary"
+                                >
                                   <td>
                                     <span className="fw-bold">{item.trackingNumber}</span>
                                   </td>
@@ -467,6 +480,13 @@ export default function ChinaTeamDashboard() {
               )}
             </>
           )}
+
+          {/* Item Details Modal */}
+          <ItemDetailsModal
+            item={selectedItem}
+            isOpen={showItemModal}
+            onClose={() => setShowItemModal(false)}
+          />
         </div>
       </div>
     </div>

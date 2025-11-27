@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { getAllCustomers, getItemsByCustomerId, updateItem, getAllItems } from '../../services/airtable';
 import { getFirstPhotoUrl } from '../../utils/photos';
+import ItemDetailsModal from '../../components/common/ItemDetailsModal';
 import type { User, Item } from '../../types/index';
 
 export default function PackagingPage() {
@@ -17,6 +18,8 @@ export default function PackagingPage() {
   const [viewMode, setViewMode] = useState<'packaging' | 'all-items'>('packaging');
   const [expandedFolders, setExpandedFolders] = useState<Set<string>>(new Set());
   const [searchQuery, setSearchQuery] = useState('');
+  const [selectedItem, setSelectedItem] = useState<Item | null>(null);
+  const [showItemModal, setShowItemModal] = useState(false);
 
   // Load customers on mount
   useEffect(() => {
@@ -411,6 +414,11 @@ export default function PackagingPage() {
     };
   };
 
+  const handleItemClick = (item: Item) => {
+    setSelectedItem(item);
+    setShowItemModal(true);
+  };
+
   const totals = calculateTotals();
 
   return (
@@ -587,8 +595,13 @@ export default function PackagingPage() {
                       </thead>
                       <tbody>
                         {items.map((item) => (
-                          <tr key={item.id}>
-                            <td>
+                          <tr
+                            key={item.id}
+                            onClick={() => handleItemClick(item)}
+                            style={{ cursor: 'pointer' }}
+                            className="hover-bg-light-primary"
+                          >
+                            <td onClick={(e) => e.stopPropagation()}>
                               <div className="form-check form-check-sm form-check-custom">
                                 <input
                                   className="form-check-input"
@@ -884,7 +897,12 @@ export default function PackagingPage() {
                       </thead>
                       <tbody>
                         {dateItems.map((item) => (
-                          <tr key={item.id}>
+                          <tr
+                            key={item.id}
+                            onClick={() => handleItemClick(item)}
+                            style={{ cursor: 'pointer' }}
+                            className="hover-bg-light-primary"
+                          >
                             <td>
                               {item.photos && item.photos.length > 0 ? (
                                 <img
@@ -974,6 +992,13 @@ export default function PackagingPage() {
               </div>
             </div>
           )}
+
+          {/* Item Details Modal */}
+          <ItemDetailsModal
+            item={selectedItem}
+            isOpen={showItemModal}
+            onClose={() => setShowItemModal(false)}
+          />
         </div>
       </div>
     </div>

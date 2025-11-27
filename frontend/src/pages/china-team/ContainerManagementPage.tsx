@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { getAllItems, updateItem } from '../../services/airtable';
 import { getFirstPhotoUrl } from '../../utils/photos';
+import ItemDetailsModal from '../../components/common/ItemDetailsModal';
 import type { Item } from '../../types/index';
 
 interface Container {
@@ -20,6 +21,8 @@ export default function ContainerManagementPage() {
   const [isAssigning, setIsAssigning] = useState(false);
   const [showNewContainerModal, setShowNewContainerModal] = useState(false);
   const [expandedContainer, setExpandedContainer] = useState<string | null>(null);
+  const [selectedItem, setSelectedItem] = useState<Item | null>(null);
+  const [showItemModal, setShowItemModal] = useState(false);
 
   useEffect(() => {
     loadData();
@@ -153,6 +156,11 @@ export default function ContainerManagementPage() {
 
   const toggleContainer = (containerNum: string) => {
     setExpandedContainer(expandedContainer === containerNum ? null : containerNum);
+  };
+
+  const handleItemClick = (item: Item) => {
+    setSelectedItem(item);
+    setShowItemModal(true);
   };
 
   return (
@@ -346,8 +354,13 @@ export default function ContainerManagementPage() {
                     </thead>
                     <tbody>
                       {availableItems.map((item) => (
-                        <tr key={item.id}>
-                          <td>
+                        <tr
+                          key={item.id}
+                          onClick={() => handleItemClick(item)}
+                          style={{ cursor: 'pointer' }}
+                          className="hover-bg-light-primary"
+                        >
+                          <td onClick={(e) => e.stopPropagation()}>
                             <div className="form-check form-check-sm form-check-custom">
                               <input
                                 className="form-check-input"
@@ -478,7 +491,12 @@ export default function ContainerManagementPage() {
                                 </thead>
                                 <tbody>
                                   {container.items.map((item) => (
-                                    <tr key={item.id}>
+                                    <tr
+                                      key={item.id}
+                                      onClick={() => handleItemClick(item)}
+                                      style={{ cursor: 'pointer' }}
+                                      className="hover-bg-light-primary"
+                                    >
                                       <td>
                                         {item.photos && item.photos.length > 0 ? (
                                           <img
@@ -530,7 +548,7 @@ export default function ContainerManagementPage() {
                                           {item.status.replace(/_/g, ' ').toUpperCase()}
                                         </span>
                                       </td>
-                                      <td>
+                                      <td onClick={(e) => e.stopPropagation()}>
                                         {item.status === 'in_transit' && (
                                           <button
                                             className="btn btn-sm btn-light-danger"
@@ -555,6 +573,13 @@ export default function ContainerManagementPage() {
               )}
             </div>
           </div>
+
+          {/* Item Details Modal */}
+          <ItemDetailsModal
+            item={selectedItem}
+            isOpen={showItemModal}
+            onClose={() => setShowItemModal(false)}
+          />
         </div>
       </div>
 
