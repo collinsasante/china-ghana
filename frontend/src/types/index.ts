@@ -68,6 +68,8 @@ export interface Announcement {
   id: string;
   title: string;
   content: string;
+  message: string; // Alias for content (used in customer pages)
+  type: string; // Type: important, update, general, etc.
   createdBy: string;
   createdAt: string;
   isActive: boolean;
@@ -94,13 +96,17 @@ export interface Invoice {
   subtotal: number;
   tax: number;
   total: number;
+  totalAmount: number; // Alias for total (used in customer pages)
 
   currency: 'USD' | 'GHS';
   status: 'pending' | 'paid' | 'overdue';
+  description: string; // Invoice description
 
   createdAt: string;
+  issueDate: string; // Alias for createdAt
   dueDate: string;
   paidAt?: string;
+  notes?: string; // Optional invoice notes
 }
 
 export interface SupportRequest {
@@ -111,6 +117,9 @@ export interface SupportRequest {
   type: SupportRequestType;
   subject: string;
   description: string;
+  message: string; // Alias for description
+  category: string; // Support category
+  priority: string; // Priority level
   relatedTrackingNumbers?: string[];
   status: 'open' | 'in_progress' | 'resolved' | 'closed';
   createdAt: string;
@@ -122,8 +131,11 @@ export interface Container {
   containerNumber: string;
   receivingDate: string;
   expectedArrivalGhana: string;
+  estimatedArrival: string; // Alias for expectedArrivalGhana
   actualArrivalGhana?: string;
   status: ShipmentStatus;
+  shippingMethod?: string; // sea or air
+  departureDate?: string; // Departure date from China
   itemCount: number;
   photoFolderPath: string;
 }
