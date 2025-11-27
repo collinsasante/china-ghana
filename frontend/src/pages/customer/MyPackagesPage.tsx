@@ -89,7 +89,8 @@ export default function MyPackagesPage() {
   };
 
   const counts = getStatusCounts();
-  const totalValue = items.reduce((sum, item) => sum + (item.costUSD || 0), 0);
+  const totalValueUSD = items.reduce((sum, item) => sum + (item.costUSD || 0), 0);
+  const totalValueCedis = items.reduce((sum, item) => sum + (item.costCedis || 0), 0);
   // const totalCBM = items.reduce((sum, item) => sum + (item.cbm || 0), 0); // Unused for now
 
   return (
@@ -191,7 +192,8 @@ export default function MyPackagesPage() {
                     </div>
                     <div>
                       <div className="fs-6 text-gray-400">Total Value</div>
-                      <div className="fs-2x fw-bold text-gray-800">${totalValue.toFixed(2)}</div>
+                      <div className="fs-2x fw-bold text-gray-800">${totalValueUSD.toFixed(2)}</div>
+                      <div className="fs-7 text-gray-600">₵{totalValueCedis.toFixed(2)}</div>
                     </div>
                   </div>
                 </div>
@@ -372,6 +374,9 @@ export default function MyPackagesPage() {
                                 <div className="text-gray-400 fs-7">Cost</div>
                                 <div className="text-gray-800 fw-bold">
                                   ${item.costUSD?.toFixed(2) || '0.00'}
+                                </div>
+                                <div className="text-gray-600 fs-8">
+                                  ₵{item.costCedis?.toFixed(2) || '0.00'}
                                 </div>
                               </div>
                             </div>
