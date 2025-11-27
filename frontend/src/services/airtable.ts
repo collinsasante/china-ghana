@@ -517,6 +517,16 @@ export async function getAllItems(): Promise<Item[]> {
   }
 }
 
+export async function deleteItem(itemId: string): Promise<void> {
+  try {
+    await base(TABLES.ITEMS).destroy([itemId]);
+    console.log(`Item ${itemId} deleted successfully`);
+  } catch (error) {
+    console.error('Error deleting item:', error);
+    throw error;
+  }
+}
+
 // ============================================
 // CONTAINER OPERATIONS
 // ============================================

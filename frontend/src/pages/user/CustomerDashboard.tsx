@@ -50,6 +50,11 @@ export default function CustomerDashboard() {
       .reduce((sum, inv) => sum + inv.totalAmount, 0);
   };
 
+  const getPendingInvoiceAmountCedis = () => {
+    const usdAmount = getPendingInvoiceAmount();
+    return usdAmount * 15; // 1 USD = 15 GHS
+  };
+
   const getRecentItems = () => {
     return items
       .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
@@ -191,6 +196,7 @@ export default function CustomerDashboard() {
                     </div>
                     <div>
                       <div className="fs-2hx fw-bold text-danger">${getPendingInvoiceAmount().toFixed(2)}</div>
+                      <div className="text-muted fs-7">₵{getPendingInvoiceAmountCedis().toFixed(2)} GHS</div>
                       <div className="fs-7 text-danger">Pending Payment</div>
                     </div>
                   </div>

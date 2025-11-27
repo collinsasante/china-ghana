@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { getAllItems, getAllCustomers, updateItem } from '../../services/airtable';
+import { getAllItems, getAllCustomers, updateItem, deleteItem } from '../../services/airtable';
 import ItemDetailsModal from '../../components/ghana-team/ItemDetailsModal';
 import { getFirstPhotoUrl } from '../../utils/photos';
 import type { Item, User } from '../../types/index';
@@ -106,6 +106,21 @@ export default function TaggingPage() {
     } catch (error) {
       console.error('Failed to unassign customer:', error);
       alert('Failed to unassign customer. Please try again.');
+    }
+  };
+
+  const handleDeleteItem = async (itemId: string, trackingNumber: string) => {
+    if (!window.confirm(`Are you sure you want to delete item ${trackingNumber}? This action cannot be undone.`)) {
+      return;
+    }
+
+    try {
+      await deleteItem(itemId);
+      await loadData();
+      alert('✅ Item deleted successfully!');
+    } catch (error) {
+      console.error('Failed to delete item:', error);
+      alert('Failed to delete item. Please try again.');
     }
   };
 
@@ -247,14 +262,23 @@ export default function TaggingPage() {
                             </div>
                           </div>
 
-                          {/* Add Details Button */}
-                          <button
-                            className="btn btn-primary w-100"
-                            onClick={() => handleOpenDetailsModal(item)}
-                          >
-                            <i className="bi bi-pencil-square me-2"></i>
-                            Add Item Details
-                          </button>
+                          {/* Action Buttons */}
+                          <div className="d-flex gap-2">
+                            <button
+                              className="btn btn-primary flex-grow-1"
+                              onClick={() => handleOpenDetailsModal(item)}
+                            >
+                              <i className="bi bi-pencil-square me-2"></i>
+                              Add Item Details
+                            </button>
+                            <button
+                              className="btn btn-danger"
+                              onClick={() => handleDeleteItem(item.id, item.trackingNumber)}
+                              title="Delete item"
+                            >
+                              <i className="bi bi-trash"></i>
+                            </button>
+                          </div>
                         </div>
                       </div>
                     </div>

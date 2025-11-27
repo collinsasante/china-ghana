@@ -607,6 +607,11 @@ export default function ContainerManagementPage() {
                       .filter((item) => selectedItems.has(item.id))
                       .reduce((sum, item) => sum + (item.costUSD || 0), 0)
                       .toFixed(2)}{' '}
+                    / ₵
+                    {availableItems
+                      .filter((item) => selectedItems.has(item.id))
+                      .reduce((sum, item) => sum + (item.costCedis || 0), 0)
+                      .toFixed(2)}{' '}
                     total value
                   </div>
                 </div>
