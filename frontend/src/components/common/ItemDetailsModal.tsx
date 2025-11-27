@@ -92,7 +92,7 @@ export default function ItemDetailsModal({ item, isOpen, onClose }: ItemDetailsM
                 </div>
                 <div className="mb-3">
                   <label className="text-muted fw-semibold">CBM:</label>
-                  <div className="text-gray-800">{item.cbm.toFixed(6)} m³</div>
+                  <div className="text-gray-800">{item.cbm ? item.cbm.toFixed(6) : '0.000000'} m³</div>
                 </div>
                 {item.weight && (
                   <div className="mb-3">
@@ -111,11 +111,11 @@ export default function ItemDetailsModal({ item, isOpen, onClose }: ItemDetailsM
                 <h5 className="mb-4">Cost</h5>
                 <div className="mb-3">
                   <label className="text-muted fw-semibold">USD:</label>
-                  <div className="text-gray-800 fw-bold fs-3">${item.costUSD.toFixed(2)}</div>
+                  <div className="text-gray-800 fw-bold fs-3">${item.costUSD ? item.costUSD.toFixed(2) : '0.00'}</div>
                 </div>
                 <div className="mb-3">
                   <label className="text-muted fw-semibold">Cedis:</label>
-                  <div className="text-gray-800 fw-bold fs-3">₵{item.costCedis.toFixed(2)} GHS</div>
+                  <div className="text-gray-800 fw-bold fs-3">₵{item.costCedis ? item.costCedis.toFixed(2) : '0.00'} GHS</div>
                 </div>
               </div>
 
