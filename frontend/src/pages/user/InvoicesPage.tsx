@@ -40,9 +40,9 @@ export default function InvoicesPage() {
     return <span className={`badge ${config.class}`}>{config.label}</span>;
   };
 
-  const getTotalAmount = () => {
-    return invoices.reduce((sum, invoice) => sum + invoice.totalAmount, 0);
-  };
+  // const getTotalAmount = () => {
+  //   return invoices.reduce((sum, invoice) => sum + invoice.totalAmount, 0);
+  // }; // Unused for now
 
   const getPendingAmount = () => {
     return invoices

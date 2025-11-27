@@ -145,7 +145,7 @@ export function getThumbnailUrl(publicId: string, size: number = 200): string {
  * Delete an image from Cloudinary (requires API key and secret)
  * Note: This should ideally be done from a backend server
  */
-export async function deleteImage(publicId: string): Promise<void> {
+export async function deleteImage(_publicId: string): Promise<void> {
   // This would require the API secret which should not be exposed in the frontend
   // Implement this on a backend server instead
   console.warn('Image deletion should be handled by backend for security');

@@ -42,6 +42,7 @@ export default function StatusPage() {
   const getStatusColor = (status: ShipmentStatus): string => {
     const colors: Record<ShipmentStatus, string> = {
       china_warehouse: 'info',
+      picked_up: 'info',
       in_transit: 'primary',
       arrived_ghana: 'warning',
       ready_for_pickup: 'success',

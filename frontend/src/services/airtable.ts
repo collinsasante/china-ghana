@@ -138,7 +138,7 @@ export async function requestPasswordReset(email: string): Promise<boolean> {
  * Reset password with token
  * TODO: Implement in production with actual password hashing
  */
-export async function resetPassword(token: string, newPassword: string): Promise<boolean> {
+export async function resetPassword(token: string, _newPassword: string): Promise<boolean> {
   try {
     // TODO: In production, implement:
     // 1. Validate reset token
@@ -417,7 +417,15 @@ export async function getAllContainers(): Promise<Container[]> {
       })
       .all();
 
-    return records.map((record) => recordToObject(record) as Container);
+    return records.map((record) => {
+      const obj = recordToObject(record) as any;
+      return {
+        ...obj,
+        estimatedArrival: obj.expectedArrivalGhana || obj.estimatedArrival, // Map expectedArrivalGhana to estimatedArrival
+        shippingMethod: obj.shippingMethod || 'sea', // Default shipping method
+        departureDate: obj.departureDate || undefined, // Optional departure date
+      } as Container;
+    });
   } catch (error) {
     console.error('Error fetching containers:', error);
     throw error;
@@ -462,7 +470,16 @@ export async function getInvoicesByCustomerId(customerId: string): Promise<Invoi
       })
       .all();
 
-    return records.map((record) => recordToObject(record) as Invoice);
+    return records.map((record) => {
+      const obj = recordToObject(record) as any;
+      return {
+        ...obj,
+        totalAmount: obj.total || obj.totalAmount || 0, // Map total to totalAmount
+        issueDate: obj.createdAt || obj.issueDate, // Map createdAt to issueDate
+        description: obj.description || '', // Ensure description exists
+        notes: obj.notes || undefined, // Optional notes
+      } as Invoice;
+    });
   } catch (error) {
     console.error('Error fetching invoices:', error);
     throw error;
@@ -507,7 +524,15 @@ export async function getSupportRequestsByCustomerId(customerId: string): Promis
       })
       .all();
 
-    return records.map((record) => recordToObject(record) as SupportRequest);
+    return records.map((record) => {
+      const obj = recordToObject(record) as any;
+      return {
+        ...obj,
+        message: obj.description || obj.message, // Map description to message
+        category: obj.category || obj.type || 'general', // Map type to category
+        priority: obj.priority || 'normal', // Default priority
+      } as SupportRequest;
+    });
   } catch (error) {
     console.error('Error fetching support requests:', error);
     throw error;
@@ -552,7 +577,14 @@ export async function getActiveAnnouncements(): Promise<Announcement[]> {
       })
       .all();
 
-    return records.map((record) => recordToObject(record) as Announcement);
+    return records.map((record) => {
+      const obj = recordToObject(record) as any;
+      return {
+        ...obj,
+        message: obj.content || obj.message, // Map content to message
+        type: obj.type || 'general', // Default type if missing
+      } as Announcement;
+    });
   } catch (error) {
     console.error('Error fetching announcements:', error);
     throw error;

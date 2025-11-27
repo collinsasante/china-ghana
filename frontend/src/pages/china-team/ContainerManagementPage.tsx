@@ -125,7 +125,7 @@ export default function ContainerManagementPage() {
     }
   };
 
-  const handleRemoveFromContainer = async (itemId: string, containerNum: string) => {
+  const handleRemoveFromContainer = async (itemId: string, _containerNum: string) => {
     if (!window.confirm('Remove this item from the container?')) {
       return;
     }

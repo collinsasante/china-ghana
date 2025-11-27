@@ -112,18 +112,21 @@ export interface Invoice {
 export interface SupportRequest {
   id: string;
   customerId: string;
-  customerName: string;
-  customerEmail: string;
-  type: SupportRequestType;
+  customerName?: string;
+  customerEmail?: string;
+  type?: SupportRequestType;
   subject: string;
   description: string;
   message: string; // Alias for description
   category: string; // Support category
   priority: string; // Priority level
   relatedTrackingNumbers?: string[];
+  relatedTrackingNumber?: string; // Singular version (for forms)
   status: 'open' | 'in_progress' | 'resolved' | 'closed';
   createdAt: string;
+  updatedAt?: string; // Last update timestamp
   resolvedAt?: string;
+  adminResponse?: string; // Admin's response to the request
 }
 
 export interface Container {

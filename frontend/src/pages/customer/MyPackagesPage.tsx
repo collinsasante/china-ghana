@@ -84,7 +84,7 @@ export default function MyPackagesPage() {
 
   const counts = getStatusCounts();
   const totalValue = items.reduce((sum, item) => sum + (item.costUSD || 0), 0);
-  const totalCBM = items.reduce((sum, item) => sum + (item.cbm || 0), 0);
+  // const totalCBM = items.reduce((sum, item) => sum + (item.cbm || 0), 0); // Unused for now
 
   return (
     <div className="d-flex flex-column flex-column-fluid">
