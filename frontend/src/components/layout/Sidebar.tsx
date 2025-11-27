@@ -10,7 +10,7 @@ interface MenuItem {
 
 const menuItems: MenuItem[] = [
   // Customer menu items
-  { path: '/packages', label: 'My Packages', icon: 'bi-box-seam', roles: ['customer'] },
+  { path: '/packages', label: 'Dashboard', icon: 'bi-box-seam', roles: ['customer'] },
   { path: '/status', label: 'Shipment Status', icon: 'bi-truck', roles: ['customer'] },
   { path: '/arrival', label: 'Estimated Arrival', icon: 'bi-calendar-event', roles: ['customer'] },
   { path: '/items', label: 'My Items', icon: 'bi-box', roles: ['customer'] },
