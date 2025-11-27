@@ -12,15 +12,20 @@ export default function CustomerDashboard() {
   const [supportRequests, setSupportRequests] = useState<SupportRequest[]>([]);
   const [announcements, setAnnouncements] = useState<Announcement[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     loadDashboardData();
   }, [user]);
 
   const loadDashboardData = async () => {
-    if (!user?.id) return;
+    if (!user?.id) {
+      setLoading(false);
+      return;
+    }
 
     setLoading(true);
+    setError(null);
     try {
       const [itemsData, invoicesData, requestsData, announcementsData] = await Promise.all([
         getItemsByCustomerId(user.id),
@@ -29,12 +34,20 @@ export default function CustomerDashboard() {
         getActiveAnnouncements(),
       ]);
 
+      console.log('✅ Dashboard data loaded:', {
+        items: itemsData.length,
+        invoices: invoicesData.length,
+        requests: requestsData.length,
+        announcements: announcementsData.length
+      });
+
       setItems(itemsData);
       setInvoices(invoicesData);
       setSupportRequests(requestsData);
       setAnnouncements(announcementsData);
-    } catch (err) {
-      console.error('Error loading dashboard data:', err);
+    } catch (err: any) {
+      console.error('❌ Error loading dashboard data:', err);
+      setError(err.message || 'Failed to load dashboard data');
     } finally {
       setLoading(false);
     }
@@ -86,6 +99,38 @@ export default function CustomerDashboard() {
                   <span className="visually-hidden">Loading...</span>
                 </div>
                 <p className="text-gray-600 mt-5">Loading dashboard...</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="d-flex flex-column flex-column-fluid">
+        <div id="kt_app_toolbar" className="app-toolbar py-3 py-lg-6">
+          <div id="kt_app_toolbar_container" className="app-container container-xxl d-flex flex-stack">
+            <div className="page-title d-flex flex-column justify-content-center flex-wrap me-3">
+              <h1 className="page-heading d-flex text-gray-900 fw-bold fs-3 flex-column justify-content-center my-0">
+                Dashboard
+              </h1>
+            </div>
+          </div>
+        </div>
+
+        <div id="kt_app_content" className="app-content flex-column-fluid">
+          <div id="kt_app_content_container" className="app-container container-xxl">
+            <div className="card">
+              <div className="card-body text-center py-20">
+                <i className="bi bi-exclamation-triangle text-danger fs-3x mb-5"></i>
+                <h3 className="text-danger mb-3">Error Loading Dashboard</h3>
+                <p className="text-gray-600">{error}</p>
+                <button className="btn btn-primary mt-5" onClick={loadDashboardData}>
+                  <i className="bi bi-arrow-clockwise me-2"></i>
+                  Retry
+                </button>
               </div>
             </div>
           </div>

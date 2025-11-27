@@ -50,6 +50,16 @@ export default function InvoicesPage() {
       .reduce((sum, invoice) => sum + invoice.totalAmount, 0);
   };
 
+  const getPaidAmount = () => {
+    return invoices
+      .filter(inv => inv.status === 'paid')
+      .reduce((sum, invoice) => sum + invoice.totalAmount, 0);
+  };
+
+  const convertToCedis = (usd: number) => {
+    return usd * 15; // 1 USD = 15 GHS
+  };
+
   const openInvoice = (invoice: Invoice) => {
     setSelectedInvoice(invoice);
     setShowModal(true);
@@ -133,8 +143,9 @@ export default function InvoicesPage() {
               <div className="card card-flush h-100 bg-light-success">
                 <div className="card-body">
                   <div className="fs-2hx fw-bold text-success mb-2">
-                    ${invoices.filter(inv => inv.status === 'paid').reduce((sum, inv) => sum + inv.totalAmount, 0).toFixed(2)}
+                    ${getPaidAmount().toFixed(2)}
                   </div>
+                  <div className="text-muted fs-7 mb-2">₵{convertToCedis(getPaidAmount()).toFixed(2)} GHS</div>
                   <div className="fw-semibold text-success">Total Paid</div>
                 </div>
               </div>
@@ -194,9 +205,12 @@ export default function InvoicesPage() {
                             <span className="text-gray-600">{invoice.description}</span>
                           </td>
                           <td>
-                            <span className="text-gray-900 fw-bold fs-6">
-                              ${invoice.totalAmount.toFixed(2)}
-                            </span>
+                            <div>
+                              <span className="text-gray-900 fw-bold fs-6">
+                                ${invoice.totalAmount.toFixed(2)}
+                              </span>
+                              <div className="text-muted fs-7">₵{convertToCedis(invoice.totalAmount).toFixed(2)}</div>
+                            </div>
                           </td>
                           <td>{getStatusBadge(invoice.status)}</td>
                           <td className="text-end">
@@ -259,6 +273,7 @@ export default function InvoicesPage() {
                     <div className="fs-1 fw-bold text-gray-800 mt-3">
                       ${selectedInvoice.totalAmount.toFixed(2)}
                     </div>
+                    <div className="text-muted fs-6">₵{convertToCedis(selectedInvoice.totalAmount).toFixed(2)} GHS</div>
                   </div>
                 </div>
 
@@ -296,16 +311,22 @@ export default function InvoicesPage() {
                       <tbody>
                         <tr>
                           <td className="text-gray-800">{selectedInvoice.description}</td>
-                          <td className="text-end text-gray-800 fw-bold">
-                            ${selectedInvoice.totalAmount.toFixed(2)}
+                          <td className="text-end">
+                            <div className="text-gray-800 fw-bold">
+                              ${selectedInvoice.totalAmount.toFixed(2)}
+                            </div>
+                            <div className="text-muted fs-7">₵{convertToCedis(selectedInvoice.totalAmount).toFixed(2)}</div>
                           </td>
                         </tr>
                       </tbody>
                       <tfoot>
                         <tr>
                           <td className="text-end fw-bold text-gray-800 fs-4">Total</td>
-                          <td className="text-end fw-bold text-gray-800 fs-3">
-                            ${selectedInvoice.totalAmount.toFixed(2)}
+                          <td className="text-end">
+                            <div className="fw-bold text-gray-800 fs-3">
+                              ${selectedInvoice.totalAmount.toFixed(2)}
+                            </div>
+                            <div className="text-muted fs-6">₵{convertToCedis(selectedInvoice.totalAmount).toFixed(2)} GHS</div>
                           </td>
                         </tr>
                       </tfoot>
