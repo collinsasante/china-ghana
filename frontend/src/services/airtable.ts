@@ -95,6 +95,24 @@ export async function updateUserPassword(userId: string, newPassword: string): P
   }
 }
 
+export async function toggleUserFirstLogin(userId: string, isFirstLogin: boolean): Promise<User> {
+  try {
+    const record = await base(TABLES.USERS).update([
+      {
+        id: userId,
+        fields: {
+          isFirstLogin: isFirstLogin,
+        },
+      },
+    ]);
+
+    return recordToObject(record[0]) as User;
+  } catch (error) {
+    console.error('Error toggling isFirstLogin:', error);
+    throw error;
+  }
+}
+
 export async function createUser(userData: Omit<User, 'id'>): Promise<User> {
   try {
     const record = await base(TABLES.USERS).create([{ fields: userData }]);

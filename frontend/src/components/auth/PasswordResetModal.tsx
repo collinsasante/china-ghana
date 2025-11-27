@@ -4,14 +4,17 @@ import type { FormEvent } from 'react';
 interface PasswordResetModalProps {
   isOpen: boolean;
   userName: string;
+  isFirstLogin?: boolean;
   onSubmit: (newPassword: string) => Promise<void>;
+  onToggleFirstLogin?: (value: boolean) => Promise<void>;
 }
 
-export default function PasswordResetModal({ isOpen, userName, onSubmit }: PasswordResetModalProps) {
+export default function PasswordResetModal({ isOpen, userName, isFirstLogin = false, onSubmit, onToggleFirstLogin }: PasswordResetModalProps) {
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
+  const [localIsFirstLogin, setLocalIsFirstLogin] = useState(isFirstLogin);
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -85,7 +88,7 @@ export default function PasswordResetModal({ isOpen, userName, onSubmit }: Passw
                 <div className="form-text">Must be at least 6 characters long</div>
               </div>
 
-              <div className="mb-7">
+              <div className="mb-5">
                 <label className="form-label required fw-bold">Confirm Password</label>
                 <input
                   type="password"
@@ -96,6 +99,38 @@ export default function PasswordResetModal({ isOpen, userName, onSubmit }: Passw
                   required
                   minLength={6}
                 />
+              </div>
+
+              {/* Admin/Debug: Airtable isFirstLogin checkbox */}
+              <div className="mb-7">
+                <div className="form-check form-check-custom form-check-solid">
+                  <input
+                    className="form-check-input"
+                    type="checkbox"
+                    id="isFirstLoginCheckbox"
+                    checked={localIsFirstLogin}
+                    onChange={async (e) => {
+                      const newValue = e.target.checked;
+                      setLocalIsFirstLogin(newValue);
+                      if (onToggleFirstLogin) {
+                        try {
+                          await onToggleFirstLogin(newValue);
+                        } catch (err) {
+                          console.error('Failed to toggle isFirstLogin:', err);
+                          // Revert on error
+                          setLocalIsFirstLogin(!newValue);
+                        }
+                      }
+                    }}
+                  />
+                  <label className="form-check-label fw-bold" htmlFor="isFirstLoginCheckbox">
+                    First Login (Airtable Field)
+                  </label>
+                </div>
+                <div className="form-text">
+                  This checkbox is synced with the Airtable <code>isFirstLogin</code> field.
+                  Check this to require password reset on next login.
+                </div>
               </div>
 
               <button

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import PasswordResetModal from './PasswordResetModal';
-import { updateUserPassword } from '../../services/airtable';
+import { updateUserPassword, toggleUserFirstLogin } from '../../services/airtable';
 
 interface FirstLoginCheckProps {
   children: React.ReactNode;
@@ -54,13 +54,32 @@ export default function FirstLoginCheck({ children }: FirstLoginCheckProps) {
     }
   };
 
+  const handleToggleFirstLogin = async (value: boolean) => {
+    if (!user) return;
+
+    try {
+      await toggleUserFirstLogin(user.id, value);
+
+      // Update local storage with updated user
+      const updatedUser = { ...user, isFirstLogin: value };
+      localStorage.setItem('afreq_user', JSON.stringify(updatedUser));
+
+      console.log('✅ isFirstLogin toggled to:', value);
+    } catch (error) {
+      console.error('Failed to toggle isFirstLogin:', error);
+      throw error;
+    }
+  };
+
   return (
     <>
       {children}
       <PasswordResetModal
         isOpen={showPasswordModal}
         userName={user?.name || 'User'}
+        isFirstLogin={user?.isFirstLogin || false}
         onSubmit={handlePasswordReset}
+        onToggleFirstLogin={handleToggleFirstLogin}
       />
     </>
   );
