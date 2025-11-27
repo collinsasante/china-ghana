@@ -1,0 +1,13 @@
+{
+  "name": "afreq-delivery-tracking",
+  "version": "1.0.0",
+  "description": "AFREQ Delivery Tracking System - China to Ghana Logistics",
+  "scripts": {
+    "build": "cd frontend && npm install && npm run build",
+    "dev": "cd frontend && npm run dev",
+    "preview": "cd frontend && npm run preview"
+  },
+  "keywords": ["logistics", "delivery", "tracking", "afreq"],
+  "author": "AFREQ Logistics",
+  "license": "MIT"
+}
