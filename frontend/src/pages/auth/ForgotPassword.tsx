@@ -50,26 +50,31 @@ export default function ForgotPassword() {
 
   return (
     <div className="d-flex flex-column flex-root" id="kt_app_root">
-      <div className="d-flex flex-column flex-center flex-column-fluid"
-           style={{
-             backgroundImage: 'url(/assets/media/misc/auth-bg.png)',
-             backgroundColor: '#1e1e2d',
-             backgroundSize: 'cover',
-             backgroundPosition: 'center'
-           }}>
-        <div className="d-flex flex-column flex-center p-10 pb-lg-20">
-          {/* Logo and Title */}
-          <div className="mb-12 text-center">
-            <h1 className="text-white fs-2qx fw-bolder mb-3">
+      <div className="d-flex flex-column flex-lg-row flex-column-fluid">
+        {/* Left side - Image */}
+        <div
+          className="d-flex flex-lg-row-fluid w-lg-50 bgi-size-cover bgi-position-center order-1 order-lg-1"
+          style={{
+            backgroundImage: 'url(/assets/media/misc/auth-bg.png)',
+            backgroundColor: '#1e1e2d'
+          }}
+        >
+          <div className="d-flex flex-column flex-center py-15 px-5 px-md-15 w-100">
+            <h1 className="text-white fs-2qx fw-bolder text-center mb-7">
               AFREQ Logistics
             </h1>
-            <div className="text-white fs-base">
-              Delivery Tracking System - China to Ghana Shipments
+            <div className="text-white fs-base text-center">
+              Delivery Tracking System
+              <br />
+              China to Ghana Shipments
             </div>
           </div>
+        </div>
 
-          {/* Forgot Password Form Card */}
-          <div className="w-lg-500px bg-body rounded shadow-sm p-10 p-lg-15 mx-auto">
+        {/* Right side - Forgot Password Form */}
+        <div className="d-flex flex-column flex-lg-row-fluid w-lg-50 p-10 order-2 order-lg-2">
+          <div className="d-flex flex-center flex-column flex-lg-row-fluid">
+            <div className="w-lg-500px p-10">
               {!success ? (
                 <form className="form w-100" onSubmit={handleSubmit}>
                   <div className="text-center mb-10">
@@ -139,11 +144,11 @@ export default function ForgotPassword() {
                   </Link>
                 </div>
               )}
+            </div>
           </div>
 
-          {/* Footer */}
-          <div className="d-flex flex-center flex-wrap px-5 mt-10">
-            <div className="d-flex fw-semibold text-white fs-base">
+          <div className="d-flex flex-center flex-wrap px-5">
+            <div className="d-flex fw-semibold text-primary fs-base">
               <span className="px-5">AFREQ Logistics &copy; 2025</span>
             </div>
           </div>
