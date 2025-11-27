@@ -1,4 +1,5 @@
-import { useState, useEffect, FormEvent } from 'react';
+import { useState, useEffect } from 'react';
+import type { FormEvent } from 'react';
 import { calculateCBM } from '../../utils/calculations';
 import { getAllCustomers } from '../../services/airtable';
 import type { Item, User } from '../../types/index';

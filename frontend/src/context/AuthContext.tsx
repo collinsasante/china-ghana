@@ -1,4 +1,5 @@
-import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect } from 'react';
+import type { ReactNode } from 'react';
 import type { User, UserRole } from '../types/index';
 import { getUserByEmail } from '../services/airtable';
 import { config } from '../config/env';
