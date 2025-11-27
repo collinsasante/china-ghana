@@ -119,7 +119,6 @@ export interface SupportRequest {
   description: string;
   message: string; // Alias for description
   category: string; // Support category
-  priority: string; // Priority level
   relatedTrackingNumbers?: string[];
   relatedTrackingNumber?: string; // Singular version (for forms)
   status: 'open' | 'in_progress' | 'resolved' | 'closed';

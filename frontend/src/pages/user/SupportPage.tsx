@@ -16,7 +16,6 @@ export default function SupportPage() {
     subject: '',
     description: '',
     category: 'general' as 'missing_item' | 'wrong_delivery' | 'general',
-    priority: 'medium' as 'low' | 'medium' | 'high',
     relatedTrackingNumber: '',
   });
 
@@ -51,7 +50,6 @@ export default function SupportPage() {
         description: formData.description,
         message: formData.description, // Same as description
         category: formData.category,
-        priority: formData.priority,
         status: 'open',
         relatedTrackingNumber: formData.relatedTrackingNumber || undefined,
         createdAt: new Date().toISOString(),
@@ -65,7 +63,6 @@ export default function SupportPage() {
         subject: '',
         description: '',
         category: 'general',
-        priority: 'medium',
         relatedTrackingNumber: '',
       });
 
@@ -102,19 +99,6 @@ export default function SupportPage() {
 
     const config = categoryConfig[category] || categoryConfig.general;
     return <span className={`badge ${config.class}`}>{config.label}</span>;
-  };
-
-  const getPriorityIcon = (priority: string) => {
-    switch (priority) {
-      case 'high':
-        return <i className="ki-duotone ki-arrow-up text-danger fs-2"><span className="path1"></span><span className="path2"></span></i>;
-      case 'medium':
-        return <i className="ki-duotone ki-minus text-warning fs-2"><span className="path1"></span><span className="path2"></span></i>;
-      case 'low':
-        return <i className="ki-duotone ki-arrow-down text-success fs-2"><span className="path1"></span><span className="path2"></span></i>;
-      default:
-        return null;
-    }
   };
 
   const openRequestDetails = (request: SupportRequest) => {
@@ -274,7 +258,6 @@ export default function SupportPage() {
                   <table className="table table-row-bordered table-row-gray-100 align-middle gs-0 gy-3">
                     <thead>
                       <tr className="fw-bold text-muted">
-                        <th className="min-w-50px">Priority</th>
                         <th className="min-w-150px">Subject</th>
                         <th className="min-w-120px">Category</th>
                         <th className="min-w-140px">Tracking Number</th>
@@ -286,7 +269,6 @@ export default function SupportPage() {
                     <tbody>
                       {requests.map((request) => (
                         <tr key={request.id}>
-                          <td>{getPriorityIcon(request.priority)}</td>
                           <td>
                             <span className="text-gray-900 fw-bold">{request.subject}</span>
                           </td>
@@ -353,33 +335,18 @@ export default function SupportPage() {
                     />
                   </div>
 
-                  <div className="row g-5 mb-5">
-                    <div className="col-md-6">
-                      <label className="form-label required">Category</label>
-                      <select
-                        className="form-select"
-                        value={formData.category}
-                        onChange={(e) => setFormData({ ...formData, category: e.target.value as any })}
-                        required
-                      >
-                        <option value="general">General Inquiry</option>
-                        <option value="missing_item">Missing Item</option>
-                        <option value="wrong_delivery">Wrong Delivery</option>
-                      </select>
-                    </div>
-                    <div className="col-md-6">
-                      <label className="form-label required">Priority</label>
-                      <select
-                        className="form-select"
-                        value={formData.priority}
-                        onChange={(e) => setFormData({ ...formData, priority: e.target.value as any })}
-                        required
-                      >
-                        <option value="low">Low</option>
-                        <option value="medium">Medium</option>
-                        <option value="high">High</option>
-                      </select>
-                    </div>
+                  <div className="mb-5">
+                    <label className="form-label required">Category</label>
+                    <select
+                      className="form-select"
+                      value={formData.category}
+                      onChange={(e) => setFormData({ ...formData, category: e.target.value as any })}
+                      required
+                    >
+                      <option value="general">General Inquiry</option>
+                      <option value="missing_item">Missing Item</option>
+                      <option value="wrong_delivery">Wrong Delivery</option>
+                    </select>
                   </div>
 
                   <div className="mb-5">
@@ -454,7 +421,6 @@ export default function SupportPage() {
                       {getStatusBadge(selectedRequest.status)}
                     </div>
                   </div>
-                  {getPriorityIcon(selectedRequest.priority)}
                 </div>
 
                 <div className="separator my-5"></div>
@@ -482,7 +448,7 @@ export default function SupportPage() {
                 <div className="separator my-5"></div>
 
                 <div className="row g-4">
-                  <div className="col-md-4">
+                  <div className="col-md-6">
                     <div className="fs-7 text-gray-600 mb-1">Created</div>
                     <div className="fw-bold text-gray-800">
                       {new Date(selectedRequest.createdAt).toLocaleDateString('en-US', {
@@ -492,7 +458,7 @@ export default function SupportPage() {
                       })}
                     </div>
                   </div>
-                  <div className="col-md-4">
+                  <div className="col-md-6">
                     <div className="fs-7 text-gray-600 mb-1">Last Updated</div>
                     <div className="fw-bold text-gray-800">
                       {selectedRequest.updatedAt ? new Date(selectedRequest.updatedAt).toLocaleDateString('en-US', {
@@ -500,12 +466,6 @@ export default function SupportPage() {
                         day: 'numeric',
                         year: 'numeric',
                       }) : 'N/A'}
-                    </div>
-                  </div>
-                  <div className="col-md-4">
-                    <div className="fs-7 text-gray-600 mb-1">Priority</div>
-                    <div className="fw-bold text-gray-800 text-capitalize">
-                      {selectedRequest.priority}
                     </div>
                   </div>
                 </div>
