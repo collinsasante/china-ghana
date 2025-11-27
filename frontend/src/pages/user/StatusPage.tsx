@@ -8,6 +8,8 @@ export default function StatusPage() {
   const [items, setItems] = useState<Item[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedStatus, setSelectedStatus] = useState<'all' | ShipmentStatus>('all');
+  const [startDate, setStartDate] = useState('');
+  const [endDate, setEndDate] = useState('');
 
   useEffect(() => {
     loadItems();
@@ -51,9 +53,31 @@ export default function StatusPage() {
     return colors[status] || 'secondary';
   };
 
-  const filteredItems = selectedStatus === 'all'
-    ? items
-    : items.filter(item => item.status === selectedStatus);
+  const filteredItems = items.filter(item => {
+    // Status filter
+    if (selectedStatus !== 'all' && item.status !== selectedStatus) {
+      return false;
+    }
+
+    // Date filter
+    if (startDate || endDate) {
+      const itemDate = new Date(item.createdAt || item.receivingDate);
+
+      if (startDate) {
+        const start = new Date(startDate);
+        start.setHours(0, 0, 0, 0);
+        if (itemDate < start) return false;
+      }
+
+      if (endDate) {
+        const end = new Date(endDate);
+        end.setHours(23, 59, 59, 999);
+        if (itemDate > end) return false;
+      }
+    }
+
+    return true;
+  });
 
   const getStatusCount = (status: ShipmentStatus) => {
     return items.filter(item => item.status === status).length;
@@ -147,6 +171,44 @@ export default function StatusPage() {
                       </div>
                     ))}
                   </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Date Filter */}
+          <div className="card mb-5">
+            <div className="card-body">
+              <div className="row g-4 align-items-end">
+                <div className="col-md-4">
+                  <label className="form-label fw-bold">Start Date</label>
+                  <input
+                    type="date"
+                    className="form-control"
+                    value={startDate}
+                    onChange={(e) => setStartDate(e.target.value)}
+                  />
+                </div>
+                <div className="col-md-4">
+                  <label className="form-label fw-bold">End Date</label>
+                  <input
+                    type="date"
+                    className="form-control"
+                    value={endDate}
+                    onChange={(e) => setEndDate(e.target.value)}
+                  />
+                </div>
+                <div className="col-md-4">
+                  <button
+                    className="btn btn-light w-100"
+                    onClick={() => {
+                      setStartDate('');
+                      setEndDate('');
+                    }}
+                  >
+                    <i className="bi bi-x-circle me-2"></i>
+                    Clear Dates
+                  </button>
                 </div>
               </div>
             </div>
