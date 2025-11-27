@@ -28,12 +28,18 @@ export default function ContainerManagementPage() {
     try {
       setLoading(true);
       const itemsData = await getAllItems();
-      setItems(itemsData);
+      // Sort items by date descending (newest first)
+      const sortedItems = itemsData.sort((a, b) => {
+        const dateA = new Date(a.createdAt || a.receivingDate).getTime();
+        const dateB = new Date(b.createdAt || b.receivingDate).getTime();
+        return dateB - dateA;
+      });
+      setItems(sortedItems);
 
       // Group items by container number
       const containerMap = new Map<string, Item[]>();
 
-      itemsData.forEach((item) => {
+      sortedItems.forEach((item) => {
         if (item.containerNumber) {
           const existing = containerMap.get(item.containerNumber) || [];
           containerMap.set(item.containerNumber, [...existing, item]);

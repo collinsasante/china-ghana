@@ -21,7 +21,13 @@ export default function MyPackagesPage() {
     try {
       setLoading(true);
       const data = await getItemsByCustomerId(CURRENT_USER_ID);
-      setItems(data);
+      // Sort by date descending (newest first)
+      const sortedData = data.sort((a, b) => {
+        const dateA = new Date(a.createdAt || a.receivingDate).getTime();
+        const dateB = new Date(b.createdAt || b.receivingDate).getTime();
+        return dateB - dateA;
+      });
+      setItems(sortedData);
     } catch (error) {
       console.error('Failed to load packages:', error);
       alert('Failed to load your packages. Please refresh the page.');

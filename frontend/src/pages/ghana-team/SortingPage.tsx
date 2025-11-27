@@ -22,7 +22,13 @@ export default function SortingPage() {
         getAllItems(),
         getAllCustomers(),
       ]);
-      setItems(itemsData);
+      // Sort items by date descending (newest first)
+      const sortedItems = itemsData.sort((a, b) => {
+        const dateA = new Date(a.createdAt || a.receivingDate).getTime();
+        const dateB = new Date(b.createdAt || b.receivingDate).getTime();
+        return dateB - dateA;
+      });
+      setItems(sortedItems);
       setCustomers(customersData);
     } catch (error) {
       console.error('Failed to load data:', error);

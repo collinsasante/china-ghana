@@ -23,7 +23,13 @@ export default function ItemsPage() {
 
     try {
       const customerItems = await getItemsByCustomerId(user.id);
-      setItems(customerItems);
+      // Sort by date descending (newest first)
+      const sortedItems = customerItems.sort((a, b) => {
+        const dateA = new Date(a.createdAt || a.receivingDate).getTime();
+        const dateB = new Date(b.createdAt || b.receivingDate).getTime();
+        return dateB - dateA;
+      });
+      setItems(sortedItems);
     } catch (err) {
       console.error('Error loading items:', err);
       setError('Failed to load your items. Please try again later.');

@@ -49,7 +49,13 @@ export default function PackagingPage() {
     try {
       setLoadingAllItems(true);
       const items = await getAllItems();
-      setAllItems(items);
+      // Sort items by date descending (newest first)
+      const sortedItems = items.sort((a, b) => {
+        const dateA = new Date(a.createdAt || a.receivingDate).getTime();
+        const dateB = new Date(b.createdAt || b.receivingDate).getTime();
+        return dateB - dateA;
+      });
+      setAllItems(sortedItems);
     } catch (error) {
       console.error('Failed to load all items:', error);
       alert('Failed to load all items. Please try again.');
@@ -110,7 +116,14 @@ export default function PackagingPage() {
 
       console.log('Available items for packaging:', availableItems.length);
 
-      setItems(availableItems);
+      // Sort items by date descending (newest first)
+      const sortedItems = availableItems.sort((a, b) => {
+        const dateA = new Date(a.createdAt || a.receivingDate).getTime();
+        const dateB = new Date(b.createdAt || b.receivingDate).getTime();
+        return dateB - dateA;
+      });
+
+      setItems(sortedItems);
       setSelectedItemIds(new Set());
     } catch (error) {
       console.error('Failed to load items:', error);
