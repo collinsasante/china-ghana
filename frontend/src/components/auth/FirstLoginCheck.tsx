@@ -13,8 +13,14 @@ export default function FirstLoginCheck({ children }: FirstLoginCheckProps) {
 
   useEffect(() => {
     // Check if user needs to reset password on first login
+    console.log('🔍 FirstLoginCheck - User data:', user);
+    console.log('🔍 FirstLoginCheck - isFirstLogin value:', user?.isFirstLogin);
+
     if (user && user.isFirstLogin) {
+      console.log('✅ FirstLoginCheck - Showing password reset modal');
       setShowPasswordModal(true);
+    } else if (user) {
+      console.log('❌ FirstLoginCheck - isFirstLogin is false or undefined, NOT showing modal');
     }
   }, [user]);
 
