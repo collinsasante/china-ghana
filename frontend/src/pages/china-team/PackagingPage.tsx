@@ -369,7 +369,10 @@ export default function PackagingPage() {
                         <td>${item.name || 'N/A'}</td>
                         <td>${item.length} × ${item.width} × ${item.height} ${item.dimensionUnit}</td>
                         <td>${item.cbm ? item.cbm.toFixed(6) : '0.000000'}</td>
-                        <td>$${item.costUSD ? item.costUSD.toFixed(2) : '0.00'}</td>
+                        <td>
+                          $${item.costUSD ? item.costUSD.toFixed(2) : '0.00'}<br/>
+                          <small class="text-muted">₵${item.costCedis ? item.costCedis.toFixed(2) : '0.00'}</small>
+                        </td>
                       </tr>
                     `
                       )

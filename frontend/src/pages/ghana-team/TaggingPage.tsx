@@ -334,6 +334,18 @@ export default function TaggingPage() {
 
                             <div className="text-muted fs-8 mt-2 mb-1">CBM</div>
                             <div className="fs-7">{item.cbm?.toFixed(6) || '0'} m³</div>
+
+                            {item.costUSD > 0 && (
+                              <>
+                                <div className="text-muted fs-8 mt-2 mb-1">Cost</div>
+                                <div className="fw-bold fs-7 text-primary">
+                                  ${item.costUSD.toFixed(2)}
+                                </div>
+                                <div className="fs-8 text-muted">
+                                  ₵{item.costCedis.toFixed(2)}
+                                </div>
+                              </>
+                            )}
                           </div>
 
                           {/* Actions */}

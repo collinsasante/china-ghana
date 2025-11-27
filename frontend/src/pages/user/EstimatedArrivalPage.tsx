@@ -316,6 +316,9 @@ export default function EstimatedArrivalPage() {
                                       <div className="fw-bold text-gray-800">
                                         ${item.costUSD.toFixed(2)}
                                       </div>
+                                      <div className="text-muted fs-7">
+                                        ₵{item.costCedis.toFixed(2)}
+                                      </div>
                                     </div>
                                   </div>
                                 ))}
@@ -323,9 +326,14 @@ export default function EstimatedArrivalPage() {
                               <div className="mt-3 pt-3 border-top">
                                 <div className="d-flex justify-content-between">
                                   <span className="fw-bold text-gray-800">Total Cost:</span>
-                                  <span className="fw-bold text-gray-800 fs-4">
-                                    ${containerItems.reduce((sum, item) => sum + item.costUSD, 0).toFixed(2)}
-                                  </span>
+                                  <div className="text-end">
+                                    <div className="fw-bold text-gray-800 fs-4">
+                                      ${containerItems.reduce((sum, item) => sum + item.costUSD, 0).toFixed(2)}
+                                    </div>
+                                    <div className="text-muted fs-6">
+                                      ₵{containerItems.reduce((sum, item) => sum + item.costCedis, 0).toFixed(2)}
+                                    </div>
+                                  </div>
                                 </div>
                               </div>
                             </div>
@@ -425,9 +433,12 @@ export default function EstimatedArrivalPage() {
                             </span>
                           </td>
                           <td>
-                            <span className="text-gray-900 fw-bold">
+                            <div className="text-gray-900 fw-bold">
                               ${item.costUSD.toFixed(2)}
-                            </span>
+                            </div>
+                            <div className="text-muted fs-7">
+                              ₵{item.costCedis.toFixed(2)}
+                            </div>
                           </td>
                           <td>
                             <span className="badge badge-light-info">

@@ -281,7 +281,10 @@ export default function CustomerDashboard() {
                                   {item.status.replace(/_/g, ' ')}
                                 </span>
                               </td>
-                              <td className="text-gray-800 fw-bold">${item.costUSD.toFixed(2)}</td>
+                              <td className="text-gray-800 fw-bold">
+                                <div>${item.costUSD.toFixed(2)}</div>
+                                <div className="text-muted fs-7">₵{item.costCedis.toFixed(2)}</div>
+                              </td>
                             </tr>
                           ))}
                         </tbody>
