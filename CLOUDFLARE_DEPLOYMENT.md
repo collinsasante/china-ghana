@@ -93,3 +93,5 @@ To add a custom domain:
 - Repository: https://github.com/collinsasante/china-ghana
 - Branch: `main`
 - Auto-deploy: ✅ Enabled
+- TypeScript: ✅ Type-only imports fixed
+- Build: Ready for deployment
