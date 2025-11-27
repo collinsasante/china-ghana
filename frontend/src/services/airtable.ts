@@ -634,15 +634,31 @@ export async function getSupportRequestsByCustomerId(customerId: string): Promis
 
 export async function createSupportRequest(requestData: Omit<SupportRequest, 'id'>): Promise<SupportRequest> {
   try {
-    // Map customerId to linked record format
-    const mappedData: any = { ...requestData };
+    // Clean data - remove auto-generated fields and format for Airtable
+    const cleanData: any = {
+      subject: requestData.subject,
+      description: requestData.description,
+      message: requestData.message,
+      category: requestData.category,
+      status: requestData.status,
+    };
 
+    // Add optional fields if present
     if (requestData.customerId) {
       // customerId must be sent as array for linked record field
-      mappedData.customerId = [requestData.customerId];
+      cleanData.customerId = [requestData.customerId];
     }
 
-    const record = await base(TABLES.SUPPORT_REQUESTS).create([{ fields: mappedData }]);
+    if (requestData.relatedTrackingNumber) {
+      cleanData.relatedTrackingNumber = requestData.relatedTrackingNumber;
+    }
+
+    // Note: Do NOT send createdAt, updatedAt - Airtable auto-generates these
+    // Note: Do NOT send customerName, customerEmail - these are lookup fields
+
+    console.log('Creating support request with data:', cleanData);
+
+    const record = await base(TABLES.SUPPORT_REQUESTS).create([{ fields: cleanData }]);
     return recordToObject(record[0]) as SupportRequest;
   } catch (error) {
     console.error('Error creating support request:', error);
