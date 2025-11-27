@@ -49,6 +49,7 @@ export default function SupportPage() {
         customerId: user.id,
         subject: formData.subject,
         description: formData.description,
+        message: formData.description, // Same as description
         category: formData.category,
         priority: formData.priority,
         status: 'open',
@@ -494,11 +495,11 @@ export default function SupportPage() {
                   <div className="col-md-4">
                     <div className="fs-7 text-gray-600 mb-1">Last Updated</div>
                     <div className="fw-bold text-gray-800">
-                      {new Date(selectedRequest.updatedAt).toLocaleDateString('en-US', {
+                      {selectedRequest.updatedAt ? new Date(selectedRequest.updatedAt).toLocaleDateString('en-US', {
                         month: 'short',
                         day: 'numeric',
                         year: 'numeric',
-                      })}
+                      }) : 'N/A'}
                     </div>
                   </div>
                   <div className="col-md-4">

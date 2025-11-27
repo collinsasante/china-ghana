@@ -235,7 +235,7 @@ export default function EstimatedArrivalPage() {
                                 <div className="flex-grow-1">
                                   <div className="fw-bold text-gray-800">China</div>
                                   <div className="text-gray-600 fs-7">
-                                    {new Date(container.departureDate).toLocaleDateString()}
+                                    {container.departureDate ? new Date(container.departureDate).toLocaleDateString() : 'N/A'}
                                   </div>
                                 </div>
                                 <div className="px-5">

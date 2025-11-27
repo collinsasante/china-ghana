@@ -26,18 +26,9 @@ export const TABLES = {
 } as const;
 
 /**
- * Generic Airtable record type
- */
-interface AirtableRecord<T> {
-  id: string;
-  fields: T;
-  createdTime: string;
-}
-
-/**
  * Convert Airtable record to our app format
  */
-function recordToObject<T>(record: AirtableRecord<T>): T & { id: string } {
+function recordToObject<T>(record: any): T & { id: string } {
   return {
     id: record.id,
     ...record.fields,
@@ -488,7 +479,7 @@ export async function getInvoicesByCustomerId(customerId: string): Promise<Invoi
 
 export async function createInvoice(invoiceData: Omit<Invoice, 'id'>): Promise<Invoice> {
   try {
-    const record = await base(TABLES.INVOICES).create([{ fields: invoiceData }]);
+    const record = await base(TABLES.INVOICES).create([{ fields: invoiceData as any }]);
     return recordToObject(record[0]) as Invoice;
   } catch (error) {
     console.error('Error creating invoice:', error);
@@ -501,7 +492,7 @@ export async function updateInvoice(invoiceId: string, updates: Partial<Invoice>
     const record = await base(TABLES.INVOICES).update([
       {
         id: invoiceId,
-        fields: updates,
+        fields: updates as any,
       },
     ]);
     return recordToObject(record[0]) as Invoice;
