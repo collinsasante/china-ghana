@@ -311,17 +311,20 @@ export default function ItemsPage() {
                     <h4 className="mb-4">Photos</h4>
                     {selectedItem.photos && selectedItem.photos.length > 0 ? (
                       <div className="row g-3">
-                        {selectedItem.photos.map((photo, index) => (
-                          <div key={index} className="col-12">
-                            <img
-                              src={photo}
-                              alt={`Item photo ${index + 1}`}
-                              className="img-fluid rounded cursor-pointer"
-                              onClick={() => window.open(photo, '_blank')}
-                              style={{ maxHeight: '400px', objectFit: 'contain', width: '100%' }}
-                            />
-                          </div>
-                        ))}
+                        {selectedItem.photos.map((photo, index) => {
+                          const photoUrl = typeof photo === 'string' ? photo : (photo as any)?.url;
+                          return (
+                            <div key={index} className="col-12">
+                              <img
+                                src={photoUrl}
+                                alt={`Item photo ${index + 1}`}
+                                className="img-fluid rounded cursor-pointer"
+                                onClick={() => window.open(photoUrl, '_blank')}
+                                style={{ maxHeight: '400px', objectFit: 'contain', width: '100%' }}
+                              />
+                            </div>
+                          );
+                        })}
                       </div>
                     ) : (
                       <div className="bg-light rounded d-flex align-items-center justify-content-center" style={{ height: '300px' }}>
