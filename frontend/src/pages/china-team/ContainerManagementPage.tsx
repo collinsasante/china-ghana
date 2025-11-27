@@ -356,7 +356,7 @@ export default function ContainerManagementPage() {
                                 src={
                                   typeof item.photos[0] === 'string'
                                     ? item.photos[0]
-                                    : (item.photos[0] as any).url
+                                    : (item.photos[0] as any)?.url
                                 }
                                 alt="Item"
                                 className="rounded"
@@ -482,7 +482,7 @@ export default function ContainerManagementPage() {
                                             src={
                                               typeof item.photos[0] === 'string'
                                                 ? item.photos[0]
-                                                : (item.photos[0] as any).url
+                                                : (item.photos[0] as any)?.url
                                             }
                                             alt="Item"
                                             className="rounded"
