@@ -73,6 +73,28 @@ export async function getAllCustomers(): Promise<User[]> {
   }
 }
 
+export async function updateUserPassword(userId: string, newPassword: string): Promise<User> {
+  try {
+    // In production, hash the password before storing
+    // For now, storing plain text (NOT RECOMMENDED FOR PRODUCTION)
+    const record = await base(TABLES.USERS).update([
+      {
+        id: userId,
+        fields: {
+          password: newPassword, // In production: hash this with bcrypt
+          isFirstLogin: false,
+          passwordChangedAt: new Date().toISOString(),
+        },
+      },
+    ]);
+
+    return recordToObject(record[0]) as User;
+  } catch (error) {
+    console.error('Error updating password:', error);
+    throw error;
+  }
+}
+
 export async function createUser(userData: Omit<User, 'id'>): Promise<User> {
   try {
     const record = await base(TABLES.USERS).create([{ fields: userData }]);

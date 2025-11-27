@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "./context/AuthContext";
 import ProtectedRoute from "./components/common/ProtectedRoute";
 import MainLayout from "./components/layout/MainLayout";
+import FirstLoginCheck from "./components/auth/FirstLoginCheck";
 
 import Login from "./pages/auth/Login";
 import SignUp from "./pages/auth/SignUp";
@@ -62,7 +63,9 @@ function App() {
             path="/"
             element={
               <ProtectedRoute>
-                <MainLayout />
+                <FirstLoginCheck>
+                  <MainLayout />
+                </FirstLoginCheck>
               </ProtectedRoute>
             }
           >
@@ -150,7 +153,7 @@ function App() {
             <Route
               path="china/dashboard"
               element={
-                <ProtectedRoute allowedRoles={["china_team", "admin"]}>
+                <ProtectedRoute allowedRoles={["china_team", "ghana_team", "admin"]}>
                   <ChinaTeamDashboard />
                 </ProtectedRoute>
               }
@@ -174,7 +177,7 @@ function App() {
             <Route
               path="china/containers"
               element={
-                <ProtectedRoute allowedRoles={["china_team", "admin"]}>
+                <ProtectedRoute allowedRoles={["admin"]}>
                   <ContainerManagementPage />
                 </ProtectedRoute>
               }

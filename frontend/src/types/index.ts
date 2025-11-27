@@ -17,6 +17,8 @@ export interface User {
   role: UserRole;
   phone?: string;
   address?: string;
+  isFirstLogin?: boolean; // Flag for first-time login (Ghana team created accounts)
+  passwordChangedAt?: string; // Timestamp of last password change
 }
 
 export interface Item {
