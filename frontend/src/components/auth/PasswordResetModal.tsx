@@ -41,7 +41,7 @@ export default function PasswordResetModal({ isOpen, userName, onSubmit }: Passw
   if (!isOpen) return null;
 
   return (
-    <div className="modal fade show d-block" tabIndex={-1} style={{ backgroundColor: 'rgba(0,0,0,0.6)' }}>
+    <div className="modal fade show d-block" tabIndex={-1} style={{ backgroundColor: 'rgba(0,0,0,0.6)', zIndex: 9999, position: 'fixed', top: 0, left: 0, width: '100%', height: '100%' }}>
       <div className="modal-dialog modal-dialog-centered">
         <div className="modal-content">
           <div className="modal-header bg-primary">
