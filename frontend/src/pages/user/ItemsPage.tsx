@@ -171,7 +171,8 @@ export default function ItemsPage() {
                   <div className="fs-2hx fw-bold text-info">
                     ${items.reduce((sum, item) => sum + item.costUSD, 0).toFixed(2)}
                   </div>
-                  <div className="fw-semibold text-info">Total Cost (USD)</div>
+                  <div className="fs-7 text-info">₵{items.reduce((sum, item) => sum + item.costCedis, 0).toFixed(2)}</div>
+                  <div className="fw-semibold text-info">Total Cost</div>
                 </div>
               </div>
             </div>
@@ -268,6 +269,9 @@ export default function ItemsPage() {
                                 <div className="fs-7 text-gray-600">Cost</div>
                                 <div className="fw-bold text-gray-800">
                                   ${item.costUSD.toFixed(2)}
+                                </div>
+                                <div className="fs-8 text-gray-600">
+                                  ₵{item.costCedis.toFixed(2)}
                                 </div>
                               </div>
                             </div>

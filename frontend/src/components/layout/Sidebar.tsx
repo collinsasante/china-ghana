@@ -19,10 +19,9 @@ const menuItems: MenuItem[] = [
   { path: '/support', label: 'Support', icon: 'bi-headset', roles: ['customer'] },
 
   // China Team menu items
-  { path: '/china/dashboard', label: 'Dashboard', icon: 'bi-speedometer2', roles: ['china_team', 'admin'] },
+  { path: '/china/dashboard', label: 'Dashboard', icon: 'bi-speedometer2', roles: ['china_team', 'ghana_team', 'admin'] },
   { path: '/china/receiving', label: 'Upload Photos', icon: 'bi-camera', roles: ['china_team', 'admin'] },
   { path: '/china/packaging', label: 'Packaging', icon: 'bi-boxes', roles: ['china_team', 'admin'] },
-  { path: '/china/containers', label: 'Container Management', icon: 'bi-stack', roles: ['china_team', 'admin'] },
 
   // Ghana Team menu items
   { path: '/ghana/tagging', label: 'Item Tagging', icon: 'bi-tag', roles: ['ghana_team', 'admin'] },
@@ -31,6 +30,7 @@ const menuItems: MenuItem[] = [
 
   // Admin menu items
   { path: '/admin/dashboard', label: 'Admin Dashboard', icon: 'bi-speedometer', roles: ['admin'] },
+  { path: '/china/containers', label: 'Container Management', icon: 'bi-stack', roles: ['admin'] },
 ];
 
 export default function Sidebar() {
