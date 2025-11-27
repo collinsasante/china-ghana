@@ -231,7 +231,16 @@ export async function getItemByTrackingNumber(trackingNumber: string): Promise<I
 
     if (records.length === 0) return null;
 
-    return recordToObject(records[0]) as Item;
+    const obj = recordToObject(records[0]) as any;
+
+    // Map customerId_old (array) to customerId (string)
+    if (obj.customerId_old && Array.isArray(obj.customerId_old) && obj.customerId_old.length > 0) {
+      obj.customerId = obj.customerId_old[0];
+    } else if (!obj.customerId && obj.customerId_old) {
+      obj.customerId = obj.customerId_old;
+    }
+
+    return obj as Item;
   } catch (error) {
     console.error('Error fetching item:', error);
     throw error;
@@ -412,7 +421,18 @@ export async function getItemsByContainerNumber(containerNumber: string): Promis
       })
       .all();
 
-    return records.map((record) => recordToObject(record) as Item);
+    return records.map((record) => {
+      const obj = recordToObject(record) as any;
+
+      // Map customerId_old (array) to customerId (string)
+      if (obj.customerId_old && Array.isArray(obj.customerId_old) && obj.customerId_old.length > 0) {
+        obj.customerId = obj.customerId_old[0];
+      } else if (!obj.customerId && obj.customerId_old) {
+        obj.customerId = obj.customerId_old;
+      }
+
+      return obj as Item;
+    });
   } catch (error) {
     console.error('Error fetching items by container:', error);
     throw error;
@@ -427,7 +447,20 @@ export async function getAllItems(): Promise<Item[]> {
       })
       .all();
 
-    return records.map((record) => recordToObject(record) as Item);
+    return records.map((record) => {
+      const obj = recordToObject(record) as any;
+
+      // Map customerId_old (array) to customerId (string)
+      // Airtable returns linked records as arrays, but our app expects strings
+      if (obj.customerId_old && Array.isArray(obj.customerId_old) && obj.customerId_old.length > 0) {
+        obj.customerId = obj.customerId_old[0];
+      } else if (!obj.customerId && obj.customerId_old) {
+        // If customerId_old exists but not as expected array, handle it
+        obj.customerId = obj.customerId_old;
+      }
+
+      return obj as Item;
+    });
   } catch (error) {
     console.error('Error fetching all items:', error);
     throw error;

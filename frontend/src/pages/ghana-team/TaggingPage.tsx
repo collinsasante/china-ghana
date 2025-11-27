@@ -193,8 +193,9 @@ export default function TaggingPage() {
                                     : (item.photos[0] as any)?.url
                                 }
                                 alt="Item"
-                                className="w-100 rounded"
+                                className="w-100 rounded cursor-pointer"
                                 style={{ height: '200px', objectFit: 'cover' }}
+                                onClick={() => handleOpenDetailsModal(item)}
                               />
                             ) : (
                               <div
@@ -287,8 +288,9 @@ export default function TaggingPage() {
                                     : (item.photos[0] as any)?.url
                                 }
                                 alt="Item"
-                                className="w-100 rounded"
+                                className="w-100 rounded cursor-pointer"
                                 style={{ height: '150px', objectFit: 'cover' }}
+                                onClick={() => handleOpenDetailsModal(item)}
                               />
                             ) : (
                               <div
