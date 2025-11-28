@@ -185,7 +185,6 @@ export async function requestPasswordReset(email: string): Promise<boolean> {
     // 3. Send email with reset link using Airtable automation or email service
     // 4. Reset link would be: /reset-password?token=xxx
 
-    console.log(`Password reset requested for: ${email}`);
     return true;
   } catch (error) {
     console.error('Error requesting password reset:', error);
@@ -206,7 +205,6 @@ export async function resetPassword(token: string, _newPassword: string): Promis
     // 4. Update user password in Airtable
     // 5. Invalidate reset token
 
-    console.log(`Password reset with token: ${token}`);
     return true;
   } catch (error) {
     console.error('Error resetting password:', error);
@@ -220,51 +218,12 @@ export async function resetPassword(token: string, _newPassword: string): Promis
 
 export async function getItemsByCustomerId(customerId: string): Promise<Item[]> {
   try {
-    console.log('🔍 getItemsByCustomerId called with:', customerId);
-
     // First, get ALL items to see what's in the table
     const allRecords = await base(TABLES.ITEMS)
       .select({
         sort: [{ field: 'receivingDate', direction: 'desc' }],
       })
       .all();
-
-    console.log('📦 Total items in table:', allRecords.length);
-
-    // Log first few items to see their structure
-    if (allRecords.length > 0) {
-      const firstItem = allRecords[0];
-      const fieldNames = Object.keys(firstItem.fields);
-
-      console.log('🔑 ALL FIELD NAMES in Items table:', fieldNames);
-      console.log('📄 First item complete fields:', firstItem.fields);
-
-      // Check the customerId_old field value
-      const customerIdOld = (firstItem.fields as any).customerId_old;
-      console.log('🎯 customerId_old field value:', customerIdOld);
-      console.log('🎯 customerId_old is array?', Array.isArray(customerIdOld));
-      if (Array.isArray(customerIdOld) && customerIdOld.length > 0) {
-        console.log('🎯 First value in customerId_old array:', customerIdOld[0]);
-      }
-
-      // Show what we're searching for
-      console.log('🔎 Searching for customer ID:', customerId);
-
-      // Show ALL items with their customer IDs to debug mismatch
-      console.log('\n📋 ALL ITEMS WITH CUSTOMER IDs:');
-      allRecords.forEach((record, index) => {
-        const custId = (record.fields as any).customerId_old;
-        const status = (record.fields as any).status;
-        const carton = (record.fields as any).cartonNumber;
-        console.log(`Item ${index + 1}:`, {
-          trackingNumber: (record.fields as any).trackingNumber,
-          customerId_old: custId,
-          status: status,
-          cartonNumber: carton,
-        });
-      });
-      console.log('');
-    }
 
     // Now try to filter by customer
     // IMPORTANT: Your Airtable field is called 'customerId_old' not 'customerId'
@@ -278,8 +237,6 @@ export async function getItemsByCustomerId(customerId: string): Promise<Item[]> 
       }
       return false;
     });
-
-    console.log('✅ Filtered items for customer:', filteredRecords.length);
 
     return filteredRecords.map((record) => recordToObject(record) as Item);
   } catch (error) {
@@ -322,7 +279,6 @@ export async function createItem(itemData: Omit<Item, 'id'>): Promise<Item> {
   try {
     // Check if Airtable is configured
     if (!config.airtable.apiKey || !config.airtable.baseId) {
-      console.warn('Airtable not configured, using demo mode for item creation');
       // Return mock item with generated ID
       const mockItem: Item = {
         id: 'item-' + Date.now(),
@@ -365,7 +321,6 @@ export async function createItem(itemData: Omit<Item, 'id'>): Promise<Item> {
         cleanData.customerId_old = [itemData.customerId];
       } else {
         // It's NOT a record ID - need to look up the user first by email
-        console.warn('customerId is not an Airtable record ID. Attempting to find user by email:', itemData.customerId);
 
         // Try to find user by email
         try {
@@ -379,7 +334,6 @@ export async function createItem(itemData: Omit<Item, 'id'>): Promise<Item> {
           if (userRecord.length > 0) {
             // Found user - use their Airtable record ID
             cleanData.customerId_old = [userRecord[0].id];
-            console.log('Found user record:', userRecord[0].id);
           } else {
             // User not found - throw error
             throw new Error(`Customer not found with email: ${itemData.customerId}. Please create the customer in Airtable Users table first, or use their Airtable record ID (starts with 'rec').`);
@@ -407,25 +361,10 @@ export async function createItem(itemData: Omit<Item, 'id'>): Promise<Item> {
       );
     }
 
-    console.log('Creating item in Airtable with data:', cleanData);
-
     const record = await base(TABLES.ITEMS).create([{ fields: cleanData }]);
     return recordToObject(record[0]) as Item;
   } catch (error: any) {
     console.error('Error creating item:', error);
-    console.error('Item data that failed:', itemData);
-    console.error('Clean data sent to Airtable:', cleanData);
-
-    // Log detailed Airtable error
-    if (error.error) {
-      console.error('Airtable error details:', error.error);
-    }
-    if (error.message) {
-      console.error('Error message:', error.message);
-    }
-    if (error.statusCode) {
-      console.error('Status code:', error.statusCode);
-    }
 
     throw error;
   }
@@ -444,7 +383,6 @@ export async function updateItem(itemId: string, updates: Partial<Item>): Promis
         mappedUpdates.customerId_old = [updates.customerId];
       } else {
         // It's NOT a record ID - need to look up the user first by email
-        console.warn('customerId is not an Airtable record ID. Attempting to find user by email:', updates.customerId);
 
         try {
           const userRecord = await base(TABLES.USERS)
@@ -457,7 +395,6 @@ export async function updateItem(itemId: string, updates: Partial<Item>): Promis
           if (userRecord.length > 0) {
             // Found user - use their Airtable record ID
             mappedUpdates.customerId_old = [userRecord[0].id];
-            console.log('Found user record:', userRecord[0].id);
           } else {
             // User not found - throw error
             throw new Error(`Customer not found with email: ${updates.customerId}. Please create the customer in Airtable Users table first, or use their Airtable record ID (starts with 'rec').`);
@@ -541,7 +478,6 @@ export async function getAllItems(): Promise<Item[]> {
 export async function deleteItem(itemId: string): Promise<void> {
   try {
     await base(TABLES.ITEMS).destroy([itemId]);
-    console.log(`Item ${itemId} deleted successfully`);
   } catch (error) {
     console.error('Error deleting item:', error);
     throw error;
@@ -711,8 +647,6 @@ export async function createSupportRequest(requestData: Omit<SupportRequest, 'id
 
     // Note: Do NOT send createdAt, updatedAt - Airtable auto-generates these
     // Note: Do NOT send customerName, customerEmail - these are lookup fields
-
-    console.log('Creating support request with data:', cleanData);
 
     const record = await base(TABLES.SUPPORT_REQUESTS).create([{ fields: cleanData }]);
     return recordToObject(record[0]) as SupportRequest;

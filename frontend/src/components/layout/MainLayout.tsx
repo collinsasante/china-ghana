@@ -12,7 +12,7 @@ export default function MainLayout() {
         try {
           (window as any).KTComponents.init();
         } catch (error) {
-          console.warn('KTComponents init failed:', error);
+          // Silently handle initialization errors
         }
       }
 
@@ -39,7 +39,7 @@ export default function MainLayout() {
             (window as any).KTThemeMode.init();
           }
         } catch (error) {
-          console.warn('Keen component initialization failed:', error);
+          // Silently handle initialization errors
         }
       }
     }, 100);

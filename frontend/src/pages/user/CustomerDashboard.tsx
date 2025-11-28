@@ -37,13 +37,6 @@ export default function CustomerDashboard() {
         getActiveAnnouncements(),
       ]);
 
-      console.log('✅ Dashboard data loaded:', {
-        items: itemsData.length,
-        invoices: invoicesData.length,
-        requests: requestsData.length,
-        announcements: announcementsData.length
-      });
-
       setItems(itemsData);
       setInvoices(invoicesData);
       setSupportRequests(requestsData);

@@ -255,7 +255,6 @@ export default function ItemDetailsModal({
       );
 
       // Note: In production, you would send an email here with the login details
-      console.log('Send email to:', newCustomer.email, 'with password:', tempPassword);
     } catch (error: any) {
       console.error('Failed to create customer:', error);
       showNotification('error', 'Creation Failed', error.message || 'Failed to create customer account. Please try again.');

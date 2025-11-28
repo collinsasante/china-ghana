@@ -102,26 +102,10 @@ export default function PackagingPage() {
       setLoadingItems(true);
       const customerItems = await getItemsByCustomerId(customerId);
 
-      console.log('All customer items:', customerItems);
-      console.log('Items count:', customerItems.length);
-
-      // Log details about each item for debugging
-      customerItems.forEach((item, index) => {
-        console.log(`Item ${index + 1}:`, {
-          trackingNumber: item.trackingNumber,
-          status: item.status,
-          cartonNumber: item.cartonNumber,
-          hasCartonNumber: !!item.cartonNumber,
-          isInChinaWarehouse: item.status === 'china_warehouse'
-        });
-      });
-
       // Filter items that are in china_warehouse and don't have a carton number yet
       const availableItems = customerItems.filter(
         (item) => item.status === 'china_warehouse' && !item.cartonNumber
       );
-
-      console.log('Available items for packaging:', availableItems.length);
 
       // Sort items by date descending (newest first)
       const sortedItems = availableItems.sort((a, b) => {

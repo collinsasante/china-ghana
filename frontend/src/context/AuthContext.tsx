@@ -38,7 +38,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       // Check if Airtable is configured
       if (!config.airtable.apiKey || !config.airtable.baseId) {
-        console.warn('Airtable not configured, using demo mode');
         // Fall back to demo mode
         const mockUser: User = {
           id: 'demo-' + Date.now(),

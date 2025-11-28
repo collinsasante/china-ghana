@@ -96,7 +96,6 @@ export default function CSVImportPage() {
       }
 
       setCSVData(data);
-      console.log('Parsed CSV data:', data);
     };
 
     reader.readAsText(file);

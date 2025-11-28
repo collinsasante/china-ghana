@@ -148,6 +148,5 @@ export function getThumbnailUrl(publicId: string, size: number = 200): string {
 export async function deleteImage(_publicId: string): Promise<void> {
   // This would require the API secret which should not be exposed in the frontend
   // Implement this on a backend server instead
-  console.warn('Image deletion should be handled by backend for security');
   throw new Error('Delete operation must be performed from backend');
 }
