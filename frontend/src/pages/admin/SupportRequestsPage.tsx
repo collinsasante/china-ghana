@@ -395,7 +395,7 @@ export default function SupportRequestsPage() {
                       <div className="col-md-6">
                         <label className="fs-6 fw-semibold text-gray-800">Last Updated</label>
                         <p className="text-gray-600 mb-0">
-                          {new Date(selectedRequest.updatedAt).toLocaleString()}
+                          {selectedRequest.updatedAt ? new Date(selectedRequest.updatedAt).toLocaleString() : 'N/A'}
                         </p>
                       </div>
                     </div>

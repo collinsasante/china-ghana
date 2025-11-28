@@ -196,7 +196,7 @@ export async function requestPasswordReset(email: string): Promise<boolean> {
  * Reset password with token
  * TODO: Implement in production with actual password hashing
  */
-export async function resetPassword(token: string, _newPassword: string): Promise<boolean> {
+export async function resetPassword(_token: string, _newPassword: string): Promise<boolean> {
   try {
     // TODO: In production, implement:
     // 1. Validate reset token
