@@ -20,6 +20,7 @@ export default function PackagingPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedItem, setSelectedItem] = useState<Item | null>(null);
   const [showItemModal, setShowItemModal] = useState(false);
+  const [notification, setNotification] = useState<{type: 'success'|'error'|'warning'|'info', title: string, message: string} | null>(null);
 
   // Load customers on mount
   useEffect(() => {
@@ -43,7 +44,8 @@ export default function PackagingPage() {
       setCustomers(customersList);
     } catch (error) {
       console.error('Failed to load customers:', error);
-      alert('Failed to load customers. Please refresh the page.');
+      setNotification({type: 'error', title: 'Error', message: 'Failed to load customers. Please refresh the page.'});
+      setTimeout(() => setNotification(null), 3000);
     } finally {
       setLoadingCustomers(false);
     }
@@ -62,7 +64,8 @@ export default function PackagingPage() {
       setAllItems(sortedItems);
     } catch (error) {
       console.error('Failed to load all items:', error);
-      alert('Failed to load all items. Please try again.');
+      setNotification({type: 'error', title: 'Error', message: 'Failed to load all items. Please try again.'});
+      setTimeout(() => setNotification(null), 3000);
     } finally {
       setLoadingAllItems(false);
     }
@@ -131,7 +134,8 @@ export default function PackagingPage() {
       setSelectedItemIds(new Set());
     } catch (error) {
       console.error('Failed to load items:', error);
-      alert('Failed to load items. Please try again.');
+      setNotification({type: 'error', title: 'Error', message: 'Failed to load items. Please try again.'});
+      setTimeout(() => setNotification(null), 3000);
     } finally {
       setLoadingItems(false);
     }
@@ -177,12 +181,14 @@ export default function PackagingPage() {
 
   const handlePackageItems = async () => {
     if (selectedItemIds.size === 0) {
-      alert('Please select at least one item to package.');
+      setNotification({type: 'warning', title: 'Warning', message: 'Please select at least one item to package.'});
+      setTimeout(() => setNotification(null), 3000);
       return;
     }
 
     if (!cartonNumber.trim()) {
-      alert('Please generate or enter a carton number.');
+      setNotification({type: 'warning', title: 'Warning', message: 'Please generate or enter a carton number.'});
+      setTimeout(() => setNotification(null), 3000);
       return;
     }
 
@@ -200,16 +206,12 @@ export default function PackagingPage() {
 
       await Promise.all(updatePromises);
 
-      alert(
-        `✅ Successfully packaged ${selectedItemIds.size} item(s)!\n\n` +
-          `📦 Carton Number: ${cartonNumber}\n` +
-          `👤 Customer: ${selectedCustomer?.name}\n\n` +
-          `Next Steps:\n` +
-          `1. Print the carton label\n` +
-          `2. Attach label to the package\n` +
-          `3. Store package in warehouse\n` +
-          `4. When ready to ship, assign to container`
-      );
+      setNotification({
+        type: 'success',
+        title: 'Success!',
+        message: `Successfully packaged ${selectedItemIds.size} item(s) with carton ${cartonNumber} for ${selectedCustomer?.name}`
+      });
+      setTimeout(() => setNotification(null), 5000);
 
       // Reload items to refresh the list
       if (selectedCustomer) {
@@ -221,7 +223,8 @@ export default function PackagingPage() {
       setCartonNumber('');
     } catch (error) {
       console.error('Failed to package items:', error);
-      alert('Failed to package items. Please try again.');
+      setNotification({type: 'error', title: 'Error', message: 'Failed to package items. Please try again.'});
+      setTimeout(() => setNotification(null), 3000);
     } finally {
       setIsPackaging(false);
     }
@@ -229,12 +232,14 @@ export default function PackagingPage() {
 
   const handlePrintLabel = () => {
     if (!cartonNumber.trim()) {
-      alert('Please generate or enter a carton number first.');
+      setNotification({type: 'warning', title: 'Warning', message: 'Please generate or enter a carton number first.'});
+      setTimeout(() => setNotification(null), 3000);
       return;
     }
 
     if (!selectedCustomer) {
-      alert('Please select a customer first.');
+      setNotification({type: 'warning', title: 'Warning', message: 'Please select a customer first.'});
+      setTimeout(() => setNotification(null), 3000);
       return;
     }
 
@@ -999,6 +1004,21 @@ export default function PackagingPage() {
             isOpen={showItemModal}
             onClose={() => setShowItemModal(false)}
           />
+
+          {/* Toast Notification */}
+          {notification && (
+            <div className="position-fixed top-0 end-0 p-3" style={{ zIndex: 9999, marginTop: '70px' }}>
+              <div className={`toast show align-items-center text-white bg-${notification.type} border-0`} role="alert">
+                <div className="d-flex">
+                  <div className="toast-body">
+                    <strong>{notification.title}</strong>
+                    <div className="small">{notification.message}</div>
+                  </div>
+                  <button type="button" className="btn-close btn-close-white me-2 m-auto" onClick={() => setNotification(null)}></button>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>

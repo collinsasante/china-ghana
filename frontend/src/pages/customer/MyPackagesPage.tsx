@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { getItemsByCustomerId } from '../../services/airtable';
+import ItemDetailsModal from '../../components/common/ItemDetailsModal';
 import type { Item, ShipmentStatus } from '../../types/index';
 
 // This would normally come from auth context
@@ -12,6 +13,7 @@ export default function MyPackagesPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedItem, setSelectedItem] = useState<Item | null>(null);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
+  const [notification, setNotification] = useState<{type: 'success'|'error'|'warning'|'info', title: string, message: string} | null>(null);
 
   useEffect(() => {
     loadPackages();
@@ -30,7 +32,8 @@ export default function MyPackagesPage() {
       setItems(sortedData);
     } catch (error) {
       console.error('Failed to load packages:', error);
-      alert('Failed to load your packages. Please refresh the page.');
+      setNotification({type: 'error', title: 'Error', message: 'Failed to load your packages. Please refresh the page.'});
+      setTimeout(() => setNotification(null), 3000);
     } finally {
       setLoading(false);
     }
@@ -416,160 +419,22 @@ export default function MyPackagesPage() {
       </div>
 
       {/* Package Details Modal */}
-      {selectedItem && showDetailsModal && (
-        <div className="modal fade show d-block" tabIndex={-1} style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}>
-          <div className="modal-dialog modal-dialog-centered modal-lg">
-            <div className="modal-content">
-              <div className="modal-header">
-                <h3 className="modal-title">Package Details</h3>
-                <button
-                  type="button"
-                  className="btn-close"
-                  onClick={() => setShowDetailsModal(false)}
-                ></button>
-              </div>
-              <div className="modal-body">
-                <div className="row">
-                  {/* Photos */}
-                  <div className="col-md-5 mb-4">
-                    {selectedItem.photos && selectedItem.photos.length > 0 ? (
-                      <img
-                        src={
-                          typeof selectedItem.photos[0] === 'string'
-                            ? selectedItem.photos[0]
-                            : (selectedItem.photos[0] as any)?.url
-                        }
-                        alt="Package"
-                        className="w-100 rounded"
-                      />
-                    ) : (
-                      <div
-                        className="bg-light rounded d-flex align-items-center justify-content-center"
-                        style={{ height: '300px' }}
-                      >
-                        <i className="bi bi-image fs-3x text-muted"></i>
-                      </div>
-                    )}
-                  </div>
+      <ItemDetailsModal
+        item={selectedItem}
+        isOpen={showDetailsModal}
+        onClose={() => setShowDetailsModal(false)}
+      />
 
-                  {/* Details */}
-                  <div className="col-md-7">
-                    <div className="mb-4">
-                      <h5 className="mb-3">Tracking Information</h5>
-                      <table className="table table-row-bordered">
-                        <tbody>
-                          <tr>
-                            <td className="fw-bold">Tracking Number</td>
-                            <td>{selectedItem.trackingNumber}</td>
-                          </tr>
-                          {selectedItem.name && (
-                            <tr>
-                              <td className="fw-bold">Item Name</td>
-                              <td>{selectedItem.name}</td>
-                            </tr>
-                          )}
-                          <tr>
-                            <td className="fw-bold">Status</td>
-                            <td>{getStatusBadge(selectedItem.status)}</td>
-                          </tr>
-                          {selectedItem.containerNumber && (
-                            <tr>
-                              <td className="fw-bold">Container</td>
-                              <td>
-                                <span className="badge badge-light-info">
-                                  {selectedItem.containerNumber}
-                                </span>
-                              </td>
-                            </tr>
-                          )}
-                          {selectedItem.cartonNumber && (
-                            <tr>
-                              <td className="fw-bold">Carton Number</td>
-                              <td>
-                                <span className="badge badge-light">{selectedItem.cartonNumber}</span>
-                              </td>
-                            </tr>
-                          )}
-                        </tbody>
-                      </table>
-                    </div>
-
-                    <div className="mb-4">
-                      <h5 className="mb-3">Dimensions & Cost</h5>
-                      <table className="table table-row-bordered">
-                        <tbody>
-                          <tr>
-                            <td className="fw-bold">Dimensions</td>
-                            <td>
-                              {selectedItem.length} × {selectedItem.width} × {selectedItem.height}{' '}
-                              {selectedItem.dimensionUnit}
-                            </td>
-                          </tr>
-                          <tr>
-                            <td className="fw-bold">CBM</td>
-                            <td>{selectedItem.cbm?.toFixed(6)} m³</td>
-                          </tr>
-                          {selectedItem.weight && (
-                            <tr>
-                              <td className="fw-bold">Weight</td>
-                              <td>
-                                {selectedItem.weight} {selectedItem.weightUnit}
-                              </td>
-                            </tr>
-                          )}
-                          <tr>
-                            <td className="fw-bold">Shipping Method</td>
-                            <td>
-                              <span
-                                className={`badge ${
-                                  selectedItem.shippingMethod === 'sea'
-                                    ? 'badge-light-info'
-                                    : 'badge-light-primary'
-                                }`}
-                              >
-                                {selectedItem.shippingMethod?.toUpperCase()}
-                              </span>
-                            </td>
-                          </tr>
-                          <tr>
-                            <td className="fw-bold">Cost (USD)</td>
-                            <td className="fs-5 fw-bold text-primary">
-                              ${selectedItem.costUSD?.toFixed(2) || '0.00'}
-                            </td>
-                          </tr>
-                          <tr>
-                            <td className="fw-bold">Cost (GHS)</td>
-                            <td className="fs-5 fw-bold text-success">
-                              ₵{selectedItem.costCedis?.toFixed(2) || '0.00'}
-                            </td>
-                          </tr>
-                        </tbody>
-                      </table>
-                    </div>
-
-                    <div>
-                      <h5 className="mb-3">Dates</h5>
-                      <table className="table table-row-bordered">
-                        <tbody>
-                          <tr>
-                            <td className="fw-bold">Receiving Date</td>
-                            <td>{new Date(selectedItem.receivingDate).toLocaleDateString()}</td>
-                          </tr>
-                        </tbody>
-                      </table>
-                    </div>
-                  </div>
-                </div>
+      {/* Toast Notification */}
+      {notification && (
+        <div className="position-fixed top-0 end-0 p-3" style={{ zIndex: 9999, marginTop: '70px' }}>
+          <div className={`toast show align-items-center text-white bg-${notification.type} border-0`} role="alert">
+            <div className="d-flex">
+              <div className="toast-body">
+                <strong>{notification.title}</strong>
+                <div className="small">{notification.message}</div>
               </div>
-              <div className="modal-footer">
-                <button
-                  type="button"
-                  className="btn btn-light"
-                  onClick={() => setShowDetailsModal(false)}
-                >
-                  Close
-                </button>
-              </div>
+              <button type="button" className="btn-close btn-close-white me-2 m-auto" onClick={() => setNotification(null)}></button>
             </div>
           </div>
         </div>

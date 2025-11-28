@@ -20,6 +20,7 @@ export default function SignUp() {
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [notification, setNotification] = useState<{type: 'success'|'error'|'warning'|'info', title: string, message: string} | null>(null);
 
   const navigate = useNavigate();
 
@@ -82,8 +83,11 @@ export default function SignUp() {
       if (!config.airtable.apiKey || !config.airtable.baseId) {
         // Demo mode - simulate account creation
         await new Promise((resolve) => setTimeout(resolve, 1500));
-        alert('Account created successfully! (Demo Mode)\n\nYou can now login with any password.');
-        navigate('/login');
+        setNotification({type: 'success', title: 'Success!', message: 'Account created successfully! (Demo Mode) You can now login.'});
+        setTimeout(() => {
+          setNotification(null);
+          navigate('/login');
+        }, 2000);
         return;
       }
 
@@ -97,8 +101,11 @@ export default function SignUp() {
       });
 
       // Success - redirect to login
-      alert('Account created successfully! Please login with your credentials.');
-      navigate('/login');
+      setNotification({type: 'success', title: 'Success!', message: 'Account created successfully! Please login with your credentials.'});
+      setTimeout(() => {
+        setNotification(null);
+        navigate('/login');
+      }, 2000);
     } catch (err: any) {
       if (err.message?.includes('duplicate') || err.message?.includes('unique')) {
         setError('An account with this email already exists.');
@@ -357,6 +364,21 @@ export default function SignUp() {
           </div>
         </div>
       </div>
+
+      {/* Toast Notification */}
+      {notification && (
+        <div className="position-fixed top-0 end-0 p-3" style={{ zIndex: 9999, marginTop: '70px' }}>
+          <div className={`toast show align-items-center text-white bg-${notification.type} border-0`} role="alert">
+            <div className="d-flex">
+              <div className="toast-body">
+                <strong>{notification.title}</strong>
+                <div className="small">{notification.message}</div>
+              </div>
+              <button type="button" className="btn-close btn-close-white me-2 m-auto" onClick={() => setNotification(null)}></button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

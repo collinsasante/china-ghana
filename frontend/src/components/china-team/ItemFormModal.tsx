@@ -10,6 +10,7 @@ interface ItemFormModalProps {
   onSubmit: (itemData: Partial<Item>) => Promise<void>;
   imageUrl: string;
   receivingDate: string;
+  onNotification?: (type: 'success'|'error'|'warning'|'info', title: string, message: string) => void;
 }
 
 export default function ItemFormModal({
@@ -18,6 +19,7 @@ export default function ItemFormModal({
   onSubmit,
   imageUrl,
   receivingDate,
+  onNotification,
 }: ItemFormModalProps) {
   const [formData, setFormData] = useState({
     name: '',
@@ -57,7 +59,9 @@ export default function ItemFormModal({
       setCustomers(customersList);
     } catch (error) {
       console.error('Failed to load customers:', error);
-      alert('Failed to load customers. Please refresh the page.');
+      if (onNotification) {
+        onNotification('error', 'Error', 'Failed to load customers. Please refresh the page.');
+      }
     } finally {
       setLoadingCustomers(false);
     }
@@ -139,25 +143,9 @@ export default function ItemFormModal({
       const customerName = selectedCustomer ? selectedCustomer.name : formData.customerId;
 
       // Show success message with where item is saved
-      alert(
-        `✅ Item saved successfully!\n\n` +
-          `📦 Tracking: ${formData.trackingNumber}\n` +
-          `👤 Customer: ${customerName}\n` +
-          `🚢 Shipping: ${formData.shippingMethod.toUpperCase()}\n` +
-          `💰 Cost: $${calculatedCost.toFixed(2)} (GH₵ ${costCedis.toFixed(2)})\n` +
-          `📊 CBM: ${cbm.toFixed(6)}\n\n` +
-          `🗂️ Item Location:\n` +
-          `• Status: China Warehouse\n` +
-          `• Received: ${receivingDate}\n\n` +
-          `✈️ Next Steps:\n` +
-          `1. Item is now in the system\n` +
-          `2. Customer can track it with tracking number\n` +
-          `3. When ready to ship, assign to container\n` +
-          `4. When shipped, status will update to "In Transit"\n` +
-          `5. Upon arrival in Ghana, status becomes "Arrived Ghana"\n` +
-          `6. After sorting, status becomes "Ready for Pickup"\n` +
-          `7. Finally, status becomes "Delivered" when picked up`
-      );
+      if (onNotification) {
+        onNotification('success', 'Item Saved!', `Item ${formData.trackingNumber} saved successfully for ${customerName}`);
+      }
 
       // Reset form
       setFormData({
@@ -178,25 +166,16 @@ export default function ItemFormModal({
       console.error('Failed to submit item:', error);
 
       // Show detailed error message
-      let errorMessage = '❌ Failed to create item.\n\n';
-
-      if (error.error) {
-        errorMessage += `Error: ${error.error}\n`;
-      }
+      let errorMessage = 'Failed to create item. ';
       if (error.message) {
-        errorMessage += `Message: ${error.message}\n`;
-      }
-      if (error.statusCode) {
-        errorMessage += `Status: ${error.statusCode}\n`;
+        errorMessage += error.message;
+      } else {
+        errorMessage += 'Please check console for details.';
       }
 
-      errorMessage += '\n💡 Tips:\n';
-      errorMessage += '1. Check that all required fields are filled\n';
-      errorMessage += '2. Verify customer exists in Airtable\n';
-      errorMessage += '3. Check browser console for details\n';
-      errorMessage += '4. Ensure Airtable fields match setup guide';
-
-      alert(errorMessage);
+      if (onNotification) {
+        onNotification('error', 'Error', errorMessage);
+      }
     } finally {
       setIsSubmitting(false);
     }

@@ -7,6 +7,7 @@ interface FileUploadProps {
   multiple?: boolean;
   maxSize?: number; // in MB
   disabled?: boolean;
+  onError?: (message: string) => void;
 }
 
 export default function FileUpload({
@@ -15,6 +16,7 @@ export default function FileUpload({
   multiple = true,
   maxSize = 10,
   disabled = false,
+  onError,
 }: FileUploadProps) {
   const [isDragging, setIsDragging] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -70,7 +72,9 @@ export default function FileUpload({
     const sizeValidFiles = validFiles.filter((file) => file.size <= maxBytes);
 
     if (sizeValidFiles.length < validFiles.length) {
-      alert(`Some files were too large. Maximum size is ${maxSize}MB`);
+      if (onError) {
+        onError(`Some files were too large. Maximum size is ${maxSize}MB`);
+      }
     }
 
     if (sizeValidFiles.length > 0) {

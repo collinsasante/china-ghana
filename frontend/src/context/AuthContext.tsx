@@ -1,7 +1,7 @@
 import { createContext, useContext, useState, useEffect } from 'react';
 import type { ReactNode } from 'react';
 import type { User, UserRole } from '../types/index';
-import { getUserByEmail } from '../services/airtable';
+import { getUserByEmail, verifyPassword } from '../services/airtable';
 import { config } from '../config/env';
 
 interface AuthContextType {
@@ -33,7 +33,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setIsLoading(false);
   }, []);
 
-  const login = async (email: string, _password: string): Promise<User> => {
+  const login = async (email: string, password: string): Promise<User> => {
     setIsLoading(true);
     try {
       // Check if Airtable is configured
@@ -61,9 +61,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         throw new Error('User not found. Please contact administrator.');
       }
 
-      // In production, verify password here (e.g., using bcrypt comparison)
-      // For now, accepting any password for demo purposes
-      // TODO: Implement proper password verification
+      // Verify password using bcrypt
+      if (!user.password) {
+        throw new Error('Account not properly configured. Please contact administrator.');
+      }
+
+      const isPasswordValid = await verifyPassword(password, user.password);
+      if (!isPasswordValid) {
+        throw new Error('Invalid password. Please try again.');
+      }
 
       setUser(user);
       localStorage.setItem('afreq_user', JSON.stringify(user));

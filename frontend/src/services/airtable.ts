@@ -1,4 +1,5 @@
 import Airtable from 'airtable';
+import bcrypt from 'bcryptjs';
 import { config } from '../config/env';
 import type {
   User,
@@ -57,6 +58,21 @@ export async function getUserByEmail(email: string): Promise<User | null> {
   }
 }
 
+/**
+ * Verify password against stored hash
+ * @param plainPassword - The plain text password to verify
+ * @param hashedPassword - The hashed password from the database
+ * @returns Promise<boolean> - True if password matches
+ */
+export async function verifyPassword(plainPassword: string, hashedPassword: string): Promise<boolean> {
+  try {
+    return await bcrypt.compare(plainPassword, hashedPassword);
+  } catch (error) {
+    console.error('Error verifying password:', error);
+    return false;
+  }
+}
+
 export async function getAllCustomers(): Promise<User[]> {
   try {
     const records = await base(TABLES.USERS)
@@ -75,13 +91,14 @@ export async function getAllCustomers(): Promise<User[]> {
 
 export async function updateUserPassword(userId: string, newPassword: string): Promise<User> {
   try {
-    // In production, hash the password before storing
-    // For now, storing plain text (NOT RECOMMENDED FOR PRODUCTION)
+    // Hash the password before storing (production-ready)
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+
     const record = await base(TABLES.USERS).update([
       {
         id: userId,
         fields: {
-          password: newPassword, // In production: hash this with bcrypt
+          password: hashedPassword,
           isFirstLogin: false,
           passwordChangedAt: new Date().toISOString(),
         },
@@ -115,10 +132,14 @@ export async function toggleUserFirstLogin(userId: string, isFirstLogin: boolean
 
 export async function createUser(userData: Omit<User, 'id'>): Promise<User> {
   try {
+    // Hash the password before storing
+    const hashedPassword = userData.password ? await bcrypt.hash(userData.password, 10) : undefined;
+
     // Automatically set isFirstLogin: true for all new accounts created by Ghana team
     // This forces customers to reset their password on first login
     const userDataWithFirstLogin = {
       ...userData,
+      password: hashedPassword,
       isFirstLogin: true,
     };
 

@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { getItemsByCustomerId } from '../../services/airtable';
 import { getFirstPhotoUrl } from '../../utils/photos';
+import ItemDetailsModal from '../../components/common/ItemDetailsModal';
 import type { Item, ShipmentStatus } from '../../types/index';
 
 export default function StatusPage() {
@@ -11,6 +12,8 @@ export default function StatusPage() {
   const [selectedStatus, setSelectedStatus] = useState<'all' | ShipmentStatus>('all');
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
+  const [selectedItem, setSelectedItem] = useState<Item | null>(null);
+  const [showItemModal, setShowItemModal] = useState(false);
 
   useEffect(() => {
     loadItems();
@@ -82,6 +85,11 @@ export default function StatusPage() {
 
   const getStatusCount = (status: ShipmentStatus) => {
     return items.filter(item => item.status === status).length;
+  };
+
+  const handleItemClick = (item: Item) => {
+    setSelectedItem(item);
+    setShowItemModal(true);
   };
 
   if (loading) {
@@ -277,7 +285,12 @@ export default function StatusPage() {
                       {filteredItems.map((item) => {
                         const currentStatusIndex = getStatusIndex(item.status);
                         return (
-                          <tr key={item.id}>
+                          <tr
+                            key={item.id}
+                            onClick={() => handleItemClick(item)}
+                            style={{ cursor: 'pointer' }}
+                            className="hover-bg-light-primary"
+                          >
                             <td>
                               <div className="d-flex align-items-center">
                                 {item.photos && item.photos.length > 0 ? (
@@ -390,6 +403,13 @@ export default function StatusPage() {
           </div>
         </div>
       </div>
+
+      {/* Item Details Modal */}
+      <ItemDetailsModal
+        item={selectedItem}
+        isOpen={showItemModal}
+        onClose={() => setShowItemModal(false)}
+      />
     </div>
   );
 }

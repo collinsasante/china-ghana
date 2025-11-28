@@ -11,6 +11,7 @@ export default function TaggingPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedItem, setSelectedItem] = useState<Item | null>(null);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
+  const [notification, setNotification] = useState<{type: 'success'|'error'|'warning'|'info', title: string, message: string} | null>(null);
 
   useEffect(() => {
     loadData();
@@ -27,7 +28,8 @@ export default function TaggingPage() {
       setCustomers(customersData);
     } catch (error) {
       console.error('Failed to load data:', error);
-      alert('Failed to load data. Please refresh the page.');
+      setNotification({type: 'error', title: 'Error', message: 'Failed to load data. Please refresh the page.'});
+      setTimeout(() => setNotification(null), 3000);
     } finally {
       setLoading(false);
     }
@@ -102,10 +104,12 @@ export default function TaggingPage() {
     try {
       await updateItem(itemId, { customerId: '' });
       await loadData();
-      alert('✅ Customer unassigned successfully!');
+      setNotification({type: 'success', title: 'Success!', message: 'Customer unassigned successfully!'});
+      setTimeout(() => setNotification(null), 3000);
     } catch (error) {
       console.error('Failed to unassign customer:', error);
-      alert('Failed to unassign customer. Please try again.');
+      setNotification({type: 'error', title: 'Error', message: 'Failed to unassign customer. Please try again.'});
+      setTimeout(() => setNotification(null), 3000);
     }
   };
 
@@ -117,10 +121,12 @@ export default function TaggingPage() {
     try {
       await deleteItem(itemId);
       await loadData();
-      alert('✅ Item deleted successfully!');
+      setNotification({type: 'success', title: 'Success!', message: 'Item deleted successfully!'});
+      setTimeout(() => setNotification(null), 3000);
     } catch (error) {
       console.error('Failed to delete item:', error);
-      alert('Failed to delete item. Please try again.');
+      setNotification({type: 'error', title: 'Error', message: 'Failed to delete item. Please try again.'});
+      setTimeout(() => setNotification(null), 3000);
     }
   };
 
@@ -411,6 +417,21 @@ export default function TaggingPage() {
           item={selectedItem}
           customers={customers}
         />
+      )}
+
+      {/* Toast Notification */}
+      {notification && (
+        <div className="position-fixed top-0 end-0 p-3" style={{ zIndex: 9999, marginTop: '70px' }}>
+          <div className={`toast show align-items-center text-white bg-${notification.type} border-0`} role="alert">
+            <div className="d-flex">
+              <div className="toast-body">
+                <strong>{notification.title}</strong>
+                <div className="small">{notification.message}</div>
+              </div>
+              <button type="button" className="btn-close btn-close-white me-2 m-auto" onClick={() => setNotification(null)}></button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
