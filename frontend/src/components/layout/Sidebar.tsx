@@ -30,6 +30,7 @@ const menuItems: MenuItem[] = [
 
   // Admin menu items
   { path: '/admin/dashboard', label: 'Admin Dashboard', icon: 'bi-speedometer', roles: ['admin'] },
+  { path: '/admin/support-requests', label: 'Support Requests', icon: 'bi-headset', roles: ['admin', 'ghana_team', 'china_team'] },
   { path: '/china/containers', label: 'Container Management', icon: 'bi-stack', roles: ['admin'] },
 ];
 

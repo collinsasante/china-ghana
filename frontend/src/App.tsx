@@ -8,6 +8,7 @@ import Login from "./pages/auth/Login";
 import SignUp from "./pages/auth/SignUp";
 import ForgotPassword from "./pages/auth/ForgotPassword";
 import DashboardPage from "./pages/admin/DashboardPage";
+import SupportRequestsPage from "./pages/admin/SupportRequestsPage";
 
 import CustomerDashboard from "./pages/user/CustomerDashboard";
 import StatusPage from "./pages/user/StatusPage";
@@ -87,6 +88,16 @@ function App() {
               element={
                 <ProtectedRoute allowedRoles={["admin"]}>
                   <DashboardPage />
+                </ProtectedRoute>
+              }
+            />
+
+            {/* Support Requests Management */}
+            <Route
+              path="admin/support-requests"
+              element={
+                <ProtectedRoute allowedRoles={["admin", "ghana_team", "china_team"]}>
+                  <SupportRequestsPage />
                 </ProtectedRoute>
               }
             />

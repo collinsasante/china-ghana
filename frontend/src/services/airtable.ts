@@ -624,6 +624,56 @@ export async function getSupportRequestsByCustomerId(customerId: string): Promis
   }
 }
 
+export async function getAllSupportRequests(): Promise<SupportRequest[]> {
+  try {
+    const records = await base(TABLES.SUPPORT_REQUESTS)
+      .select({
+        sort: [{ field: 'createdAt', direction: 'desc' }],
+      })
+      .all();
+
+    return records.map((record) => {
+      const obj = recordToObject(record) as any;
+
+      // Map customerId from array to string
+      if (obj.customerId && Array.isArray(obj.customerId) && obj.customerId.length > 0) {
+        obj.customerId = obj.customerId[0];
+      }
+
+      return obj as SupportRequest;
+    });
+  } catch (error) {
+    console.error('Error fetching all support requests:', error);
+    throw error;
+  }
+}
+
+export async function updateSupportRequestStatus(requestId: string, status: 'open' | 'in_progress' | 'resolved' | 'closed'): Promise<SupportRequest> {
+  try {
+    const record = await base(TABLES.SUPPORT_REQUESTS).update([
+      {
+        id: requestId,
+        fields: {
+          status: status,
+          updatedAt: new Date().toISOString(),
+        },
+      },
+    ]);
+
+    const obj = recordToObject(record[0]) as any;
+
+    // Map customerId from array to string
+    if (obj.customerId && Array.isArray(obj.customerId) && obj.customerId.length > 0) {
+      obj.customerId = obj.customerId[0];
+    }
+
+    return obj as SupportRequest;
+  } catch (error) {
+    console.error('Error updating support request status:', error);
+    throw error;
+  }
+}
+
 export async function createSupportRequest(requestData: Omit<SupportRequest, 'id'>): Promise<SupportRequest> {
   try {
     // Clean data - remove auto-generated fields and format for Airtable
