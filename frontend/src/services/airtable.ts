@@ -143,13 +143,14 @@ export async function toggleUserFirstLogin(userId: string, isFirstLogin: boolean
   }
 }
 
-export async function createUser(userData: Omit<User, 'id'>): Promise<User> {
+export async function createUser(userData: Omit<User, 'id'>, createdByTeam: boolean = false): Promise<User> {
   try {
     console.error('DEBUG - createUser called with:', {
       email: userData.email,
       hasPassword: !!userData.password,
       passwordLength: userData.password?.length,
-      role: userData.role
+      role: userData.role,
+      createdByTeam
     });
 
     // Hash the password before storing
@@ -161,12 +162,12 @@ export async function createUser(userData: Omit<User, 'id'>): Promise<User> {
       hashedLength: hashedPassword?.length
     });
 
-    // Automatically set isFirstLogin: true for all new accounts created by Ghana team
-    // This forces customers to reset their password on first login
+    // Only set isFirstLogin: true for accounts created by Ghana team
+    // Self-signup accounts don't need password reset
     const userDataWithFirstLogin = {
       ...userData,
       password: hashedPassword,
-      isFirstLogin: true,
+      isFirstLogin: createdByTeam, // Only true if created by team
     };
 
     console.error('DEBUG - Sending to Airtable:', {

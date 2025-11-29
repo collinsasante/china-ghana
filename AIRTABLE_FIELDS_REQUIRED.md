@@ -34,10 +34,12 @@ This guide lists all the fields you need to add to your Airtable tables for the 
 
 **For Ghana Team Created Customer Accounts:**
 
-- The `isFirstLogin` field is automatically set to `true` when Ghana team creates a customer account
+- The `isFirstLogin` field is automatically set to `true` ONLY when Ghana team creates a customer account through the "Create Customer Account" button
 - This triggers the password reset modal on the customer's first login
-- **Important:** First login check ONLY applies to customer accounts, not to China team, Ghana team, or admin accounts
-- Team member and admin accounts can login directly without forced password reset
+- **Important:**
+  - First login check ONLY applies to customer accounts created by Ghana team
+  - Self-signup accounts (customers who register themselves) have `isFirstLogin` set to `false`
+  - Team member and admin accounts always have `isFirstLogin` set to `false`
 
 **✅ SECURITY NOTE:**
 Passwords are automatically hashed using bcrypt (salt rounds: 10) before being stored in Airtable. This is already implemented and production-ready.
@@ -146,17 +148,26 @@ If you want to display customer info in the support request view:
 
 ## 6. Testing Your Setup
 
-### Test Password Reset (Customer Accounts Only):
+### Test Password Reset (Ghana Team Created Accounts):
 
 1. Log in as Ghana team member
 2. Go to item tagging and use "Create Customer Account" button
 3. A temporary password will be generated and automatically hashed
 4. Log in with the customer's credentials and temporary password
-5. Password reset modal should appear (only for customer role, not for team members or admins)
+5. Password reset modal should appear (forcing password change)
 6. Set new password
 7. Verify `isFirstLogin` becomes unchecked in Airtable
 8. Verify `passwordChangedAt` is populated with current timestamp
 9. Login again with new password to confirm it works
+
+### Test Self-Signup (No Password Reset Required):
+
+1. Go to the sign-up page
+2. Create a new account with email, password, and other details
+3. Submit the form
+4. Log in with your new credentials
+5. **NO password reset modal should appear** (you should go directly to your dashboard)
+6. Verify in Airtable that `isFirstLogin` is `false` or unchecked for this user
 
 ### Test Support Requests:
 

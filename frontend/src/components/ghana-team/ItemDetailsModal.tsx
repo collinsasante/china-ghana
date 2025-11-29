@@ -232,8 +232,7 @@ export default function ItemDetailsModal({
         phone: newCustomerData.phone.trim() || undefined,
         role: 'customer',
         password: tempPassword, // Save temp password to Airtable
-        // isFirstLogin: true is automatically set by createUser function
-      });
+      }, true); // createdByTeam = true, so isFirstLogin will be set to true
 
       // Select the new customer
       setFormData(prev => ({ ...prev, customerId: newCustomer.id }));
