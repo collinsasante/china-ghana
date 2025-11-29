@@ -174,6 +174,8 @@ export async function createUser(userData: Omit<User, 'id'>, createdByTeam: bool
       email: userDataWithFirstLogin.email,
       hasPassword: !!userDataWithFirstLogin.password,
       passwordValue: userDataWithFirstLogin.password ? `${userDataWithFirstLogin.password.substring(0, 15)}...` : 'undefined',
+      isFirstLogin: userDataWithFirstLogin.isFirstLogin,
+      createdByTeam: createdByTeam,
       allFields: Object.keys(userDataWithFirstLogin)
     });
 
@@ -195,6 +197,7 @@ export async function createUser(userData: Omit<User, 'id'>, createdByTeam: bool
       id: createdUser.id,
       email: createdUser.email,
       hasPasswordInResponse: !!createdUser.password,
+      isFirstLoginInResponse: createdUser.isFirstLogin,
       allFieldsInResponse: Object.keys(createdUser)
     });
 
