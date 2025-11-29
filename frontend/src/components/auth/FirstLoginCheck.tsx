@@ -13,8 +13,9 @@ export default function FirstLoginCheck({ children }: FirstLoginCheckProps) {
   const [showSuccessNotification, setShowSuccessNotification] = useState(false);
 
   useEffect(() => {
-    // Check if user needs to reset password on first login
-    if (user && user.isFirstLogin) {
+    // Only apply first login check to customer accounts (not team members or admins)
+    // This is for accounts created by Ghana team through the "Create Customer" button
+    if (user && user.isFirstLogin && user.role === 'customer') {
       setShowPasswordModal(true);
     }
   }, [user]);

@@ -95,6 +95,7 @@ export default function SignUp() {
       await createUser({
         name: formData.name,
         email: formData.email,
+        password: formData.password,
         role: formData.role,
         phone: formData.phone || undefined,
         address: formData.address || undefined,

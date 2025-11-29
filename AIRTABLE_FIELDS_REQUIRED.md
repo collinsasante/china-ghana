@@ -32,26 +32,15 @@ This guide lists all the fields you need to add to your Airtable tables for the 
    - Select "Single line text" type
    - Name it: `password`
 
-**For Ghana Team Created Accounts:**
+**For Ghana Team Created Customer Accounts:**
 
-- Check the `isFirstLogin` box for any user created by the Ghana team
-- This will trigger the password reset modal on their first login
+- The `isFirstLogin` field is automatically set to `true` when Ghana team creates a customer account
+- This triggers the password reset modal on the customer's first login
+- **Important:** First login check ONLY applies to customer accounts, not to China team, Ghana team, or admin accounts
+- Team member and admin accounts can login directly without forced password reset
 
-**⚠️ SECURITY WARNING:**
-Currently, passwords are stored as plain text. **Before production deployment**, you MUST:
-
-```bash
-npm install bcryptjs @types/bcryptjs
-```
-
-Then update the `updateUserPassword()` function in `frontend/src/services/airtable.ts` to hash passwords:
-
-```typescript
-import bcrypt from "bcryptjs";
-
-const hashedPassword = await bcrypt.hash(newPassword, 10);
-// Store hashedPassword instead of plain text
-```
+**✅ SECURITY NOTE:**
+Passwords are automatically hashed using bcrypt (salt rounds: 10) before being stored in Airtable. This is already implemented and production-ready.
 
 ---
 
@@ -133,8 +122,7 @@ If you want to display customer info in the support request view:
 - [ ] Add `isFirstLogin` checkbox field to Users table
 - [ ] Add `passwordChangedAt` date field to Users table
 - [ ] Ensure `password` field exists in Users table
-- [ ] Check `isFirstLogin` box for Ghana team created accounts
-- [ ] ⚠️ **Before production:** Implement bcrypt password hashing
+- [ ] ✅ Bcrypt password hashing is already implemented and production-ready
 
 ### For Support Requests:
 
@@ -158,15 +146,17 @@ If you want to display customer info in the support request view:
 
 ## 6. Testing Your Setup
 
-### Test Password Reset:
+### Test Password Reset (Customer Accounts Only):
 
-1. Create a test user in Airtable
-2. Check the `isFirstLogin` box for that user
-3. Log in with that user's credentials
-4. Modal should appear forcing password change
-5. Set new password
-6. Verify `isFirstLogin` becomes unchecked
-7. Verify `passwordChangedAt` is populated
+1. Log in as Ghana team member
+2. Go to item tagging and use "Create Customer Account" button
+3. A temporary password will be generated and automatically hashed
+4. Log in with the customer's credentials and temporary password
+5. Password reset modal should appear (only for customer role, not for team members or admins)
+6. Set new password
+7. Verify `isFirstLogin` becomes unchecked in Airtable
+8. Verify `passwordChangedAt` is populated with current timestamp
+9. Login again with new password to confirm it works
 
 ### Test Support Requests:
 
