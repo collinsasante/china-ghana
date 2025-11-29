@@ -508,7 +508,7 @@ export async function getAllItems(): Promise<Item[]> {
   try {
     const records = await base(TABLES.ITEMS)
       .select({
-        // No sorting - let Airtable return items in natural order
+        sort: [{ field: 'createdAt', direction: 'asc' }] // Sort by creation time - oldest first (upload order)
       })
       .all();
 
