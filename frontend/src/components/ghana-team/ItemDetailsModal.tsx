@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import type { FormEvent } from 'react';
 import { calculateCBM } from '../../utils/calculations';
 import { createUser } from '../../services/airtable';
-import { getFirstPhotoUrl } from '../../utils/photos';
 import type { Item, User } from '../../types/index';
 
 interface ItemDetailsModalProps {
@@ -262,10 +261,17 @@ export default function ItemDetailsModal({
 
   if (!isOpen) return null;
 
-  // Get photo URL (uses first photo in sorted order)
-  const photoUrl = item.photos && item.photos.length > 0
-    ? getFirstPhotoUrl(item.photos)
-    : '';
+  // Get all photo URLs
+  const photoUrls: string[] = [];
+  if (item.photos && item.photos.length > 0) {
+    item.photos.forEach((photo) => {
+      if (typeof photo === 'string') {
+        photoUrls.push(photo);
+      } else if (photo && typeof photo === 'object' && 'url' in photo) {
+        photoUrls.push(photo.url);
+      }
+    });
+  }
 
   return (
     <>
@@ -320,30 +326,39 @@ export default function ItemDetailsModal({
               </div>
 
               <div className="row">
-                {/* Image Preview - LARGER */}
+                {/* Image Preview - ALL PHOTOS */}
                 <div className="col-md-5 mb-5">
                   <div className="card card-flush">
                     <div className="card-body p-3">
-                      {photoUrl ? (
+                      {photoUrls.length > 0 ? (
                         <>
-                          <img
-                            src={photoUrl}
-                            alt="Item"
-                            className="img-fluid rounded w-100 cursor-pointer"
-                            style={{ minHeight: '400px', objectFit: 'contain' }}
-                            onClick={() => window.open(photoUrl, '_blank')}
-                          />
+                          <div className="row g-3">
+                            {photoUrls.map((url, index) => (
+                              <div key={index} className="col-12">
+                                <img
+                                  src={url}
+                                  alt={`Item angle ${index + 1}`}
+                                  className="img-fluid rounded w-100 cursor-pointer"
+                                  style={{ minHeight: '200px', objectFit: 'contain', border: '1px solid #e4e6ef' }}
+                                  onClick={() => window.open(url, '_blank')}
+                                />
+                                <div className="text-center mt-2 text-muted">
+                                  <small>Photo {index + 1} of {photoUrls.length}</small>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
                           <div className="text-center mt-3 text-muted">
                             <small>
                               <i className="bi bi-arrows-fullscreen me-1"></i>
-                              Click image to view full size
+                              Click any image to view full size
                             </small>
                           </div>
                         </>
                       ) : (
                         <div className="text-center py-10 text-muted">
                           <i className="bi bi-image fs-3x"></i>
-                          <div className="mt-3">No photo available</div>
+                          <div className="mt-3">No photos available</div>
                         </div>
                       )}
                     </div>
