@@ -21,14 +21,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     // Check for existing session on mount
+    // Only restore session if Airtable is not configured (demo mode)
+    // For production, users must login every session for security
     const storedUser = localStorage.getItem('afreq_user');
-    if (storedUser) {
+    if (storedUser && (!config.airtable.apiKey || !config.airtable.baseId)) {
+      // Demo mode - allow session persistence
       try {
         setUser(JSON.parse(storedUser));
       } catch (error) {
         console.error('Error parsing stored user:', error);
         localStorage.removeItem('afreq_user');
       }
+    } else if (storedUser && config.airtable.apiKey && config.airtable.baseId) {
+      // Production mode - clear old session, require fresh login
+      localStorage.removeItem('afreq_user');
     }
     setIsLoading(false);
   }, []);
