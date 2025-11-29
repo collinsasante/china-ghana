@@ -176,7 +176,18 @@ export async function createUser(userData: Omit<User, 'id'>): Promise<User> {
       allFields: Object.keys(userDataWithFirstLogin)
     });
 
-    const record = await base(TABLES.USERS).create([{ fields: userDataWithFirstLogin }]);
+    // Create the record - explicitly list all fields to ensure password is included
+    const record = await base(TABLES.USERS).create([{
+      fields: {
+        name: userDataWithFirstLogin.name,
+        email: userDataWithFirstLogin.email,
+        phone: userDataWithFirstLogin.phone || undefined,
+        role: userDataWithFirstLogin.role,
+        password: userDataWithFirstLogin.password,
+        isFirstLogin: userDataWithFirstLogin.isFirstLogin,
+        address: userDataWithFirstLogin.address || undefined,
+      }
+    }]);
     const createdUser = recordToObject(record[0]) as User;
 
     console.error('DEBUG - User created in Airtable:', {
