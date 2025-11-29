@@ -70,22 +70,27 @@ export async function uploadImage(
 }
 
 /**
- * Upload multiple images to Cloudinary
+ * Upload multiple images to Cloudinary sequentially (in order)
  */
 export async function uploadMultipleImages(
   files: File[],
   folder: string = 'afreq',
   onProgress?: (fileIndex: number, progress: UploadProgress) => void
 ): Promise<CloudinaryUploadResponse[]> {
-  const uploads = files.map((file, index) =>
-    uploadImage(file, folder, (progress) => {
+  const results: CloudinaryUploadResponse[] = [];
+
+  // Upload files sequentially to preserve order
+  for (let index = 0; index < files.length; index++) {
+    const file = files[index];
+    const response = await uploadImage(file, folder, (progress) => {
       if (onProgress) {
         onProgress(index, progress);
       }
-    })
-  );
+    });
+    results.push(response);
+  }
 
-  return Promise.all(uploads);
+  return results;
 }
 
 /**
