@@ -69,9 +69,11 @@ export default function ReceivingPage() {
       });
 
       // Create placeholder items in Airtable with photos for Ghana team
-      // IMPORTANT: Assign order numbers to preserve upload sequence (close/open shot pattern)
-      const itemCreationPromises = results.map((result, index) =>
-        createItem({
+      // IMPORTANT: Create items SEQUENTIALLY to preserve upload order
+      // Using a loop instead of Promise.all() ensures items are created in order
+      for (let index = 0; index < results.length; index++) {
+        const result = results[index];
+        await createItem({
           photos: [{ url: result.secure_url, order: index }],
           receivingDate: receivingDate,
           status: 'china_warehouse',
@@ -90,10 +92,8 @@ export default function ReceivingPage() {
           customerId: '', // No customer assigned yet
           isDamaged: false,
           isMissing: false,
-        } as any) // Using 'as any' to bypass strict typing for placeholder items
-      );
-
-      await Promise.all(itemCreationPromises);
+        } as any); // Using 'as any' to bypass strict typing for placeholder items
+      }
 
       alert(
         `✅ ${files.length} image${files.length > 1 ? 's' : ''} uploaded successfully!\n\n` +
