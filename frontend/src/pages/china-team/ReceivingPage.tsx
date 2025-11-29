@@ -69,15 +69,29 @@ export default function ReceivingPage() {
       });
 
       // Create placeholder items in Airtable with photos for Ghana team
-      // IMPORTANT: Create items SEQUENTIALLY to preserve upload order
-      // Using a loop instead of Promise.all() ensures items are created in order
-      for (let index = 0; index < results.length; index++) {
-        const result = results[index];
+      // IMPORTANT: Group photos in PAIRS (2 angles of same product) to avoid double pricing
+      // Create ONE item per 2 photos instead of ONE item per photo
+      const itemCount = Math.ceil(results.length / 2);
+
+      for (let itemIndex = 0; itemIndex < itemCount; itemIndex++) {
+        const photoIndex1 = itemIndex * 2;
+        const photoIndex2 = photoIndex1 + 1;
+
+        // Collect photos for this item (1 or 2 photos)
+        const itemPhotos = [];
+        if (photoIndex1 < results.length) {
+          itemPhotos.push({ url: results[photoIndex1].secure_url, order: 0 });
+        }
+        if (photoIndex2 < results.length) {
+          itemPhotos.push({ url: results[photoIndex2].secure_url, order: 1 });
+        }
+
+        // Create one item with both photos
         await createItem({
-          photos: [{ url: result.secure_url, order: index }],
+          photos: itemPhotos,
           receivingDate: receivingDate,
           status: 'china_warehouse',
-          trackingNumber: `TEMP-${Date.now()}-${index}`, // Temporary tracking number - Ghana will update
+          trackingNumber: `TEMP-${Date.now()}-${itemIndex}`, // Temporary tracking number - Ghana will update
           // Minimal required fields - Ghana team will add the rest
           length: 0,
           width: 0,
@@ -97,6 +111,7 @@ export default function ReceivingPage() {
 
       alert(
         `✅ ${files.length} image${files.length > 1 ? 's' : ''} uploaded successfully!\n\n` +
+        `Created ${itemCount} item${itemCount > 1 ? 's' : ''} (${files.length} photos grouped in pairs).\n\n` +
         `These images are now available for the Ghana team to add item details and assign to customers.`
       );
     } catch (error) {
