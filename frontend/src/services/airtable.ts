@@ -46,12 +46,25 @@ export async function getUserByEmail(email: string): Promise<User | null> {
       .select({
         filterByFormula: `{email} = '${email}'`,
         maxRecords: 1,
+        // Explicitly request all fields including password
+        fields: ['name', 'email', 'phone', 'role', 'password', 'isFirstLogin', 'passwordChangedAt', 'address'],
       })
       .firstPage();
 
     if (records.length === 0) return null;
 
-    return recordToObject(records[0]) as User;
+    const user = recordToObject(records[0]) as User;
+
+    // Debug log to see what we got
+    console.error('DEBUG - getUserByEmail returned:', {
+      id: user.id,
+      email: user.email,
+      hasPassword: !!user.password,
+      passwordValue: user.password ? `${user.password.substring(0, 10)}...` : 'undefined',
+      allKeys: Object.keys(user)
+    });
+
+    return user;
   } catch (error) {
     console.error('Error fetching user:', error);
     throw error;
