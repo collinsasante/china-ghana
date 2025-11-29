@@ -62,11 +62,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         throw new Error('Invalid email or password.');
       }
 
+      // Debug: Check what fields we received
+      console.error('DEBUG - User object received:', {
+        id: user.id,
+        email: user.email,
+        hasPassword: !!user.password,
+        passwordLength: user.password?.length,
+        allFields: Object.keys(user)
+      });
+
       // Verify password using bcrypt
       if (!user.password) {
         // Account exists but no password set - this is a legacy account
         // For security, we should not allow login without a password
-        throw new Error('Your account needs to be set up. Please contact the administrator to reset your password.');
+        throw new Error('Password field not found in your account. Please ensure the Airtable Users table has a "password" field (text type) and contact the administrator.');
       }
 
       const isPasswordValid = await verifyPassword(password, user.password);
