@@ -39,9 +39,15 @@ export default function TaggingPage() {
   const untaggedItems = items
     .filter((item) => !item.customerId);
 
-  // Get items with customer assignment (tagged) - no sorting, keep upload order
+  // Get items with customer assignment (tagged) - sorted by most recently tagged
   const taggedItems = items
-    .filter((item) => item.customerId);
+    .filter((item) => item.customerId)
+    .sort((a, b) => {
+      // Sort by updatedAt descending (most recently tagged first)
+      const dateA = new Date(a.updatedAt || a.createdAt || a.receivingDate).getTime();
+      const dateB = new Date(b.updatedAt || b.createdAt || b.receivingDate).getTime();
+      return dateB - dateA;
+    });
 
   const getCustomerName = (customerId: string | string[]) => {
     const actualId = Array.isArray(customerId) ? customerId[0] : customerId;
