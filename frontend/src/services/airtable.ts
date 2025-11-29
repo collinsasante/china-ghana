@@ -145,8 +145,21 @@ export async function toggleUserFirstLogin(userId: string, isFirstLogin: boolean
 
 export async function createUser(userData: Omit<User, 'id'>): Promise<User> {
   try {
+    console.error('DEBUG - createUser called with:', {
+      email: userData.email,
+      hasPassword: !!userData.password,
+      passwordLength: userData.password?.length,
+      role: userData.role
+    });
+
     // Hash the password before storing
     const hashedPassword = userData.password ? await bcrypt.hash(userData.password, 10) : undefined;
+
+    console.error('DEBUG - Password hashed:', {
+      hadOriginalPassword: !!userData.password,
+      hasHashedPassword: !!hashedPassword,
+      hashedLength: hashedPassword?.length
+    });
 
     // Automatically set isFirstLogin: true for all new accounts created by Ghana team
     // This forces customers to reset their password on first login
@@ -156,8 +169,24 @@ export async function createUser(userData: Omit<User, 'id'>): Promise<User> {
       isFirstLogin: true,
     };
 
+    console.error('DEBUG - Sending to Airtable:', {
+      email: userDataWithFirstLogin.email,
+      hasPassword: !!userDataWithFirstLogin.password,
+      passwordValue: userDataWithFirstLogin.password ? `${userDataWithFirstLogin.password.substring(0, 15)}...` : 'undefined',
+      allFields: Object.keys(userDataWithFirstLogin)
+    });
+
     const record = await base(TABLES.USERS).create([{ fields: userDataWithFirstLogin }]);
-    return recordToObject(record[0]) as User;
+    const createdUser = recordToObject(record[0]) as User;
+
+    console.error('DEBUG - User created in Airtable:', {
+      id: createdUser.id,
+      email: createdUser.email,
+      hasPasswordInResponse: !!createdUser.password,
+      allFieldsInResponse: Object.keys(createdUser)
+    });
+
+    return createdUser;
   } catch (error) {
     console.error('Error creating user:', error);
     throw error;
