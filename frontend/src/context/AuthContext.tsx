@@ -21,20 +21,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     // Check for existing session on mount
-    // Only restore session if Airtable is not configured (demo mode)
-    // For production, users must login every session for security
     const storedUser = localStorage.getItem('afreq_user');
-    if (storedUser && (!config.airtable.apiKey || !config.airtable.baseId)) {
-      // Demo mode - allow session persistence
+    if (storedUser) {
       try {
-        setUser(JSON.parse(storedUser));
+        const parsedUser = JSON.parse(storedUser);
+        // Restore user session
+        setUser(parsedUser);
       } catch (error) {
         console.error('Error parsing stored user:', error);
         localStorage.removeItem('afreq_user');
       }
-    } else if (storedUser && config.airtable.apiKey && config.airtable.baseId) {
-      // Production mode - clear old session, require fresh login
-      localStorage.removeItem('afreq_user');
     }
     setIsLoading(false);
   }, []);
@@ -63,17 +59,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const user = await getUserByEmail(email);
 
       if (!user) {
-        throw new Error('User not found. Please contact administrator.');
+        throw new Error('Invalid email or password.');
       }
 
       // Verify password using bcrypt
       if (!user.password) {
-        throw new Error('Account not properly configured. Please contact administrator.');
+        // Account exists but no password set - this is a legacy account
+        // For security, we should not allow login without a password
+        throw new Error('Your account needs to be set up. Please contact the administrator to reset your password.');
       }
 
       const isPasswordValid = await verifyPassword(password, user.password);
       if (!isPasswordValid) {
-        throw new Error('Invalid password. Please try again.');
+        throw new Error('Invalid email or password.');
       }
 
       setUser(user);
