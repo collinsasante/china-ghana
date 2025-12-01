@@ -465,6 +465,18 @@ export async function updateItem(itemId: string, updates: Partial<Item>): Promis
       delete mappedUpdates.customerId;
     }
 
+    // Handle photos - ensure proper Airtable attachment format
+    if (updates.photos !== undefined) {
+      mappedUpdates.photos = updates.photos.map((photo: string | { url: string; order: number }) =>
+        typeof photo === 'string' ? { url: photo } : { url: photo.url }
+      );
+    }
+
+    // Remove fields that Airtable auto-manages or that don't exist
+    delete mappedUpdates.id;
+    delete mappedUpdates.createdAt;
+    delete mappedUpdates.updatedAt;
+
     const record = await base(TABLES.ITEMS).update([
       {
         id: itemId,
@@ -508,7 +520,7 @@ export async function getAllItems(): Promise<Item[]> {
   try {
     const records = await base(TABLES.ITEMS)
       .select({
-        sort: [{ field: 'createdAt', direction: 'asc' }] // Sort by creation time - oldest first (upload order)
+        // No sorting - Airtable returns in natural order (creation order)
       })
       .all();
 
