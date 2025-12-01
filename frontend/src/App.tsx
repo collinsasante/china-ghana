@@ -19,9 +19,9 @@ import InvoicesPage from "./pages/user/InvoicesPage";
 import SupportPage from "./pages/user/SupportPage";
 
 import ReceivingPage from "./pages/china-team/ReceivingPage";
-import PackagingPage from "./pages/china-team/PackagingPage";
 import ChinaTeamDashboard from "./pages/china-team/DashboardPage";
 import ContainerManagementPage from "./pages/china-team/ContainerManagementPage";
+import PackagingPage from "./pages/admin/PackagingPage";
 
 import SortingPage from "./pages/ghana-team/SortingPage";
 import TaggingPage from "./pages/ghana-team/TaggingPage";
@@ -160,6 +160,24 @@ function App() {
               }
             />
 
+            {/* Admin Routes */}
+            <Route
+              path="admin/packaging"
+              element={
+                <ProtectedRoute allowedRoles={["admin"]}>
+                  <PackagingPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="admin/containers"
+              element={
+                <ProtectedRoute allowedRoles={["admin"]}>
+                  <ContainerManagementPage />
+                </ProtectedRoute>
+              }
+            />
+
             {/* China Team Routes */}
             <Route
               path="china/dashboard"
@@ -174,22 +192,6 @@ function App() {
               element={
                 <ProtectedRoute allowedRoles={["china_team", "admin"]}>
                   <ReceivingPage />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="china/packaging"
-              element={
-                <ProtectedRoute allowedRoles={["china_team", "admin"]}>
-                  <PackagingPage />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="china/containers"
-              element={
-                <ProtectedRoute allowedRoles={["admin"]}>
-                  <ContainerManagementPage />
                 </ProtectedRoute>
               }
             />
