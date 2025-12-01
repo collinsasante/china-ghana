@@ -9,6 +9,7 @@ export default function TaggingPage() {
   const [customers, setCustomers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
+  const [containerFilter, setContainerFilter] = useState<string>(''); // Filter by container
   const [selectedItem, setSelectedItem] = useState<Item | null>(null);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [notification, setNotification] = useState<{type: 'success'|'error'|'warning'|'info', title: string, message: string} | null>(null);
@@ -35,13 +36,18 @@ export default function TaggingPage() {
     }
   };
 
+  // Get unique container numbers for filter dropdown
+  const uniqueContainers = Array.from(new Set(items.map(item => item.containerNumber).filter(Boolean))).sort();
+
   // Get items without customer assignment (untagged) - no sorting, keep upload order
   const untaggedItems = items
-    .filter((item) => !item.customerId);
+    .filter((item) => !item.customerId)
+    .filter((item) => !containerFilter || item.containerNumber === containerFilter);
 
   // Get items with customer assignment (tagged) - sorted by most recently tagged
   const taggedItems = items
     .filter((item) => item.customerId)
+    .filter((item) => !containerFilter || item.containerNumber === containerFilter)
     .sort((a, b) => {
       // Sort by updatedAt descending (most recently tagged first)
       const dateA = new Date(a.updatedAt || a.createdAt || a.receivingDate).getTime();
@@ -155,18 +161,36 @@ export default function TaggingPage() {
       <div id="kt_app_content" className="app-content flex-column-fluid">
         <div id="kt_app_content_container" className="app-container container-xxl">
 
-          {/* Search */}
+          {/* Search & Filter */}
           <div className="card mb-5">
             <div className="card-body">
-              <div className="d-flex align-items-center">
-                <i className="bi bi-search fs-2 me-3 text-gray-600"></i>
-                <input
-                  type="text"
-                  className="form-control form-control-lg form-control-solid"
-                  placeholder="Search by tracking number, item name, container number..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                />
+              <div className="row g-3">
+                <div className="col-md-8">
+                  <div className="d-flex align-items-center">
+                    <i className="bi bi-search fs-2 me-3 text-gray-600"></i>
+                    <input
+                      type="text"
+                      className="form-control form-control-lg form-control-solid"
+                      placeholder="Search by tracking number, item name, container number..."
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                    />
+                  </div>
+                </div>
+                <div className="col-md-4">
+                  <select
+                    className="form-select form-select-lg form-select-solid"
+                    value={containerFilter}
+                    onChange={(e) => setContainerFilter(e.target.value)}
+                  >
+                    <option value="">All Containers</option>
+                    {uniqueContainers.map((container) => (
+                      <option key={container} value={container}>
+                        {container}
+                      </option>
+                    ))}
+                  </select>
+                </div>
               </div>
             </div>
           </div>
@@ -179,8 +203,8 @@ export default function TaggingPage() {
                 <div>
                   <h4 className="mb-2 text-primary">Ghana Team - Add Complete Item Details</h4>
                   <p className="mb-0 text-gray-700">
-                    Photos have been uploaded by the China team. Click "Add Item Details" on any photo to enter tracking number,
-                    dimensions, weight, costs, and assign to the correct customer.
+                    Items have been uploaded and assigned to containers by the China team. Use the container filter to view items from specific containers.
+                    Click "Add Item Details" to enter tracking number, dimensions, weight, costs, and assign to the correct customer.
                   </p>
                 </div>
               </div>

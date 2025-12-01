@@ -15,11 +15,18 @@ export default function ReceivingPage() {
   const [receivingDate, setReceivingDate] = useState(
     new Date().toISOString().split('T')[0]
   );
+  const [containerNumber, setContainerNumber] = useState('');
   const [images, setImages] = useState<UploadedImage[]>([]);
   const [isUploading, setIsUploading] = useState(false);
 
   const handleFilesSelected = async (files: File[]) => {
     if (files.length === 0) {
+      return;
+    }
+
+    // Validate container number is provided
+    if (!containerNumber.trim()) {
+      alert('Please enter a container number before uploading photos.');
       return;
     }
 
@@ -86,10 +93,11 @@ export default function ReceivingPage() {
           itemPhotos.push({ url: results[photoIndex2].secure_url, order: 1 });
         }
 
-        // Create one item with both photos
+        // Create one item with both photos and container number
         await createItem({
           photos: itemPhotos,
           receivingDate: receivingDate,
+          containerNumber: containerNumber.trim(), // Assign container number at upload time
           status: 'china_warehouse',
           trackingNumber: `TEMP-${Date.now()}-${itemIndex}`, // Temporary tracking number - Ghana will update
           // Minimal required fields - Ghana team will add the rest
@@ -111,8 +119,9 @@ export default function ReceivingPage() {
 
       alert(
         `✅ ${files.length} image${files.length > 1 ? 's' : ''} uploaded successfully!\n\n` +
-        `Created ${itemCount} item${itemCount > 1 ? 's' : ''} (${files.length} photos grouped in pairs).\n\n` +
-        `These images are now available for the Ghana team to add item details and assign to customers.`
+        `Created ${itemCount} item${itemCount > 1 ? 's' : ''} (${files.length} photos grouped in pairs).\n` +
+        `Container: ${containerNumber}\n\n` +
+        `These items are now registered and ready for the Ghana team to add detailed information.`
       );
     } catch (error) {
       console.error('Upload failed:', error);
@@ -177,20 +186,21 @@ export default function ReceivingPage() {
               <div className="d-flex align-items-center">
                 <i className="bi bi-info-circle fs-2x text-info me-4"></i>
                 <div>
-                  <h4 className="mb-2 text-info">China Team - Photo Upload Only</h4>
+                  <h4 className="mb-2 text-info">China Team - Photo Upload & Container Assignment</h4>
                   <p className="mb-0 text-gray-700">
-                    Upload photos of received items. The Ghana team will add all item details
-                    (tracking numbers, dimensions, costs, customer assignment) when processing the items.
+                    <strong>Workflow:</strong> Upload photos of items being loaded into containers and assign the container number.
+                    Since items are already being loaded, registering them with their container numbers ensures accurate tracking.
+                    The Ghana team will later add detailed information (tracking numbers, dimensions, costs, customer assignment).
                   </p>
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Step 1: Receiving Date */}
+          {/* Step 1: Receiving Date & Container Number */}
           <div className="card mb-5">
             <div className="card-header">
-              <h3 className="card-title">Step 1: Set Receiving Date</h3>
+              <h3 className="card-title">Step 1: Set Receiving Date & Container Number</h3>
             </div>
             <div className="card-body">
               <div className="row g-4">
@@ -204,6 +214,20 @@ export default function ReceivingPage() {
                   />
                   <div className="form-text">
                     Date when items arrived at China warehouse
+                  </div>
+                </div>
+                <div className="col-md-6">
+                  <label className="form-label required">Container Number</label>
+                  <input
+                    type="text"
+                    className="form-control form-control-lg"
+                    placeholder="e.g., CONT-2024-001"
+                    value={containerNumber}
+                    onChange={(e) => setContainerNumber(e.target.value)}
+                    disabled={isUploading}
+                  />
+                  <div className="form-text">
+                    Container that will ship these items to Ghana
                   </div>
                 </div>
               </div>
