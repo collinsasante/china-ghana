@@ -70,9 +70,9 @@ export default function ContainerManagementPage() {
     }
   };
 
-  // Get items that are ready to be loaded (packaged but not in a container)
+  // Get items that are ready to be loaded (items with photos but not in a container)
   const availableItems = items.filter(
-    (item) => item.cartonNumber && !item.containerNumber && item.status === 'china_warehouse'
+    (item) => !item.containerNumber && item.status === 'china_warehouse' && item.photos && item.photos.length > 0
   );
 
   const toggleItemSelection = (itemId: string) => {
@@ -172,7 +172,7 @@ export default function ContainerManagementPage() {
               Container Management
             </h1>
             <ul className="breadcrumb breadcrumb-separatorless fw-semibold fs-7 my-0 pt-1">
-              <li className="breadcrumb-item text-muted">China Team</li>
+              <li className="breadcrumb-item text-muted">Admin</li>
               <li className="breadcrumb-item">
                 <span className="bullet bg-gray-500 w-5px h-2px"></span>
               </li>
@@ -310,7 +310,7 @@ export default function ContainerManagementPage() {
                   <div>
                     <h5 className="mb-1">Available Items ({availableItems.length})</h5>
                     <p className="text-muted fs-7 mb-0">
-                      These items are packaged and ready to be loaded into containers
+                      Items uploaded by China team, ready to be assigned to containers
                     </p>
                   </div>
                   {availableItems.length > 0 && (
