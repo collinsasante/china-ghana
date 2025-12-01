@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import type { FormEvent } from 'react';
 import { calculateCBM } from '../../utils/calculations';
 import { createUser } from '../../services/airtable';
+import { uploadImage } from '../../services/cloudinary';
 import type { Item, User } from '../../types/index';
 
 interface ItemDetailsModalProps {
@@ -53,6 +54,8 @@ export default function ItemDetailsModal({
     phone: '',
   });
   const [notification, setNotification] = useState<Notification | null>(null);
+  const [editablePhotos, setEditablePhotos] = useState<string[]>([]);
+  const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
 
   const EXCHANGE_RATE = 15; // USD to GHS
   const CBM_RATE_SEA = 1000; // $1000 per CBM for sea shipping
@@ -83,6 +86,18 @@ export default function ItemDetailsModal({
         receivingDate: item.receivingDate || new Date().toISOString().split('T')[0],
       });
 
+      // Initialize editable photos from item
+      const photos: string[] = [];
+      if (item.photos && item.photos.length > 0) {
+        item.photos.forEach((photo) => {
+          if (typeof photo === 'string') {
+            photos.push(photo);
+          } else if (photo && typeof photo === 'object' && 'url' in photo) {
+            photos.push(photo.url);
+          }
+        });
+      }
+      setEditablePhotos(photos);
     }
   }, [isOpen, item, customers]);
 
@@ -123,6 +138,36 @@ export default function ItemDetailsModal({
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
+  const handleRemovePhoto = (index: number) => {
+    if (window.confirm('Are you sure you want to remove this photo?')) {
+      setEditablePhotos((prev) => prev.filter((_, i) => i !== index));
+      showNotification('success', 'Photo Removed', 'Photo has been removed from this item');
+    }
+  };
+
+  const handleAddPhoto = async () => {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'image/*';
+    input.onchange = async (e: any) => {
+      const file = e.target?.files?.[0];
+      if (!file) return;
+
+      setIsUploadingPhoto(true);
+      try {
+        const result = await uploadImage(file, formData.receivingDate);
+        setEditablePhotos((prev) => [...prev, result.secure_url]);
+        showNotification('success', 'Photo Added', 'New photo has been uploaded and added to this item');
+      } catch (error) {
+        console.error('Upload failed:', error);
+        showNotification('error', 'Upload Failed', 'Failed to upload photo. Please try again.');
+      } finally {
+        setIsUploadingPhoto(false);
+      }
+    };
+    input.click();
+  };
+
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
 
@@ -158,7 +203,7 @@ export default function ItemDetailsModal({
         shippingMethod: formData.shippingMethod,
         costUSD: calculatedCostUSD,
         costCedis: calculatedCostCedis,
-        photos: item.photos, // Preserve existing photos
+        photos: editablePhotos.map((url, index) => ({ url, order: index })), // Use edited photos
         status: 'china_warehouse',
       };
 
@@ -261,18 +306,6 @@ export default function ItemDetailsModal({
 
   if (!isOpen) return null;
 
-  // Get all photo URLs
-  const photoUrls: string[] = [];
-  if (item.photos && item.photos.length > 0) {
-    item.photos.forEach((photo) => {
-      if (typeof photo === 'string') {
-        photoUrls.push(photo);
-      } else if (photo && typeof photo === 'object' && 'url' in photo) {
-        photoUrls.push(photo.url);
-      }
-    });
-  }
-
   return (
     <>
       <style>{`
@@ -330,11 +363,11 @@ export default function ItemDetailsModal({
                 <div className="col-md-5 mb-5">
                   <div className="card card-flush">
                     <div className="card-body p-3">
-                      {photoUrls.length > 0 ? (
+                      {editablePhotos.length > 0 ? (
                         <>
                           <div className="row g-3">
-                            {photoUrls.map((url, index) => (
-                              <div key={index} className="col-12">
+                            {editablePhotos.map((url, index) => (
+                              <div key={index} className="col-12 position-relative">
                                 <img
                                   src={url}
                                   alt={`Item angle ${index + 1}`}
@@ -342,23 +375,53 @@ export default function ItemDetailsModal({
                                   style={{ minHeight: '200px', objectFit: 'contain', border: '1px solid #e4e6ef' }}
                                   onClick={() => window.open(url, '_blank')}
                                 />
+                                <button
+                                  type="button"
+                                  className="btn btn-sm btn-danger position-absolute"
+                                  style={{ top: '10px', right: '10px' }}
+                                  onClick={() => handleRemovePhoto(index)}
+                                  disabled={isSubmitting}
+                                >
+                                  <i className="bi bi-trash me-1"></i>
+                                  Remove
+                                </button>
                                 <div className="text-center mt-2 text-muted">
-                                  <small>Photo {index + 1} of {photoUrls.length}</small>
+                                  <small>Photo {index + 1} of {editablePhotos.length}</small>
                                 </div>
                               </div>
                             ))}
                           </div>
-                          <div className="text-center mt-3 text-muted">
-                            <small>
-                              <i className="bi bi-arrows-fullscreen me-1"></i>
-                              Click any image to view full size
-                            </small>
+                          <div className="text-center mt-3">
+                            <button
+                              type="button"
+                              className="btn btn-sm btn-light-primary me-2"
+                              onClick={handleAddPhoto}
+                              disabled={isSubmitting || isUploadingPhoto}
+                            >
+                              <i className="bi bi-plus-circle me-1"></i>
+                              {isUploadingPhoto ? 'Uploading...' : 'Add Photo'}
+                            </button>
+                            <div className="text-muted mt-2">
+                              <small>
+                                <i className="bi bi-arrows-fullscreen me-1"></i>
+                                Click any image to view full size
+                              </small>
+                            </div>
                           </div>
                         </>
                       ) : (
-                        <div className="text-center py-10 text-muted">
-                          <i className="bi bi-image fs-3x"></i>
-                          <div className="mt-3">No photos available</div>
+                        <div className="text-center py-10">
+                          <i className="bi bi-image fs-3x text-muted"></i>
+                          <div className="mt-3 text-muted">No photos available</div>
+                          <button
+                            type="button"
+                            className="btn btn-sm btn-light-primary mt-3"
+                            onClick={handleAddPhoto}
+                            disabled={isSubmitting || isUploadingPhoto}
+                          >
+                            <i className="bi bi-plus-circle me-1"></i>
+                            {isUploadingPhoto ? 'Uploading...' : 'Add Photo'}
+                          </button>
                         </div>
                       )}
                     </div>
