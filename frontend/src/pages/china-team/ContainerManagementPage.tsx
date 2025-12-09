@@ -20,6 +20,8 @@ export default function ContainerManagementPage() {
   const [containerNumber, setContainerNumber] = useState('');
   const [isAssigning, setIsAssigning] = useState(false);
   const [showNewContainerModal, setShowNewContainerModal] = useState(false);
+  const [showAddToContainerModal, setShowAddToContainerModal] = useState(false);
+  const [targetContainer, setTargetContainer] = useState<string>('');
   const [expandedContainer, setExpandedContainer] = useState<string | null>(null);
   const [selectedItem, setSelectedItem] = useState<Item | null>(null);
   const [showItemModal, setShowItemModal] = useState(false);
@@ -151,6 +153,48 @@ export default function ContainerManagementPage() {
     } catch (error) {
       console.error('Failed to remove item:', error);
       alert('Failed to remove item. Please try again.');
+    }
+  };
+
+  const handleAddToExistingContainer = (containerNum: string) => {
+    setTargetContainer(containerNum);
+    setShowAddToContainerModal(true);
+  };
+
+  const handleAddItemsToContainer = async () => {
+    if (selectedItems.size === 0) {
+      alert('Please select at least one item to add.');
+      return;
+    }
+
+    if (!window.confirm(`Add ${selectedItems.size} item(s) to container ${targetContainer}?`)) {
+      return;
+    }
+
+    setIsAssigning(true);
+
+    try {
+      const updatePromises = Array.from(selectedItems).map((itemId) =>
+        updateItem(itemId, {
+          containerNumber: targetContainer,
+          status: 'in_transit',
+        })
+      );
+
+      await Promise.all(updatePromises);
+
+      alert(`✅ Successfully added ${selectedItems.size} item(s) to container ${targetContainer}!`);
+
+      // Reset and reload
+      setSelectedItems(new Set());
+      setShowAddToContainerModal(false);
+      setTargetContainer('');
+      await loadData();
+    } catch (error) {
+      console.error('Failed to add items to container:', error);
+      alert('Failed to add items to container. Please try again.');
+    } finally {
+      setIsAssigning(false);
     }
   };
 
@@ -476,6 +520,21 @@ export default function ContainerManagementPage() {
                       {expandedContainer === container.containerNumber && (
                         <div className="accordion-collapse show">
                           <div className="accordion-body p-5">
+                            {availableItems.length > 0 && (
+                              <div className="mb-4">
+                                <button
+                                  className="btn btn-sm btn-light-primary"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleAddToExistingContainer(container.containerNumber);
+                                  }}
+                                  disabled={selectedItems.size === 0}
+                                >
+                                  <i className="bi bi-plus-circle me-2"></i>
+                                  Add {selectedItems.size > 0 ? `${selectedItems.size} ` : ''}Items to This Container
+                                </button>
+                              </div>
+                            )}
                             <div className="table-responsive">
                               <table className="table table-row-bordered table-row-gray-300 gy-4">
                                 <thead>
@@ -670,6 +729,93 @@ export default function ContainerManagementPage() {
                     <>
                       <i className="bi bi-truck me-2"></i>
                       Load Container
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Add to Existing Container Modal */}
+      {showAddToContainerModal && (
+        <div className="modal fade show d-block" tabIndex={-1} style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}>
+          <div className="modal-dialog modal-dialog-centered">
+            <div className="modal-content">
+              <div className="modal-header">
+                <h3 className="modal-title">Add Items to Container {targetContainer}</h3>
+                <button
+                  type="button"
+                  className="btn-close"
+                  onClick={() => {
+                    setShowAddToContainerModal(false);
+                    setTargetContainer('');
+                  }}
+                ></button>
+              </div>
+              <div className="modal-body">
+                <div className="alert alert-light-primary">
+                  <div className="fw-bold mb-2">Adding Summary:</div>
+                  <div>
+                    <i className="bi bi-boxes me-2"></i>
+                    {selectedItems.size} item{selectedItems.size > 1 ? 's' : ''} selected
+                  </div>
+                  <div>
+                    <i className="bi bi-rulers me-2"></i>
+                    {availableItems
+                      .filter((item) => selectedItems.has(item.id))
+                      .reduce((sum, item) => sum + (item.cbm || 0), 0)
+                      .toFixed(6)}{' '}
+                    m³ total CBM
+                  </div>
+                  <div>
+                    <i className="bi bi-currency-dollar me-2"></i>$
+                    {availableItems
+                      .filter((item) => selectedItems.has(item.id))
+                      .reduce((sum, item) => sum + (item.costUSD || 0), 0)
+                      .toFixed(2)}{' '}
+                    / ₵
+                    {availableItems
+                      .filter((item) => selectedItems.has(item.id))
+                      .reduce((sum, item) => sum + (item.costCedis || 0), 0)
+                      .toFixed(2)}{' '}
+                    total value
+                  </div>
+                </div>
+
+                <div className="alert alert-warning">
+                  <i className="bi bi-info-circle me-2"></i>
+                  These items will be added to container <strong>{targetContainer}</strong> and marked as "In Transit".
+                </div>
+              </div>
+              <div className="modal-footer">
+                <button
+                  type="button"
+                  className="btn btn-light"
+                  onClick={() => {
+                    setShowAddToContainerModal(false);
+                    setTargetContainer('');
+                  }}
+                  disabled={isAssigning}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  className="btn btn-primary"
+                  onClick={handleAddItemsToContainer}
+                  disabled={isAssigning}
+                >
+                  {isAssigning ? (
+                    <>
+                      <span className="spinner-border spinner-border-sm me-2"></span>
+                      Adding...
+                    </>
+                  ) : (
+                    <>
+                      <i className="bi bi-plus-circle me-2"></i>
+                      Add to Container
                     </>
                   )}
                 </button>
