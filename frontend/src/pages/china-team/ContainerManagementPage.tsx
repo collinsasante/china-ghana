@@ -521,10 +521,12 @@ export default function ContainerManagementPage() {
                         <div className="accordion-collapse show">
                           <div className="accordion-body p-5">
                             {availableItems.length > 0 && (
-                              <div className="mb-4">
+                              <div className="mb-4 d-flex justify-content-between align-items-center">
                                 <button
+                                  type="button"
                                   className="btn btn-sm btn-light-primary"
                                   onClick={(e) => {
+                                    e.preventDefault();
                                     e.stopPropagation();
                                     handleAddToExistingContainer(container.containerNumber);
                                   }}
@@ -533,6 +535,12 @@ export default function ContainerManagementPage() {
                                   <i className="bi bi-plus-circle me-2"></i>
                                   Add {selectedItems.size > 0 ? `${selectedItems.size} ` : ''}Items to This Container
                                 </button>
+                                {selectedItems.size === 0 && (
+                                  <span className="text-muted fs-7">
+                                    <i className="bi bi-info-circle me-1"></i>
+                                    Select items from "Available Items" section above
+                                  </span>
+                                )}
                               </div>
                             )}
                             <div className="table-responsive">
