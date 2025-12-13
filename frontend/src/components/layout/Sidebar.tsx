@@ -1,49 +1,96 @@
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import { useState } from 'react';
 
-interface MenuItem {
+interface SubMenuItem {
   path: string;
   label: string;
-  icon: string;
   roles: string[];
 }
 
-const menuItems: MenuItem[] = [
-  // Customer menu items
-  { path: '/packages', label: 'Dashboard', icon: 'bi-box-seam', roles: ['customer'] },
-  { path: '/status', label: 'Shipment Status', icon: 'bi-truck', roles: ['customer'] },
-  { path: '/arrival', label: 'Estimated Arrival', icon: 'bi-calendar-event', roles: ['customer'] },
-  { path: '/items', label: 'My Items', icon: 'bi-box', roles: ['customer'] },
-  { path: '/announcements', label: 'Announcements', icon: 'bi-megaphone', roles: ['customer'] },
-  { path: '/invoices', label: 'Invoices', icon: 'bi-receipt', roles: ['customer'] },
-  { path: '/support', label: 'Support', icon: 'bi-headset', roles: ['customer'] },
-
-  // China Team menu items
-  { path: '/china/dashboard', label: 'Dashboard', icon: 'bi-speedometer2', roles: ['china_team', 'ghana_team', 'admin'] },
-  { path: '/china/receiving', label: 'Upload Photos', icon: 'bi-camera', roles: ['china_team', 'admin'] },
-  { path: '/admin/packaging', label: 'Packaging', icon: 'bi-boxes', roles: ['china_team', 'admin'] },
-
-  // Ghana Team menu items
-  { path: '/ghana/tagging', label: 'Item Tagging', icon: 'bi-tag', roles: ['ghana_team', 'admin'] },
-  { path: '/ghana/sorting', label: 'Sorting & Scanning', icon: 'bi-upc-scan', roles: ['ghana_team', 'admin'] },
-  { path: '/ghana/csv-import', label: 'CSV Import', icon: 'bi-file-earmark-spreadsheet', roles: ['ghana_team', 'admin'] },
-
-  // Admin menu items
-  { path: '/admin/dashboard', label: 'Admin Dashboard', icon: 'bi-speedometer', roles: ['admin'] },
-  { path: '/admin/customers', label: 'Customers', icon: 'bi-people', roles: ['admin'] },
-  { path: '/admin/containers', label: 'Container Management', icon: 'bi-stack', roles: ['admin'] },
-  { path: '/admin/support-requests', label: 'Support Requests', icon: 'bi-headset', roles: ['admin', 'ghana_team', 'china_team'] },
-];
+interface MenuGroup {
+  label: string;
+  icon: string;
+  roles: string[];
+  subItems: SubMenuItem[];
+}
 
 export default function Sidebar() {
   const location = useLocation();
   const { user } = useAuth();
+  const [expandedMenus, setExpandedMenus] = useState<Set<string>>(new Set(['Dashboards']));
 
-  const filteredMenuItems = menuItems.filter(item =>
-    item.roles.includes(user?.role || '')
-  );
+  // Menu structure for admin/team users
+  const menuGroups: MenuGroup[] = [
+    {
+      label: 'Dashboards',
+      icon: 'bi-speedometer2',
+      roles: ['admin', 'china_team', 'ghana_team'],
+      subItems: [
+        { path: '/admin/dashboard', label: 'Admin Dashboard', roles: ['admin'] },
+        { path: '/china/dashboard', label: 'China Dashboard', roles: ['china_team', 'ghana_team', 'admin'] },
+        { path: '/ghana/tagging', label: 'Ghana Dashboard', roles: ['ghana_team', 'admin'] },
+      ]
+    },
+    {
+      label: 'China View',
+      icon: 'bi-camera',
+      roles: ['admin', 'china_team'],
+      subItems: [
+        { path: '/china/receiving', label: 'Upload Photos', roles: ['china_team', 'admin'] },
+        { path: '/admin/packaging', label: 'Packaging', roles: ['china_team', 'admin'] },
+      ]
+    },
+    {
+      label: 'Container Management',
+      icon: 'bi-stack',
+      roles: ['admin'],
+      subItems: [
+        { path: '/admin/containers', label: 'Containers', roles: ['admin'] },
+      ]
+    },
+    {
+      label: 'Ghana View',
+      icon: 'bi-upc-scan',
+      roles: ['admin', 'ghana_team'],
+      subItems: [
+        { path: '/ghana/tagging', label: 'Item Tagging', roles: ['ghana_team', 'admin'] },
+        { path: '/ghana/sorting', label: 'Sorting & Scanning', roles: ['ghana_team', 'admin'] },
+        { path: '/ghana/csv-import', label: 'CSV Import', roles: ['ghana_team', 'admin'] },
+      ]
+    },
+    {
+      label: 'Customers',
+      icon: 'bi-people',
+      roles: ['admin', 'china_team', 'ghana_team'],
+      subItems: [
+        { path: '/admin/customers', label: 'Customer Details', roles: ['admin'] },
+        { path: '/admin/support-requests', label: 'Support Requests', roles: ['admin', 'ghana_team', 'china_team'] },
+      ]
+    },
+  ];
 
-  // Determine dashboard path based on user role
+  // Customer menu items (no dropdowns)
+  const customerMenuItems = [
+    { path: '/packages', label: 'Dashboard', icon: 'bi-box-seam' },
+    { path: '/status', label: 'Shipment Status', icon: 'bi-truck' },
+    { path: '/arrival', label: 'Estimated Arrival', icon: 'bi-calendar-event' },
+    { path: '/items', label: 'My Items', icon: 'bi-box' },
+    { path: '/announcements', label: 'Announcements', icon: 'bi-megaphone' },
+    { path: '/invoices', label: 'Invoices', icon: 'bi-receipt' },
+    { path: '/support', label: 'Support', icon: 'bi-headset' },
+  ];
+
+  const toggleMenu = (label: string) => {
+    const newExpanded = new Set(expandedMenus);
+    if (newExpanded.has(label)) {
+      newExpanded.delete(label);
+    } else {
+      newExpanded.add(label);
+    }
+    setExpandedMenus(newExpanded);
+  };
+
   const getDashboardPath = () => {
     switch (user?.role) {
       case 'customer':
@@ -60,6 +107,12 @@ export default function Sidebar() {
   };
 
   const dashboardPath = getDashboardPath();
+  const isCustomer = user?.role === 'customer';
+
+  // Filter menu groups based on user role
+  const filteredMenuGroups = menuGroups.filter(group =>
+    group.roles.includes(user?.role || '')
+  );
 
   return (
     <div id="kt_app_sidebar" className="app-sidebar flex-column" data-kt-drawer="true" data-kt-drawer-name="app-sidebar" data-kt-drawer-activate="{default: true, lg: false}" data-kt-drawer-overlay="true" data-kt-drawer-width="225px" data-kt-drawer-direction="start" data-kt-drawer-toggle="#kt_app_sidebar_mobile_toggle">
@@ -81,24 +134,94 @@ export default function Sidebar() {
           <div id="kt_app_sidebar_menu_scroll" className="scroll-y my-5 mx-3" data-kt-scroll="true" data-kt-scroll-activate="true" data-kt-scroll-height="auto" data-kt-scroll-dependencies="#kt_app_sidebar_logo, #kt_app_sidebar_footer" data-kt-scroll-wrappers="#kt_app_sidebar_menu" data-kt-scroll-offset="5px">
             <div className="menu menu-column menu-rounded menu-sub-indention fw-semibold fs-6" id="kt_app_sidebar_menu" data-kt-menu="true" data-kt-menu-expand="false">
 
-              {filteredMenuItems.length > 0 && (
-                <div className="menu-item pt-5">
-                  <div className="menu-content">
-                    <span className="menu-heading fw-bold text-uppercase fs-7">Menu</span>
-                  </div>
+              <div className="menu-item pt-5">
+                <div className="menu-content">
+                  <span className="menu-heading fw-bold text-uppercase fs-7">Menu</span>
                 </div>
-              )}
+              </div>
 
-              {filteredMenuItems.map((item) => (
-                <div key={item.path} className="menu-item">
-                  <Link to={item.path} className={`menu-link ${location.pathname === item.path ? 'active' : ''}`}>
-                    <span className="menu-icon">
-                      <i className={`${item.icon} fs-2`}></i>
-                    </span>
-                    <span className="menu-title">{item.label}</span>
-                  </Link>
-                </div>
-              ))}
+              {isCustomer ? (
+                // Customer menu (no dropdowns)
+                customerMenuItems.map((item) => (
+                  <div key={item.path} className="menu-item">
+                    <Link to={item.path} className={`menu-link ${location.pathname === item.path ? 'active' : ''}`}>
+                      <span className="menu-icon">
+                        <i className={`${item.icon} fs-2`}></i>
+                      </span>
+                      <span className="menu-title">{item.label}</span>
+                    </Link>
+                  </div>
+                ))
+              ) : (
+                // Admin/Team menu (with dropdowns)
+                filteredMenuGroups.map((group) => {
+                  const filteredSubItems = group.subItems.filter(subItem =>
+                    subItem.roles.includes(user?.role || '')
+                  );
+
+                  if (filteredSubItems.length === 0) return null;
+
+                  const isExpanded = expandedMenus.has(group.label);
+                  const hasActiveSubItem = filteredSubItems.some(subItem =>
+                    location.pathname === subItem.path
+                  );
+
+                  // If group has only one item, don't make it a dropdown
+                  if (filteredSubItems.length === 1) {
+                    const singleItem = filteredSubItems[0];
+                    return (
+                      <div key={group.label} className="menu-item">
+                        <Link
+                          to={singleItem.path}
+                          className={`menu-link ${location.pathname === singleItem.path ? 'active' : ''}`}
+                        >
+                          <span className="menu-icon">
+                            <i className={`${group.icon} fs-2`}></i>
+                          </span>
+                          <span className="menu-title">{group.label}</span>
+                        </Link>
+                      </div>
+                    );
+                  }
+
+                  return (
+                    <div
+                      key={group.label}
+                      className={`menu-item menu-accordion ${isExpanded ? 'show' : ''} ${hasActiveSubItem ? 'here' : ''}`}
+                      data-kt-menu-trigger="click"
+                    >
+                      <span
+                        className="menu-link"
+                        onClick={() => toggleMenu(group.label)}
+                        style={{ cursor: 'pointer' }}
+                      >
+                        <span className="menu-icon">
+                          <i className={`${group.icon} fs-2`}></i>
+                        </span>
+                        <span className="menu-title">{group.label}</span>
+                        <span className="menu-arrow">
+                          <i className={`bi ${isExpanded ? 'bi-chevron-down' : 'bi-chevron-right'} fs-4`}></i>
+                        </span>
+                      </span>
+                      <div className={`menu-sub menu-sub-accordion ${isExpanded ? 'show' : ''}`}>
+                        {filteredSubItems.map((subItem) => (
+                          <div key={subItem.path} className="menu-item">
+                            <Link
+                              to={subItem.path}
+                              className={`menu-link ${location.pathname === subItem.path ? 'active' : ''}`}
+                            >
+                              <span className="menu-bullet">
+                                <span className="bullet bullet-dot"></span>
+                              </span>
+                              <span className="menu-title">{subItem.label}</span>
+                            </Link>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  );
+                })
+              )}
             </div>
           </div>
         </div>

@@ -131,14 +131,13 @@ export default function ReceivingPage() {
   };
 
   const handleRemoveImage = (index: number) => {
-    if (!window.confirm('Remove this image?')) return;
-
     setImages((prev) => {
       const newImages = [...prev];
       URL.revokeObjectURL(newImages[index].preview);
       newImages.splice(index, 1);
       return newImages;
     });
+    showToast('info', 'Image Removed', 'The image has been removed from the upload list');
   };
 
   const uploadedCount = images.filter((img) => img.isUploaded).length;
@@ -172,23 +171,6 @@ export default function ReceivingPage() {
 
       <div id="kt_app_content" className="app-content flex-column-fluid">
         <div id="kt_app_content_container" className="app-container container-xxl">
-
-          {/* Instructions Card */}
-          <div className="card mb-5 bg-light-info">
-            <div className="card-body">
-              <div className="d-flex align-items-center">
-                <i className="bi bi-info-circle fs-2x text-info me-4"></i>
-                <div>
-                  <h4 className="mb-2 text-info">China Team - Photo Upload Only</h4>
-                  <p className="mb-0 text-gray-700">
-                    <strong>Workflow:</strong> Upload photos of received items only.
-                    Admins will handle all container assignments and packaging.
-                    Ghana team will add detailed information (tracking numbers, dimensions, costs, customer assignment).
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
 
           {/* Step 1: Receiving Date */}
           <div className="card mb-5">
@@ -234,7 +216,6 @@ export default function ReceivingPage() {
                   <li>Take clear photos showing the full item</li>
                   <li>Include any tracking numbers or labels visible on packages</li>
                   <li>You can upload multiple images at once</li>
-                  <li>Photos will automatically upload to Cloudinary</li>
                 </ul>
               </div>
             </div>
