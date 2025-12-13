@@ -195,22 +195,6 @@ export default function TaggingPage() {
             </div>
           </div>
 
-          {/* Instructions Card */}
-          <div className="card mb-5 bg-light-primary">
-            <div className="card-body">
-              <div className="d-flex align-items-center">
-                <i className="bi bi-info-circle fs-2x text-primary me-4"></i>
-                <div>
-                  <h4 className="mb-2 text-primary">Ghana Team - Add Complete Item Details</h4>
-                  <p className="mb-0 text-gray-700">
-                    Items have been uploaded and assigned to containers by the China team. Use the container filter to view items from specific containers.
-                    Click "Add Item Details" to enter tracking number, dimensions, weight, costs, and assign to the correct customer.
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-
           {/* Untagged Items - Main Focus */}
           <div className="card mb-5">
             <div className="card-header">

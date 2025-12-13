@@ -76,7 +76,7 @@ export default function DashboardPage() {
               {/* Overview Stats */}
               <div className="row g-5 g-xl-10 mb-5">
                 <div className="col-xl-3 col-md-6">
-                  <div className="card card-flush h-100 bg-primary">
+                  <a href="/ghana/tagging" className="card card-flush h-100 bg-primary hover-elevate-up" style={{ cursor: 'pointer', textDecoration: 'none' }}>
                     <div className="card-body p-5">
                       <div className="d-flex flex-column">
                         <div className="d-flex align-items-center mb-3">
@@ -91,11 +91,11 @@ export default function DashboardPage() {
                         </div>
                       </div>
                     </div>
-                  </div>
+                  </a>
                 </div>
 
                 <div className="col-xl-3 col-md-6">
-                  <div className="card card-flush h-100 bg-success">
+                  <a href="/admin/customers" className="card card-flush h-100 bg-success hover-elevate-up" style={{ cursor: 'pointer', textDecoration: 'none' }}>
                     <div className="card-body p-5">
                       <div className="d-flex flex-column">
                         <div className="d-flex align-items-center mb-3">
@@ -110,11 +110,11 @@ export default function DashboardPage() {
                         </div>
                       </div>
                     </div>
-                  </div>
+                  </a>
                 </div>
 
                 <div className="col-xl-3 col-md-6">
-                  <div className="card card-flush h-100 bg-warning">
+                  <a href="/admin/containers" className="card card-flush h-100 bg-warning hover-elevate-up" style={{ cursor: 'pointer', textDecoration: 'none' }}>
                     <div className="card-body p-5">
                       <div className="d-flex flex-column">
                         <div className="d-flex align-items-center mb-3">
@@ -129,11 +129,11 @@ export default function DashboardPage() {
                         </div>
                       </div>
                     </div>
-                  </div>
+                  </a>
                 </div>
 
                 <div className="col-xl-3 col-md-6">
-                  <div className="card card-flush h-100 bg-info">
+                  <a href="/ghana/sorting" className="card card-flush h-100 bg-info hover-elevate-up" style={{ cursor: 'pointer', textDecoration: 'none' }}>
                     <div className="card-body p-5">
                       <div className="d-flex flex-column">
                         <div className="d-flex align-items-center mb-3">
@@ -148,7 +148,7 @@ export default function DashboardPage() {
                         </div>
                       </div>
                     </div>
-                  </div>
+                  </a>
                 </div>
               </div>
 
@@ -162,46 +162,46 @@ export default function DashboardPage() {
                     <div className="card-body">
                       <div className="row g-4">
                         <div className="col-md-4">
-                          <div className="border border-gray-300 border-dashed rounded p-4 text-center">
+                          <a href="/china/receiving" className="border border-gray-300 border-dashed rounded p-4 text-center d-block hover-elevate-up" style={{ cursor: 'pointer', textDecoration: 'none' }}>
                             <i className="bi bi-warehouse fs-2x text-secondary mb-2"></i>
                             <div className="fs-2x fw-bold text-gray-800">{itemsInChina}</div>
                             <div className="fs-7 text-muted">China Warehouse</div>
-                          </div>
+                          </a>
                         </div>
                         <div className="col-md-4">
-                          <div className="border border-gray-300 border-dashed rounded p-4 text-center">
+                          <a href="/admin/containers" className="border border-gray-300 border-dashed rounded p-4 text-center d-block hover-elevate-up" style={{ cursor: 'pointer', textDecoration: 'none' }}>
                             <i className="bi bi-truck fs-2x text-primary mb-2"></i>
                             <div className="fs-2x fw-bold text-gray-800">{itemsInTransit}</div>
                             <div className="fs-7 text-muted">In Transit</div>
-                          </div>
+                          </a>
                         </div>
                         <div className="col-md-4">
-                          <div className="border border-gray-300 border-dashed rounded p-4 text-center">
+                          <a href="/ghana/tagging" className="border border-gray-300 border-dashed rounded p-4 text-center d-block hover-elevate-up" style={{ cursor: 'pointer', textDecoration: 'none' }}>
                             <i className="bi bi-geo-alt fs-2x text-warning mb-2"></i>
                             <div className="fs-2x fw-bold text-gray-800">{itemsInGhana}</div>
                             <div className="fs-7 text-muted">Arrived Ghana</div>
-                          </div>
+                          </a>
                         </div>
                         <div className="col-md-4">
-                          <div className="border border-gray-300 border-dashed rounded p-4 text-center">
+                          <a href="/ghana/sorting" className="border border-gray-300 border-dashed rounded p-4 text-center d-block hover-elevate-up" style={{ cursor: 'pointer', textDecoration: 'none' }}>
                             <i className="bi bi-clipboard-check fs-2x text-success mb-2"></i>
                             <div className="fs-2x fw-bold text-gray-800">{itemsReady}</div>
                             <div className="fs-7 text-muted">Ready for Pickup</div>
-                          </div>
+                          </a>
                         </div>
                         <div className="col-md-4">
-                          <div className="border border-gray-300 border-dashed rounded p-4 text-center">
+                          <a href="/ghana/sorting" className="border border-gray-300 border-dashed rounded p-4 text-center d-block hover-elevate-up" style={{ cursor: 'pointer', textDecoration: 'none' }}>
                             <i className="bi bi-exclamation-triangle fs-2x text-danger mb-2"></i>
                             <div className="fs-2x fw-bold text-gray-800">{damagedItems}</div>
                             <div className="fs-7 text-muted">Damaged</div>
-                          </div>
+                          </a>
                         </div>
                         <div className="col-md-4">
-                          <div className="border border-gray-300 border-dashed rounded p-4 text-center">
+                          <a href="/ghana/sorting" className="border border-gray-300 border-dashed rounded p-4 text-center d-block hover-elevate-up" style={{ cursor: 'pointer', textDecoration: 'none' }}>
                             <i className="bi bi-x-circle fs-2x text-dark mb-2"></i>
                             <div className="fs-2x fw-bold text-gray-800">{missingItems}</div>
                             <div className="fs-7 text-muted">Missing</div>
-                          </div>
+                          </a>
                         </div>
                       </div>
                     </div>
