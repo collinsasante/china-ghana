@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "./context/AuthContext";
+import { ToastProvider } from "./context/ToastContext";
 import ProtectedRoute from "./components/common/ProtectedRoute";
 import MainLayout from "./components/layout/MainLayout";
 import FirstLoginCheck from "./components/auth/FirstLoginCheck";
@@ -9,6 +10,7 @@ import SignUp from "./pages/auth/SignUp";
 import ForgotPassword from "./pages/auth/ForgotPassword";
 import DashboardPage from "./pages/admin/DashboardPage";
 import SupportRequestsPage from "./pages/admin/SupportRequestsPage";
+import CustomersPage from "./pages/admin/CustomersPage";
 
 import CustomerDashboard from "./pages/user/CustomerDashboard";
 import StatusPage from "./pages/user/StatusPage";
@@ -54,11 +56,12 @@ function RootRedirect() {
 function App() {
   return (
     <AuthProvider>
-      <BrowserRouter>
-        <Routes>
-          <Route path="/login" element={<Login />} />
-          <Route path="/signup" element={<SignUp />} />
-          <Route path="/forgot-password" element={<ForgotPassword />} />
+      <ToastProvider>
+        <BrowserRouter>
+          <Routes>
+            <Route path="/login" element={<Login />} />
+            <Route path="/signup" element={<SignUp />} />
+            <Route path="/forgot-password" element={<ForgotPassword />} />
 
           <Route
             path="/"
@@ -177,6 +180,14 @@ function App() {
                 </ProtectedRoute>
               }
             />
+            <Route
+              path="admin/customers"
+              element={
+                <ProtectedRoute allowedRoles={["admin"]}>
+                  <CustomersPage />
+                </ProtectedRoute>
+              }
+            />
 
             {/* China Team Routes */}
             <Route
@@ -226,6 +237,7 @@ function App() {
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </BrowserRouter>
+      </ToastProvider>
     </AuthProvider>
   );
 }
