@@ -218,37 +218,35 @@ export default function ReceivingPage() {
             <div className="card-header">
               <h3 className="card-title">Step 2: Upload Item Photos</h3>
             </div>
-            <div className="card-body">
-              <FileUpload
-                onFilesSelected={handleFilesSelected}
-                accept="image/*"
-                multiple={true}
-                maxSize={10}
-                disabled={isUploading}
-              />
+            <FileUpload
+              onFilesSelected={handleFilesSelected}
+              accept="image/*"
+              multiple={true}
+              maxSize={10}
+              disabled={isUploading}
+            />
 
-              <div className="alert alert-light-primary mt-4 d-flex align-items-center">
-                <i className="bi bi-lightbulb fs-2x me-3"></i>
-                <div>
-                  <div className="fw-bold mb-1">Tips for better photos:</div>
-                  <ul className="mb-0">
-                    <li>Take clear photos showing the full item</li>
-                    <li>Include any tracking numbers or labels visible on packages</li>
-                    <li>You can upload multiple images at once</li>
-                    <li>Photos will automatically upload to Cloudinary</li>
-                  </ul>
+            <div className="alert alert-light-primary mt-4 d-flex align-items-center mx-4">
+              <i className="bi bi-lightbulb fs-2x me-3"></i>
+              <div>
+                <div className="fw-bold mb-1">Tips for better photos:</div>
+                <ul className="mb-0">
+                  <li>Take clear photos showing the full item</li>
+                  <li>Include any tracking numbers or labels visible on packages</li>
+                  <li>You can upload multiple images at once</li>
+                  <li>Photos will automatically upload to Cloudinary</li>
+                </ul>
+              </div>
+            </div>
+
+            {isUploading && (
+              <div className="alert alert-info mt-5 mx-4 mb-4">
+                <div className="d-flex align-items-center">
+                  <span className="spinner-border spinner-border-sm me-3"></span>
+                  <span>Uploading images to Cloudinary...</span>
                 </div>
               </div>
-
-              {isUploading && (
-                <div className="alert alert-info mt-5">
-                  <div className="d-flex align-items-center">
-                    <span className="spinner-border spinner-border-sm me-3"></span>
-                    <span>Uploading images to Cloudinary...</span>
-                  </div>
-                </div>
-              )}
-            </div>
+            )}
           </div>
 
           {/* Step 3: Uploaded Images Grid */}

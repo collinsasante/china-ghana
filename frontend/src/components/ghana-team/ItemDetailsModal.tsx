@@ -1,8 +1,7 @@
 import { useState, useEffect } from 'react';
 import type { FormEvent } from 'react';
 import { calculateCBM } from '../../utils/calculations';
-import { createUser } from '../../services/airtable';
-import { uploadImage } from '../../services/cloudinary';
+import { createUser, getAllItems } from '../../services/airtable';
 import type { Item, User } from '../../types/index';
 
 interface ItemDetailsModalProps {
@@ -49,6 +48,7 @@ export default function ItemDetailsModal({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showCreateCustomerModal, setShowCreateCustomerModal] = useState(false);
   const [showPasswordModal, setShowPasswordModal] = useState(false);
+  const [showPhotoPickerModal, setShowPhotoPickerModal] = useState(false);
   const [generatedPassword, setGeneratedPassword] = useState('');
   const [newCustomerEmail, setNewCustomerEmail] = useState('');
   const [newCustomerData, setNewCustomerData] = useState({
@@ -58,7 +58,7 @@ export default function ItemDetailsModal({
   });
   const [notification, setNotification] = useState<Notification | null>(null);
   const [editablePhotos, setEditablePhotos] = useState<string[]>([]);
-  const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
+  const [availablePhotos, setAvailablePhotos] = useState<string[]>([]);
 
   const EXCHANGE_RATE = 15; // USD to GHS
   const CBM_RATE_SEA = 1000; // $1000 per CBM for sea shipping
@@ -120,6 +120,33 @@ export default function ItemDetailsModal({
     }
   }, [formData.length, formData.width, formData.height, formData.dimensionUnit]);
 
+  // Load available photos from all items
+  useEffect(() => {
+    const loadAvailablePhotos = async () => {
+      try {
+        const allItems = await getAllItems();
+        const photos: string[] = [];
+        allItems.forEach((itm: Item) => {
+          if (itm.photos && itm.photos.length > 0) {
+            itm.photos.forEach((photo: string | { url: string }) => {
+              const url = typeof photo === 'string' ? photo : photo?.url;
+              if (url && !photos.includes(url)) {
+                photos.push(url);
+              }
+            });
+          }
+        });
+        setAvailablePhotos(photos);
+      } catch (error) {
+        console.error('Failed to load available photos:', error);
+      }
+    };
+
+    if (isOpen) {
+      loadAvailablePhotos();
+    }
+  }, [isOpen]);
+
   // Calculate cost based on shipping method
   useEffect(() => {
     let costUSD = 0;
@@ -149,26 +176,15 @@ export default function ItemDetailsModal({
   };
 
   const handleAddPhoto = async () => {
-    const input = document.createElement('input');
-    input.type = 'file';
-    input.accept = 'image/*';
-    input.onchange = async (e: any) => {
-      const file = e.target?.files?.[0];
-      if (!file) return;
+    setShowPhotoPickerModal(true);
+  };
 
-      setIsUploadingPhoto(true);
-      try {
-        const result = await uploadImage(file, formData.receivingDate);
-        setEditablePhotos((prev) => [...prev, result.secure_url]);
-        showNotification('success', 'Photo Added', 'New photo has been uploaded and added to this item');
-      } catch (error) {
-        console.error('Upload failed:', error);
-        showNotification('error', 'Upload Failed', 'Failed to upload photo. Please try again.');
-      } finally {
-        setIsUploadingPhoto(false);
-      }
-    };
-    input.click();
+  const handleSelectPhoto = (photoUrl: string) => {
+    if (!editablePhotos.includes(photoUrl)) {
+      setEditablePhotos((prev) => [...prev, photoUrl]);
+      showNotification('success', 'Photo Added', 'Photo has been added to this item');
+    }
+    setShowPhotoPickerModal(false);
   };
 
   const handleSubmit = async (e: FormEvent) => {
@@ -408,10 +424,10 @@ export default function ItemDetailsModal({
                               type="button"
                               className="btn btn-sm btn-light-primary me-2"
                               onClick={handleAddPhoto}
-                              disabled={isSubmitting || isUploadingPhoto}
+                              disabled={isSubmitting}
                             >
-                              <i className="bi bi-plus-circle me-1"></i>
-                              {isUploadingPhoto ? 'Uploading...' : 'Add Photo'}
+                              <i className="bi bi-images me-1"></i>
+                              Select Photo
                             </button>
                             <div className="text-muted mt-2">
                               <small>
@@ -429,10 +445,10 @@ export default function ItemDetailsModal({
                             type="button"
                             className="btn btn-sm btn-light-primary mt-3"
                             onClick={handleAddPhoto}
-                            disabled={isSubmitting || isUploadingPhoto}
+                            disabled={isSubmitting}
                           >
-                            <i className="bi bi-plus-circle me-1"></i>
-                            {isUploadingPhoto ? 'Uploading...' : 'Add Photo'}
+                            <i className="bi bi-images me-1"></i>
+                            Select Photo
                           </button>
                         </div>
                       )}
@@ -934,6 +950,78 @@ export default function ItemDetailsModal({
                 >
                   <i className="bi bi-check-lg me-2"></i>
                   Done
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Photo Picker Modal */}
+      {showPhotoPickerModal && (
+        <div className="modal fade show d-block" style={{ backgroundColor: 'rgba(0,0,0,0.7)', zIndex: 1070 }}>
+          <div className="modal-dialog modal-dialog-centered modal-lg">
+            <div className="modal-content">
+              <div className="modal-header bg-primary">
+                <h3 className="modal-title text-white">
+                  <i className="bi bi-images me-2"></i>
+                  Select Photo from Uploaded Items
+                </h3>
+                <button
+                  type="button"
+                  className="btn-close btn-close-white"
+                  onClick={() => setShowPhotoPickerModal(false)}
+                ></button>
+              </div>
+              <div className="modal-body">
+                {availablePhotos.length === 0 ? (
+                  <div className="alert alert-warning">
+                    <i className="bi bi-exclamation-triangle me-2"></i>
+                    No photos available. Please upload photos first in the Receiving page.
+                  </div>
+                ) : (
+                  <>
+                    <div className="alert alert-light-info mb-4">
+                      <i className="bi bi-info-circle me-2"></i>
+                      Click on a photo to add it to this item. Photos are from all uploaded items.
+                    </div>
+                    <div className="row g-3" style={{ maxHeight: '500px', overflowY: 'auto' }}>
+                      {availablePhotos.map((photoUrl, index) => (
+                        <div key={index} className="col-md-3 col-sm-4 col-6">
+                          <div
+                            className="card card-flush h-100 cursor-pointer hover-shadow"
+                            onClick={() => handleSelectPhoto(photoUrl)}
+                            style={{ cursor: 'pointer' }}
+                          >
+                            <div className="card-body p-2">
+                              <img
+                                src={photoUrl}
+                                alt={`Photo ${index + 1}`}
+                                className="w-100 rounded"
+                                style={{ height: '120px', objectFit: 'cover' }}
+                              />
+                              {editablePhotos.includes(photoUrl) && (
+                                <div className="position-absolute top-0 end-0 p-2">
+                                  <span className="badge badge-success">
+                                    <i className="bi bi-check-lg"></i>
+                                  </span>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </>
+                )}
+              </div>
+              <div className="modal-footer">
+                <button
+                  type="button"
+                  className="btn btn-light"
+                  onClick={() => setShowPhotoPickerModal(false)}
+                >
+                  Close
                 </button>
               </div>
             </div>
