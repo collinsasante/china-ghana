@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { getSupportRequestsByCustomerId, createSupportRequest } from '../../services/airtable';
+import { useToast } from '../../context/ToastContext';
 import type { SupportRequest } from '../../types/index';
 
 export default function SupportPage() {
   const { user } = useAuth();
+  const { showToast } = useToast();
   const [requests, setRequests] = useState<SupportRequest[]>([]);
   const [loading, setLoading] = useState(true);
   const [showCreateModal, setShowCreateModal] = useState(false);
@@ -69,10 +71,10 @@ export default function SupportPage() {
       setShowCreateModal(false);
       loadRequests();
 
-      alert('Support request submitted successfully! Our team will respond soon.');
+      showToast('success', 'Request Submitted', 'Support request submitted successfully! Our team will respond soon.');
     } catch (err) {
       console.error('Error creating support request:', err);
-      alert('Failed to submit support request. Please try again.');
+      showToast('error', 'Error', 'Failed to submit support request. Please try again.');
     } finally {
       setSubmitting(false);
     }

@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { getAllItems, updateItem } from '../../services/airtable';
 import { getFirstPhotoUrl } from '../../utils/photos';
 import ItemDetailsModal from '../../components/common/ItemDetailsModal';
+import { useToast } from '../../context/ToastContext';
 import type { Item } from '../../types/index';
 
 interface Container {
@@ -13,6 +14,7 @@ interface Container {
 }
 
 export default function ContainerManagementPage() {
+  const { showToast } = useToast();
   const [items, setItems] = useState<Item[]>([]);
   const [containers, setContainers] = useState<Container[]>([]);
   const [loading, setLoading] = useState(true);
@@ -66,7 +68,7 @@ export default function ContainerManagementPage() {
       setContainers(containerList.sort((a, b) => b.containerNumber.localeCompare(a.containerNumber)));
     } catch (error) {
       console.error('Failed to load data:', error);
-      alert('Failed to load data. Please refresh the page.');
+      showToast('error', 'Error', 'Failed to load data. Please refresh the page.');
     } finally {
       setLoading(false);
     }
@@ -97,12 +99,12 @@ export default function ContainerManagementPage() {
 
   const handleLoadContainer = async () => {
     if (selectedItems.size === 0) {
-      alert('Please select at least one item to load.');
+      showToast('warning', 'No Items Selected', 'Please select at least one item to load.');
       return;
     }
 
     if (!containerNumber.trim()) {
-      alert('Please enter a container number.');
+      showToast('warning', 'Missing Information', 'Please enter a container number.');
       return;
     }
 
@@ -122,7 +124,7 @@ export default function ContainerManagementPage() {
 
       await Promise.all(updatePromises);
 
-      alert(`✅ Successfully loaded ${selectedItems.size} item(s) into container ${containerNumber}!`);
+      showToast('success', 'Success', `Successfully loaded ${selectedItems.size} item(s) into container ${containerNumber}!`);
 
       // Reset and reload
       setSelectedItems(new Set());
@@ -131,7 +133,7 @@ export default function ContainerManagementPage() {
       await loadData();
     } catch (error) {
       console.error('Failed to load container:', error);
-      alert('Failed to load items into container. Please try again.');
+      showToast('error', 'Error', 'Failed to load items into container. Please try again.');
     } finally {
       setIsAssigning(false);
     }
@@ -148,11 +150,11 @@ export default function ContainerManagementPage() {
         status: 'china_warehouse', // Reset status
       });
 
-      alert('✅ Item removed from container!');
+      showToast('success', 'Success', 'Item removed from container!');
       await loadData();
     } catch (error) {
       console.error('Failed to remove item:', error);
-      alert('Failed to remove item. Please try again.');
+      showToast('error', 'Error', 'Failed to remove item. Please try again.');
     }
   };
 
@@ -163,7 +165,7 @@ export default function ContainerManagementPage() {
 
   const handleAddItemsToContainer = async () => {
     if (selectedItems.size === 0) {
-      alert('Please select at least one item to add.');
+      showToast('warning', 'No Items Selected', 'Please select at least one item to add.');
       return;
     }
 
@@ -183,7 +185,7 @@ export default function ContainerManagementPage() {
 
       await Promise.all(updatePromises);
 
-      alert(`✅ Successfully added ${selectedItems.size} item(s) to container ${targetContainer}!`);
+      showToast('success', 'Success', `Successfully added ${selectedItems.size} item(s) to container ${targetContainer}!`);
 
       // Reset and reload
       setSelectedItems(new Set());
@@ -192,7 +194,7 @@ export default function ContainerManagementPage() {
       await loadData();
     } catch (error) {
       console.error('Failed to add items to container:', error);
-      alert('Failed to add items to container. Please try again.');
+      showToast('error', 'Error', 'Failed to add items to container. Please try again.');
     } finally {
       setIsAssigning(false);
     }

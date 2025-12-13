@@ -2,9 +2,11 @@ import { useState, useEffect } from 'react';
 import { getAllItems, getAllCustomers, updateItem } from '../../services/airtable';
 import { getFirstPhotoUrl } from '../../utils/photos';
 import ItemDetailsModal from '../../components/common/ItemDetailsModal';
+import { useToast } from '../../context/ToastContext';
 import type { Item, User, ShipmentStatus } from '../../types/index';
 
 export default function SortingPage() {
+  const { showToast } = useToast();
   const [items, setItems] = useState<Item[]>([]);
   const [customers, setCustomers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
@@ -36,7 +38,7 @@ export default function SortingPage() {
       setCustomers(customersData);
     } catch (error) {
       console.error('Failed to load data:', error);
-      alert('Failed to load data. Please refresh the page.');
+      showToast('error', 'Error', 'Failed to load data. Please refresh the page.');
     } finally {
       setLoading(false);
     }
@@ -91,7 +93,7 @@ export default function SortingPage() {
 
   const handleBulkStatusUpdate = async (newStatus: ShipmentStatus) => {
     if (selectedItems.size === 0) {
-      alert('Please select at least one item.');
+      showToast('warning', 'No Items Selected', 'Please select at least one item.');
       return;
     }
 
@@ -108,14 +110,14 @@ export default function SortingPage() {
 
       await Promise.all(updatePromises);
 
-      alert(`✅ Successfully updated ${selectedItems.size} item(s) to ${newStatus}!`);
+      showToast('success', 'Success', `Successfully updated ${selectedItems.size} item(s) to ${newStatus}!`);
 
       // Reload data
       await loadData();
       setSelectedItems(new Set());
     } catch (error) {
       console.error('Failed to update items:', error);
-      alert('Failed to update items. Please try again.');
+      showToast('error', 'Error', 'Failed to update items. Please try again.');
     } finally {
       setIsUpdating(false);
     }
@@ -134,11 +136,11 @@ export default function SortingPage() {
 
     try {
       await updateItem(itemId, { [field]: !currentValue });
-      alert(`✅ Item marked as ${type}!`);
+      showToast('success', 'Success', `Item marked as ${type}!`);
       await loadData();
     } catch (error) {
       console.error(`Failed to mark item as ${type}:`, error);
-      alert(`Failed to mark item as ${type}. Please try again.`);
+      showToast('error', 'Error', `Failed to mark item as ${type}. Please try again.`);
     }
   };
 

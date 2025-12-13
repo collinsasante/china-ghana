@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { getAllItems, updateItem } from '../../services/airtable';
+import { useToast } from '../../context/ToastContext';
 import type { Item, ShipmentStatus } from '../../types/index';
 
 interface CSVRow {
@@ -17,6 +18,7 @@ interface ImportResult {
 }
 
 export default function CSVImportPage() {
+  const { showToast } = useToast();
   const [csvFile, setCSVFile] = useState<File | null>(null);
   const [csvData, setCSVData] = useState<CSVRow[]>([]);
   const [importing, setImporting] = useState(false);
@@ -27,7 +29,7 @@ export default function CSVImportPage() {
     const file = e.target.files?.[0];
     if (file) {
       if (!file.name.endsWith('.csv')) {
-        alert('Please select a CSV file');
+        showToast('warning', 'Invalid File', 'Please select a CSV file');
         return;
       }
       setCSVFile(file);
@@ -42,7 +44,7 @@ export default function CSVImportPage() {
       const lines = text.split('\n').filter((line) => line.trim());
 
       if (lines.length === 0) {
-        alert('CSV file is empty');
+        showToast('warning', 'Empty File', 'CSV file is empty');
         return;
       }
 
@@ -53,7 +55,7 @@ export default function CSVImportPage() {
       const containerIndex = header.findIndex((h) => h.includes('container'));
 
       if (trackingIndex === -1) {
-        alert('CSV must have a "tracking" column');
+        showToast('warning', 'Invalid CSV', 'CSV must have a "tracking" column');
         return;
       }
 
@@ -103,7 +105,7 @@ export default function CSVImportPage() {
 
   const handleImport = async () => {
     if (csvData.length === 0) {
-      alert('No data to import');
+      showToast('warning', 'No Data', 'No data to import');
       return;
     }
 
@@ -187,12 +189,14 @@ export default function CSVImportPage() {
       const successCount = importResults.filter((r) => r.success).length;
       const failureCount = importResults.filter((r) => !r.success).length;
 
-      alert(
-        `Import complete!\n✅ ${successCount} successful\n❌ ${failureCount} failed`
+      showToast(
+        successCount > 0 ? 'success' : 'warning',
+        'Import Complete',
+        `${successCount} successful, ${failureCount} failed`
       );
     } catch (error) {
       console.error('Import failed:', error);
-      alert('Import failed. Please try again.');
+      showToast('error', 'Error', 'Import failed. Please try again.');
     } finally {
       setImporting(false);
     }

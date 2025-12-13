@@ -2,6 +2,7 @@ import { useState } from 'react';
 import FileUpload from '../../components/common/FileUpload';
 import { uploadBulkImages } from '../../services/cloudinary';
 import { createItem } from '../../services/airtable';
+import { useToast } from '../../context/ToastContext';
 
 interface UploadedImage {
   file: File;
@@ -12,6 +13,7 @@ interface UploadedImage {
 }
 
 export default function ReceivingPage() {
+  const { showToast } = useToast();
   const [receivingDate, setReceivingDate] = useState(
     new Date().toISOString().split('T')[0]
   );
@@ -109,14 +111,14 @@ export default function ReceivingPage() {
         } as any); // Using 'as any' to bypass strict typing for placeholder items
       }
 
-      alert(
-        `✅ ${files.length} image${files.length > 1 ? 's' : ''} uploaded successfully!\n\n` +
-        `Created ${itemCount} item${itemCount > 1 ? 's' : ''} (${files.length} photos grouped in pairs).\n\n` +
-        `Admins will assign container numbers, and Ghana team will add detailed information.`
+      showToast(
+        'success',
+        'Upload Successful',
+        `${files.length} image${files.length > 1 ? 's' : ''} uploaded! Created ${itemCount} item${itemCount > 1 ? 's' : ''}.`
       );
     } catch (error) {
       console.error('Upload failed:', error);
-      alert('Upload failed. Please try again.');
+      showToast('error', 'Upload Failed', 'Upload failed. Please try again.');
 
       // Remove the failed uploads
       setImages((prev) => {
