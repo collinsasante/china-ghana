@@ -48,6 +48,9 @@ export default function ItemDetailsModal({
   const [calculatedCostCedis, setCalculatedCostCedis] = useState<number>(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showCreateCustomerModal, setShowCreateCustomerModal] = useState(false);
+  const [showPasswordModal, setShowPasswordModal] = useState(false);
+  const [generatedPassword, setGeneratedPassword] = useState('');
+  const [newCustomerEmail, setNewCustomerEmail] = useState('');
   const [newCustomerData, setNewCustomerData] = useState({
     name: '',
     email: '',
@@ -255,6 +258,16 @@ export default function ItemDetailsModal({
     }
   };
 
+  const handleCopyPassword = async () => {
+    try {
+      await navigator.clipboard.writeText(generatedPassword);
+      showNotification('success', 'Copied!', 'Password copied to clipboard');
+    } catch (error) {
+      console.error('Failed to copy:', error);
+      showNotification('error', 'Copy Failed', 'Failed to copy password to clipboard');
+    }
+  };
+
   const handleCreateCustomer = async () => {
     // Validation
     if (!newCustomerData.name.trim()) {
@@ -290,14 +303,13 @@ export default function ItemDetailsModal({
 
       setShowCreateCustomerModal(false);
 
-      showNotification(
-        'success',
-        'Customer Account Created!',
-        `Email: ${newCustomer.email} • Temp Password: ${tempPassword} (Copy this and send to customer)`,
-        15000 // 15 seconds for password notification
-      );
+      // Show password modal with copy button
+      setGeneratedPassword(tempPassword);
+      setNewCustomerEmail(newCustomer.email);
+      setShowPasswordModal(true);
 
-      // Note: In production, you would send an email here with the login details
+      // TODO: Send email to customer with login credentials
+      // In production, implement email sending service integration
     } catch (error: any) {
       console.error('Failed to create customer:', error);
       showNotification('error', 'Creation Failed', error.message || 'Failed to create customer account. Please try again.');
@@ -849,6 +861,79 @@ export default function ItemDetailsModal({
                 >
                   <i className="bi bi-person-check me-2"></i>
                   Create Customer Account
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Password Display Modal */}
+      {showPasswordModal && (
+        <div className="modal fade show d-block" style={{ backgroundColor: 'rgba(0,0,0,0.7)', zIndex: 1070 }}>
+          <div className="modal-dialog modal-dialog-centered">
+            <div className="modal-content">
+              <div className="modal-header bg-success">
+                <h3 className="modal-title text-white">
+                  <i className="bi bi-check-circle me-2"></i>
+                  Customer Account Created!
+                </h3>
+                <button
+                  type="button"
+                  className="btn-close btn-close-white"
+                  onClick={() => setShowPasswordModal(false)}
+                ></button>
+              </div>
+              <div className="modal-body">
+                <div className="alert alert-light-success mb-5">
+                  <i className="bi bi-info-circle me-2"></i>
+                  <strong>Account created successfully!</strong> Copy the temporary password below and send it to the customer via email or SMS.
+                </div>
+
+                <div className="mb-4">
+                  <label className="form-label fw-bold">Customer Email</label>
+                  <div className="form-control form-control-lg bg-light">
+                    {newCustomerEmail}
+                  </div>
+                </div>
+
+                <div className="mb-4">
+                  <label className="form-label fw-bold">Temporary Password</label>
+                  <div className="input-group input-group-lg">
+                    <input
+                      type="text"
+                      className="form-control form-control-lg bg-light-warning fw-bold"
+                      value={generatedPassword}
+                      readOnly
+                    />
+                    <button
+                      type="button"
+                      className="btn btn-sm btn-light-primary"
+                      onClick={handleCopyPassword}
+                    >
+                      <i className="bi bi-clipboard me-1"></i>
+                      Copy
+                    </button>
+                  </div>
+                  <div className="form-text text-danger">
+                    <i className="bi bi-exclamation-triangle me-1"></i>
+                    Copy this password now! Customer will be required to change it on first login.
+                  </div>
+                </div>
+
+                <div className="alert alert-light-info">
+                  <i className="bi bi-envelope me-2"></i>
+                  <strong>Next Step:</strong> Send the login credentials to the customer via email or SMS. They will be prompted to change their password on first login.
+                </div>
+              </div>
+              <div className="modal-footer">
+                <button
+                  type="button"
+                  className="btn btn-primary"
+                  onClick={() => setShowPasswordModal(false)}
+                >
+                  <i className="bi bi-check-lg me-2"></i>
+                  Done
                 </button>
               </div>
             </div>
