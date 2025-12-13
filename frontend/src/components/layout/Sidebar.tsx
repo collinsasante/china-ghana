@@ -203,7 +203,10 @@ export default function Sidebar() {
                           <i className={`bi ${isExpanded ? 'bi-chevron-down' : 'bi-chevron-right'} fs-4`}></i>
                         </span>
                       </span>
-                      <div className={`menu-sub menu-sub-accordion ${isExpanded ? 'show' : ''}`}>
+                      <div
+                        className={`menu-sub menu-sub-accordion ${isExpanded ? 'show' : ''}`}
+                        style={{ display: isExpanded ? 'block' : 'none' }}
+                      >
                         {filteredSubItems.map((subItem) => (
                           <div key={subItem.path} className="menu-item">
                             <Link
