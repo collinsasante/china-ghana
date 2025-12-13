@@ -668,16 +668,33 @@ export default function ContainerManagementPage() {
               <div className="modal-body">
                 <div className="mb-4">
                   <label className="form-label required">Container Number</label>
-                  <input
-                    type="text"
+                  <select
                     className="form-control form-control-lg"
-                    placeholder="e.g., CONT-2024-001"
                     value={containerNumber}
-                    onChange={(e) => setContainerNumber(e.target.value)}
+                    onChange={(e) => {
+                      if (e.target.value === '__new__') {
+                        const newContainer = prompt('Enter new container number (e.g., CONT-2024-001):');
+                        if (newContainer && newContainer.trim()) {
+                          setContainerNumber(newContainer.trim().toUpperCase());
+                        }
+                      } else {
+                        setContainerNumber(e.target.value);
+                      }
+                    }}
                     autoFocus
-                  />
+                  >
+                    <option value="">-- Select Container or Create New --</option>
+                    {containers.map((container) => (
+                      <option key={container.containerNumber} value={container.containerNumber}>
+                        {container.containerNumber} ({container.itemCount} items)
+                      </option>
+                    ))}
+                    <option value="__new__" className="fw-bold text-primary">
+                      + Create New Container
+                    </option>
+                  </select>
                   <div className="form-text">
-                    Enter the container number for shipping
+                    Select existing container or create a new one
                   </div>
                 </div>
 
