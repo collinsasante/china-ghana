@@ -52,10 +52,37 @@ export default function SortingPage() {
   };
 
   const filteredItems = items.filter((item) => {
+    // Exclude ready and delivered items from main list
+    if (item.status === 'ready_for_pickup' || item.status === 'picked_up' || item.status === 'delivered') {
+      return false;
+    }
+
     // Status filter
     if (statusFilter !== 'all' && item.status !== statusFilter) {
       return false;
     }
+
+    // Search filter
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase();
+      const customerName = getCustomerName(item.customerId).toLowerCase();
+      return (
+        item.trackingNumber.toLowerCase().includes(query) ||
+        customerName.includes(query) ||
+        (item.name && item.name.toLowerCase().includes(query)) ||
+        (item.containerNumber && item.containerNumber.toLowerCase().includes(query)) ||
+        (item.cartonNumber && item.cartonNumber.toLowerCase().includes(query))
+      );
+    }
+
+    return true;
+  });
+
+  // Ready items - separate section
+  const readyItems = items.filter((item) => {
+    const isReady = item.status === 'ready_for_pickup' || item.status === 'picked_up' || item.status === 'delivered';
+
+    if (!isReady) return false;
 
     // Search filter
     if (searchQuery) {
@@ -508,6 +535,89 @@ export default function SortingPage() {
               )}
             </div>
           </div>
+
+          {/* Ready for Pickup / Completed Items Section */}
+          {readyItems.length > 0 && (
+            <div className="card mt-5">
+              <div className="card-header bg-light-success">
+                <h3 className="card-title text-success">
+                  <i className="bi bi-check-circle me-2"></i>
+                  Ready for Pickup / Completed ({readyItems.length})
+                </h3>
+              </div>
+              <div className="card-body p-0">
+                <div className="table-responsive">
+                  <table className="table table-row-bordered table-row-gray-300 gy-4">
+                    <thead>
+                      <tr className="fw-bold text-muted bg-light">
+                        <th>Photo</th>
+                        <th>Tracking #</th>
+                        <th>Customer</th>
+                        <th>Container</th>
+                        <th>Status</th>
+                        <th>CBM</th>
+                        <th>Cost</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {readyItems.map((item) => (
+                        <tr
+                          key={item.id}
+                          onClick={() => handleItemClick(item)}
+                          style={{ cursor: 'pointer' }}
+                          className="hover-bg-light-success"
+                        >
+                          <td>
+                            {item.photos && item.photos.length > 0 ? (
+                              <img
+                                src={getFirstPhotoUrl(item.photos) || ''}
+                                alt="Item"
+                                className="rounded"
+                                style={{ width: '50px', height: '50px', objectFit: 'cover' }}
+                              />
+                            ) : (
+                              <div
+                                className="bg-light rounded d-flex align-items-center justify-content-center"
+                                style={{ width: '50px', height: '50px' }}
+                              >
+                                <i className="bi bi-image text-muted"></i>
+                              </div>
+                            )}
+                          </td>
+                          <td>
+                            <span className="fw-bold">{item.trackingNumber}</span>
+                            {item.name && <div className="text-muted fs-7">{item.name}</div>}
+                          </td>
+                          <td>
+                            <span className="badge badge-light-success">
+                              {getCustomerName(item.customerId)}
+                            </span>
+                          </td>
+                          <td>
+                            <span className="badge badge-light">{item.containerNumber || '-'}</span>
+                          </td>
+                          <td>
+                            {getStatusBadge(item.status)}
+                          </td>
+                          <td>
+                            {item.cbm ? (
+                              <span className="badge badge-light">{item.cbm.toFixed(6)} m³</span>
+                            ) : (
+                              <span className="text-muted">-</span>
+                            )}
+                          </td>
+                          <td>
+                            <div>${item.costUSD ? item.costUSD.toFixed(2) : '0.00'}</div>
+                            <div className="text-muted fs-7">₵{item.costCedis ? item.costCedis.toFixed(2) : '0.00'}</div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Item Details Modal */}
           <ItemDetailsModal
