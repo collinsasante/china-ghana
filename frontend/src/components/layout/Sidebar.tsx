@@ -200,7 +200,7 @@ export default function Sidebar() {
                         </span>
                         <span className="menu-title">{group.label}</span>
                         <span className="menu-arrow">
-                          <i className={`bi ${isExpanded ? 'bi-chevron-down' : 'bi-chevron-right'}`}></i>
+                          <i className={`bi ${isExpanded ? 'bi-chevron-down' : 'bi-chevron-right'} fs-3`}></i>
                         </span>
                       </span>
                       <div
