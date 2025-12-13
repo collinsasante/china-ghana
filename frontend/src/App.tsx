@@ -164,7 +164,7 @@ function App() {
             <Route
               path="admin/packaging"
               element={
-                <ProtectedRoute allowedRoles={["admin"]}>
+                <ProtectedRoute allowedRoles={["admin", "china_team"]}>
                   <PackagingPage />
                 </ProtectedRoute>
               }
