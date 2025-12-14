@@ -199,8 +199,8 @@ export default function Sidebar() {
                           <i className={`${group.icon} fs-2`}></i>
                         </span>
                         <span className="menu-title">{group.label}</span>
-                        <span className="menu-arrow">
-                          <i className={`bi ${isExpanded ? 'bi-chevron-down' : 'bi-chevron-right'} fs-3`}></i>
+                        <span className="menu-arrow" style={{ marginLeft: 'auto' }}>
+                          <i className={`bi ${isExpanded ? 'bi-chevron-down' : 'bi-chevron-right'}`} style={{ fontSize: '1rem', fontWeight: 'bold' }}></i>
                         </span>
                       </span>
                       <div

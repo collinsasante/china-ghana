@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { getAllItems, getAllCustomers, updateItem, deleteItem } from '../../services/airtable';
 import ItemDetailsModal from '../../components/ghana-team/ItemDetailsModal';
+import ConfirmModal from '../../components/common/ConfirmModal';
 import { getFirstPhotoUrl } from '../../utils/photos';
 import type { Item, User } from '../../types/index';
 
@@ -13,6 +14,12 @@ export default function TaggingPage() {
   const [selectedItem, setSelectedItem] = useState<Item | null>(null);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [notification, setNotification] = useState<{type: 'success'|'error'|'warning'|'info', title: string, message: string} | null>(null);
+  const [confirmModal, setConfirmModal] = useState<{isOpen: boolean, title: string, message: string, onConfirm: () => void}>({
+    isOpen: false,
+    title: '',
+    message: '',
+    onConfirm: () => {},
+  });
 
   useEffect(() => {
     loadData();
@@ -71,6 +78,38 @@ export default function TaggingPage() {
     );
   });
 
+  // Group items by upload date
+  const groupItemsByDate = (items: Item[]) => {
+    const groups = new Map<string, Item[]>();
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const yesterday = new Date(today);
+    yesterday.setDate(yesterday.getDate() - 1);
+
+    items.forEach((item) => {
+      const itemDate = new Date(item.createdAt || item.receivingDate);
+      itemDate.setHours(0, 0, 0, 0);
+
+      let label = '';
+      if (itemDate.getTime() === today.getTime()) {
+        label = 'Today';
+      } else if (itemDate.getTime() === yesterday.getTime()) {
+        label = 'Yesterday';
+      } else {
+        label = itemDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+      }
+
+      if (!groups.has(label)) {
+        groups.set(label, []);
+      }
+      groups.get(label)!.push(item);
+    });
+
+    return Array.from(groups.entries()).map(([label, items]) => ({ label, items }));
+  };
+
+  const groupedUntaggedItems = groupItemsByDate(filteredUntaggedItems);
+
   const filteredTaggedItems = taggedItems.filter((item) => {
     if (!searchQuery) return true;
     const query = searchQuery.toLowerCase();
@@ -96,38 +135,46 @@ export default function TaggingPage() {
     setSelectedItem(null);
   };
 
-  const handleUnassignCustomer = async (itemId: string) => {
-    if (!window.confirm('Remove customer assignment from this item?')) {
-      return;
-    }
-
-    try {
-      await updateItem(itemId, { customerId: '' });
-      await loadData();
-      setNotification({type: 'success', title: 'Success!', message: 'Customer unassigned successfully!'});
-      setTimeout(() => setNotification(null), 3000);
-    } catch (error) {
-      console.error('Failed to unassign customer:', error);
-      setNotification({type: 'error', title: 'Error', message: 'Failed to unassign customer. Please try again.'});
-      setTimeout(() => setNotification(null), 3000);
-    }
+  const handleUnassignCustomer = (itemId: string) => {
+    setConfirmModal({
+      isOpen: true,
+      title: 'Remove Customer Assignment',
+      message: 'Are you sure you want to remove customer assignment from this item?',
+      onConfirm: async () => {
+        setConfirmModal({ ...confirmModal, isOpen: false });
+        try {
+          await updateItem(itemId, { customerId: '' });
+          await loadData();
+          setNotification({type: 'success', title: 'Success!', message: 'Customer unassigned successfully!'});
+          setTimeout(() => setNotification(null), 3000);
+        } catch (error) {
+          console.error('Failed to unassign customer:', error);
+          setNotification({type: 'error', title: 'Error', message: 'Failed to unassign customer. Please try again.'});
+          setTimeout(() => setNotification(null), 3000);
+        }
+      },
+    });
   };
 
-  const handleDeleteItem = async (itemId: string, trackingNumber: string) => {
-    if (!window.confirm(`Are you sure you want to delete item ${trackingNumber}? This action cannot be undone.`)) {
-      return;
-    }
-
-    try {
-      await deleteItem(itemId);
-      await loadData();
-      setNotification({type: 'success', title: 'Success!', message: 'Item deleted successfully!'});
-      setTimeout(() => setNotification(null), 3000);
-    } catch (error) {
-      console.error('Failed to delete item:', error);
-      setNotification({type: 'error', title: 'Error', message: 'Failed to delete item. Please try again.'});
-      setTimeout(() => setNotification(null), 3000);
-    }
+  const handleDeleteItem = (itemId: string, trackingNumber: string) => {
+    setConfirmModal({
+      isOpen: true,
+      title: 'Delete Item',
+      message: `Are you sure you want to delete item ${trackingNumber}? This action cannot be undone.`,
+      onConfirm: async () => {
+        setConfirmModal({ ...confirmModal, isOpen: false });
+        try {
+          await deleteItem(itemId);
+          await loadData();
+          setNotification({type: 'success', title: 'Success!', message: 'Item deleted successfully!'});
+          setTimeout(() => setNotification(null), 3000);
+        } catch (error) {
+          console.error('Failed to delete item:', error);
+          setNotification({type: 'error', title: 'Error', message: 'Failed to delete item. Please try again.'});
+          setTimeout(() => setNotification(null), 3000);
+        }
+      },
+    });
   };
 
   return (
@@ -216,8 +263,16 @@ export default function TaggingPage() {
                   <div className="mt-1">No items needing details at the moment.</div>
                 </div>
               ) : (
-                <div className="row g-5">
-                  {filteredUntaggedItems.map((item) => (
+                <>
+                  {groupedUntaggedItems.map((group) => (
+                    <div key={group.label} className="mb-5">
+                      <div className="d-flex align-items-center mb-4">
+                        <i className="bi bi-calendar3 fs-3 text-primary me-3"></i>
+                        <h4 className="mb-0 text-primary">{group.label}</h4>
+                        <span className="badge badge-light-primary ms-3">{group.items.length} items</span>
+                      </div>
+                      <div className="row g-5">
+                        {group.items.map((item) => (
                     <div key={item.id} className="col-md-3 col-sm-6">
                       <div className="card card-flush h-100 shadow-sm">
                         <div className="card-body p-3">
@@ -290,8 +345,11 @@ export default function TaggingPage() {
                         </div>
                       </div>
                     </div>
+                        ))}
+                      </div>
+                    </div>
                   ))}
-                </div>
+                </>
               )}
             </div>
           </div>
@@ -420,6 +478,16 @@ export default function TaggingPage() {
           customers={customers}
         />
       )}
+
+      {/* Confirm Modal */}
+      <ConfirmModal
+        isOpen={confirmModal.isOpen}
+        onClose={() => setConfirmModal({ ...confirmModal, isOpen: false })}
+        onConfirm={confirmModal.onConfirm}
+        title={confirmModal.title}
+        message={confirmModal.message}
+        confirmButtonClass="btn-danger"
+      />
 
       {/* Toast Notification */}
       {notification && (
