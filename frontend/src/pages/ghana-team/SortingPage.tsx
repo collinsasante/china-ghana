@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { getAllItems, getAllCustomers, updateItem } from '../../services/airtable';
 import { getFirstPhotoUrl } from '../../utils/photos';
 import ItemDetailsModal from '../../components/common/ItemDetailsModal';
+import ConfirmModal from '../../components/common/ConfirmModal';
 import { useToast } from '../../context/ToastContext';
 import type { Item, User, ShipmentStatus } from '../../types/index';
 
@@ -16,6 +17,12 @@ export default function SortingPage() {
   const [isUpdating, setIsUpdating] = useState(false);
   const [selectedItem, setSelectedItem] = useState<Item | null>(null);
   const [showItemModal, setShowItemModal] = useState(false);
+  const [confirmModal, setConfirmModal] = useState<{isOpen: boolean, title: string, message: string, onConfirm: () => void}>({
+    isOpen: false,
+    title: '',
+    message: '',
+    onConfirm: () => {},
+  });
 
   useEffect(() => {
     loadData();
@@ -118,57 +125,64 @@ export default function SortingPage() {
     }
   };
 
-  const handleBulkStatusUpdate = async (newStatus: ShipmentStatus) => {
+  const handleBulkStatusUpdate = (newStatus: ShipmentStatus) => {
     if (selectedItems.size === 0) {
       showToast('warning', 'No Items Selected', 'Please select at least one item.');
       return;
     }
 
-    if (!window.confirm(`Update ${selectedItems.size} item(s) to status: ${newStatus}?`)) {
-      return;
-    }
+    setConfirmModal({
+      isOpen: true,
+      title: 'Update Status',
+      message: `Update ${selectedItems.size} item(s) to status: ${newStatus.replace(/_/g, ' ')}?`,
+      onConfirm: async () => {
+        setConfirmModal({ ...confirmModal, isOpen: false });
+        setIsUpdating(true);
 
-    setIsUpdating(true);
+        try {
+          const updatePromises = Array.from(selectedItems).map((itemId) =>
+            updateItem(itemId, { status: newStatus })
+          );
 
-    try {
-      const updatePromises = Array.from(selectedItems).map((itemId) =>
-        updateItem(itemId, { status: newStatus })
-      );
+          await Promise.all(updatePromises);
 
-      await Promise.all(updatePromises);
+          showToast('success', 'Success', `Successfully updated ${selectedItems.size} item(s)!`);
 
-      showToast('success', 'Success', `Successfully updated ${selectedItems.size} item(s) to ${newStatus}!`);
-
-      // Reload data
-      await loadData();
-      setSelectedItems(new Set());
-    } catch (error) {
-      console.error('Failed to update items:', error);
-      showToast('error', 'Error', 'Failed to update items. Please try again.');
-    } finally {
-      setIsUpdating(false);
-    }
+          await loadData();
+          setSelectedItems(new Set());
+        } catch (error) {
+          console.error('Failed to update items:', error);
+          showToast('error', 'Error', 'Failed to update items. Please try again.');
+        } finally {
+          setIsUpdating(false);
+        }
+      },
+    });
   };
 
-  const handleMarkDamagedMissing = async (itemId: string, type: 'damaged' | 'missing') => {
+  const handleMarkDamagedMissing = (itemId: string, type: 'damaged' | 'missing') => {
     const item = items.find((i) => i.id === itemId);
     if (!item) return;
 
     const field = type === 'damaged' ? 'isDamaged' : 'isMissing';
     const currentValue = item[field];
 
-    if (!window.confirm(`Mark item ${item.trackingNumber} as ${type}?`)) {
-      return;
-    }
-
-    try {
-      await updateItem(itemId, { [field]: !currentValue });
-      showToast('success', 'Success', `Item marked as ${type}!`);
-      await loadData();
-    } catch (error) {
-      console.error(`Failed to mark item as ${type}:`, error);
-      showToast('error', 'Error', `Failed to mark item as ${type}. Please try again.`);
-    }
+    setConfirmModal({
+      isOpen: true,
+      title: `Mark as ${type}`,
+      message: `Mark item ${item.trackingNumber} as ${type}?`,
+      onConfirm: async () => {
+        setConfirmModal({ ...confirmModal, isOpen: false });
+        try {
+          await updateItem(itemId, { [field]: !currentValue });
+          showToast('success', 'Success', `Item marked as ${type}!`);
+          await loadData();
+        } catch (error) {
+          console.error(`Failed to mark item as ${type}:`, error);
+          showToast('error', 'Error', `Failed to mark item as ${type}. Please try again.`);
+        }
+      },
+    });
   };
 
   const handleItemClick = (item: Item) => {
@@ -624,6 +638,15 @@ export default function SortingPage() {
             item={selectedItem}
             isOpen={showItemModal}
             onClose={() => setShowItemModal(false)}
+          />
+
+          {/* Confirm Modal */}
+          <ConfirmModal
+            isOpen={confirmModal.isOpen}
+            onClose={() => setConfirmModal({ ...confirmModal, isOpen: false })}
+            onConfirm={confirmModal.onConfirm}
+            title={confirmModal.title}
+            message={confirmModal.message}
           />
         </div>
       </div>
