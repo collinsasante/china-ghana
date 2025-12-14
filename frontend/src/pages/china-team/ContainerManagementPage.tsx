@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react';
 import { getAllItems, updateItem } from '../../services/airtable';
 import { getFirstPhotoUrl } from '../../utils/photos';
 import ItemDetailsModal from '../../components/common/ItemDetailsModal';
+import ConfirmModal from '../../components/common/ConfirmModal';
+import InputModal from '../../components/common/InputModal';
 import { useToast } from '../../context/ToastContext';
 import type { Item } from '../../types/index';
 
@@ -27,6 +29,18 @@ export default function ContainerManagementPage() {
   const [expandedContainer, setExpandedContainer] = useState<string | null>(null);
   const [selectedItem, setSelectedItem] = useState<Item | null>(null);
   const [showItemModal, setShowItemModal] = useState(false);
+  const [confirmModal, setConfirmModal] = useState<{isOpen: boolean, title: string, message: string, onConfirm: () => void}>({
+    isOpen: false,
+    title: '',
+    message: '',
+    onConfirm: () => {},
+  });
+  const [inputModal, setInputModal] = useState<{isOpen: boolean, title: string, message: string, onSubmit: (value: string) => void}>({
+    isOpen: false,
+    title: '',
+    message: '',
+    onSubmit: () => {},
+  });
 
   useEffect(() => {
     loadData();
@@ -97,7 +111,7 @@ export default function ContainerManagementPage() {
     }
   };
 
-  const handleLoadContainer = async () => {
+  const handleLoadContainer = () => {
     if (selectedItems.size === 0) {
       showToast('warning', 'No Items Selected', 'Please select at least one item to load.');
       return;
@@ -108,54 +122,61 @@ export default function ContainerManagementPage() {
       return;
     }
 
-    if (!window.confirm(`Load ${selectedItems.size} item(s) into container ${containerNumber}?`)) {
-      return;
-    }
+    setConfirmModal({
+      isOpen: true,
+      title: 'Load Container',
+      message: `Load ${selectedItems.size} item(s) into container ${containerNumber}?`,
+      onConfirm: async () => {
+        setConfirmModal({ ...confirmModal, isOpen: false });
+        setIsAssigning(true);
 
-    setIsAssigning(true);
+        try {
+          const updatePromises = Array.from(selectedItems).map((itemId) =>
+            updateItem(itemId, {
+              containerNumber: containerNumber.trim().toUpperCase(),
+              status: 'in_transit',
+            })
+          );
 
-    try {
-      const updatePromises = Array.from(selectedItems).map((itemId) =>
-        updateItem(itemId, {
-          containerNumber: containerNumber.trim().toUpperCase(),
-          status: 'in_transit', // Automatically update status when loaded
-        })
-      );
+          await Promise.all(updatePromises);
 
-      await Promise.all(updatePromises);
+          showToast('success', 'Success', `Successfully loaded ${selectedItems.size} item(s) into container ${containerNumber}!`);
 
-      showToast('success', 'Success', `Successfully loaded ${selectedItems.size} item(s) into container ${containerNumber}!`);
-
-      // Reset and reload
-      setSelectedItems(new Set());
-      setContainerNumber('');
-      setShowNewContainerModal(false);
-      await loadData();
-    } catch (error) {
-      console.error('Failed to load container:', error);
-      showToast('error', 'Error', 'Failed to load items into container. Please try again.');
-    } finally {
-      setIsAssigning(false);
-    }
+          setSelectedItems(new Set());
+          setContainerNumber('');
+          setShowNewContainerModal(false);
+          await loadData();
+        } catch (error) {
+          console.error('Failed to load container:', error);
+          showToast('error', 'Error', 'Failed to load items into container. Please try again.');
+        } finally {
+          setIsAssigning(false);
+        }
+      },
+    });
   };
 
-  const handleRemoveFromContainer = async (itemId: string, _containerNum: string) => {
-    if (!window.confirm('Remove this item from the container?')) {
-      return;
-    }
+  const handleRemoveFromContainer = (itemId: string, _containerNum: string) => {
+    setConfirmModal({
+      isOpen: true,
+      title: 'Remove Item',
+      message: 'Remove this item from the container?',
+      onConfirm: async () => {
+        setConfirmModal({ ...confirmModal, isOpen: false });
+        try {
+          await updateItem(itemId, {
+            containerNumber: '',
+            status: 'china_warehouse',
+          });
 
-    try {
-      await updateItem(itemId, {
-        containerNumber: '',
-        status: 'china_warehouse', // Reset status
-      });
-
-      showToast('success', 'Success', 'Item removed from container!');
-      await loadData();
-    } catch (error) {
-      console.error('Failed to remove item:', error);
-      showToast('error', 'Error', 'Failed to remove item. Please try again.');
-    }
+          showToast('success', 'Success', 'Item removed from container!');
+          await loadData();
+        } catch (error) {
+          console.error('Failed to remove item:', error);
+          showToast('error', 'Error', 'Failed to remove item. Please try again.');
+        }
+      },
+    });
   };
 
   const handleAddToExistingContainer = (containerNum: string) => {
@@ -163,41 +184,44 @@ export default function ContainerManagementPage() {
     setShowAddToContainerModal(true);
   };
 
-  const handleAddItemsToContainer = async () => {
+  const handleAddItemsToContainer = () => {
     if (selectedItems.size === 0) {
       showToast('warning', 'No Items Selected', 'Please select at least one item to add.');
       return;
     }
 
-    if (!window.confirm(`Add ${selectedItems.size} item(s) to container ${targetContainer}?`)) {
-      return;
-    }
+    setConfirmModal({
+      isOpen: true,
+      title: 'Add to Container',
+      message: `Add ${selectedItems.size} item(s) to container ${targetContainer}?`,
+      onConfirm: async () => {
+        setConfirmModal({ ...confirmModal, isOpen: false });
+        setIsAssigning(true);
 
-    setIsAssigning(true);
+        try {
+          const updatePromises = Array.from(selectedItems).map((itemId) =>
+            updateItem(itemId, {
+              containerNumber: targetContainer,
+              status: 'in_transit',
+            })
+          );
 
-    try {
-      const updatePromises = Array.from(selectedItems).map((itemId) =>
-        updateItem(itemId, {
-          containerNumber: targetContainer,
-          status: 'in_transit',
-        })
-      );
+          await Promise.all(updatePromises);
 
-      await Promise.all(updatePromises);
+          showToast('success', 'Success', `Successfully added ${selectedItems.size} item(s) to container ${targetContainer}!`);
 
-      showToast('success', 'Success', `Successfully added ${selectedItems.size} item(s) to container ${targetContainer}!`);
-
-      // Reset and reload
-      setSelectedItems(new Set());
-      setShowAddToContainerModal(false);
-      setTargetContainer('');
-      await loadData();
-    } catch (error) {
-      console.error('Failed to add items to container:', error);
-      showToast('error', 'Error', 'Failed to add items to container. Please try again.');
-    } finally {
-      setIsAssigning(false);
-    }
+          setSelectedItems(new Set());
+          setShowAddToContainerModal(false);
+          setTargetContainer('');
+          await loadData();
+        } catch (error) {
+          console.error('Failed to add items to container:', error);
+          showToast('error', 'Error', 'Failed to add items to container. Please try again.');
+        } finally {
+          setIsAssigning(false);
+        }
+      },
+    });
   };
 
   const toggleContainer = (containerNum: string) => {
@@ -673,10 +697,15 @@ export default function ContainerManagementPage() {
                     value={containerNumber}
                     onChange={(e) => {
                       if (e.target.value === '__new__') {
-                        const newContainer = prompt('Enter new container number (e.g., CONT-2024-001):');
-                        if (newContainer && newContainer.trim()) {
-                          setContainerNumber(newContainer.trim().toUpperCase());
-                        }
+                        setInputModal({
+                          isOpen: true,
+                          title: 'Create New Container',
+                          message: 'Enter new container number (e.g., CONT-2024-001):',
+                          onSubmit: (value) => {
+                            setContainerNumber(value.toUpperCase());
+                            setInputModal({ ...inputModal, isOpen: false });
+                          },
+                        });
                       } else {
                         setContainerNumber(e.target.value);
                       }
@@ -851,6 +880,25 @@ export default function ContainerManagementPage() {
           </div>
         </div>
       )}
+
+      {/* Confirm Modal */}
+      <ConfirmModal
+        isOpen={confirmModal.isOpen}
+        onClose={() => setConfirmModal({ ...confirmModal, isOpen: false })}
+        onConfirm={confirmModal.onConfirm}
+        title={confirmModal.title}
+        message={confirmModal.message}
+      />
+
+      {/* Input Modal */}
+      <InputModal
+        isOpen={inputModal.isOpen}
+        onClose={() => setInputModal({ ...inputModal, isOpen: false })}
+        onSubmit={inputModal.onSubmit}
+        title={inputModal.title}
+        message={inputModal.message}
+        placeholder="e.g., CONT-2024-001"
+      />
     </div>
   );
 }
