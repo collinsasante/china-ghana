@@ -248,6 +248,18 @@ export default function ScanningPage() {
 
       <div id="kt_app_content" className="app-content flex-column-fluid">
         <div id="kt_app_content_container" className="app-container container-xxl">
+
+          {/* Info Alert */}
+          <div className="alert alert-light-info mb-5">
+            <div className="d-flex align-items-center">
+              <i className="bi bi-info-circle fs-2 me-3"></i>
+              <div>
+                <strong>Individual Item Scanning:</strong> Scan and update individual items for customer delivery.
+                Note: Container status changes (In Transit, Arrived) should be done via Container Arrival page.
+              </div>
+            </div>
+          </div>
+
           {/* Stats Cards */}
           <div className="row g-5 mb-5">
             <div className="col-md-3">
@@ -332,22 +344,6 @@ export default function ScanningPage() {
               <div className="card-body">
                 <div className="d-flex flex-wrap gap-3">
                   <button
-                    className="btn btn-sm btn-primary"
-                    onClick={() => handleBulkStatusUpdate('in_transit')}
-                    disabled={isUpdating}
-                  >
-                    <i className="bi bi-truck me-1"></i>
-                    Mark as In Transit
-                  </button>
-                  <button
-                    className="btn btn-sm btn-warning"
-                    onClick={() => handleBulkStatusUpdate('arrived_ghana')}
-                    disabled={isUpdating}
-                  >
-                    <i className="bi bi-geo-alt me-1"></i>
-                    Mark as Arrived Ghana
-                  </button>
-                  <button
                     className="btn btn-sm btn-success"
                     onClick={() => handleBulkStatusUpdate('ready_for_pickup')}
                     disabled={isUpdating}
@@ -362,6 +358,14 @@ export default function ScanningPage() {
                   >
                     <i className="bi bi-box-seam me-1"></i>
                     Mark as Delivered
+                  </button>
+                  <button
+                    className="btn btn-sm btn-secondary"
+                    onClick={() => handleBulkStatusUpdate('picked_up')}
+                    disabled={isUpdating}
+                  >
+                    <i className="bi bi-bag-check me-1"></i>
+                    Mark as Picked Up
                   </button>
                 </div>
               </div>
