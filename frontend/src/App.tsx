@@ -27,6 +27,7 @@ import ContainerManagementPage from "./pages/china-team/ContainerManagementPage"
 import PackagingPage from "./pages/admin/PackagingPage";
 
 import SortingPage from "./pages/ghana-team/SortingPage";
+import ScanningPage from "./pages/ghana-team/ScanningPage";
 import TaggingPage from "./pages/ghana-team/TaggingPage";
 import ContainerArrivalPage from "./pages/ghana-team/ContainerArrivalPage";
 import CSVImportPage from "./pages/ghana-team/CSVImportPage";
@@ -239,6 +240,14 @@ function App() {
               element={
                 <ProtectedRoute allowedRoles={["ghana_team", "admin"]}>
                   <SortingPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="ghana/scanning"
+              element={
+                <ProtectedRoute allowedRoles={["ghana_team", "admin"]}>
+                  <ScanningPage />
                 </ProtectedRoute>
               }
             />

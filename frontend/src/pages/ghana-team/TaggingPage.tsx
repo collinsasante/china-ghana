@@ -13,8 +13,8 @@ export default function TaggingPage() {
   const [containerFilter, setContainerFilter] = useState<string>(''); // Filter by container
   const [selectedItem, setSelectedItem] = useState<Item | null>(null);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
-  const [collapsedGroups, setCollapsedGroups] = useState<Set<string>>(new Set(['all'])); // Start with all groups collapsed
-  const [showTaggedItems, setShowTaggedItems] = useState(false); // Tagged items section collapsed by default
+  const [collapsedGroups, setCollapsedGroups] = useState<Set<string>>(new Set()); // Start with all groups expanded (empty set)
+  const [showTaggedItems, setShowTaggedItems] = useState(true); // Tagged items section expanded by default
   const [notification, setNotification] = useState<{type: 'success'|'error'|'warning'|'info', title: string, message: string} | null>(null);
   const [confirmModal, setConfirmModal] = useState<{isOpen: boolean, title: string, message: string, onConfirm: () => void}>({
     isOpen: false,
@@ -134,13 +134,7 @@ export default function TaggingPage() {
 
   const groupedUntaggedItems = groupItemsByDate(filteredUntaggedItems);
 
-  // Auto-collapse all groups on initial load
-  useEffect(() => {
-    if (groupedUntaggedItems.length > 0) {
-      const allLabels = groupedUntaggedItems.map(g => g.label);
-      setCollapsedGroups(new Set(allLabels));
-    }
-  }, [groupedUntaggedItems.length]);
+  // Groups start expanded by default (no auto-collapse)
 
   const toggleGroupCollapse = (label: string) => {
     const newCollapsed = new Set(collapsedGroups);

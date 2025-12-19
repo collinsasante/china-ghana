@@ -56,7 +56,8 @@ export default function Sidebar() {
       subItems: [
         { path: '/ghana/tagging', label: 'Item Tagging', roles: ['ghana_team', 'admin'] },
         { path: '/ghana/arrival', label: 'Container Arrival', roles: ['ghana_team', 'admin'] },
-        { path: '/ghana/sorting', label: 'Sorting & Scanning', roles: ['ghana_team', 'admin'] },
+        { path: '/ghana/sorting', label: 'Container Sorting', roles: ['ghana_team', 'admin'] },
+        { path: '/ghana/scanning', label: 'Item Scanning', roles: ['ghana_team', 'admin'] },
         { path: '/ghana/csv-import', label: 'CSV Import', roles: ['ghana_team', 'admin'] },
       ]
     },

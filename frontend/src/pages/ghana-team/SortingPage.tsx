@@ -1,223 +1,73 @@
 import { useState, useEffect } from 'react';
-import { getAllItems, getAllCustomers, updateItem } from '../../services/airtable';
-import { getFirstPhotoUrl } from '../../utils/photos';
-import ItemDetailsModal from '../../components/common/ItemDetailsModal';
-import ConfirmModal from '../../components/common/ConfirmModal';
-import { useToast } from '../../context/ToastContext';
-import type { Item, User, ShipmentStatus } from '../../types/index';
+import { getAllContainers, getItemsByContainerNumber } from '../../services/airtable';
+import type { Container, Item } from '../../types/index';
 
 export default function SortingPage() {
-  const { showToast } = useToast();
-  const [items, setItems] = useState<Item[]>([]);
-  const [customers, setCustomers] = useState<User[]>([]);
+  const [containers, setContainers] = useState<Container[]>([]);
+  const [containerItemsMap, setContainerItemsMap] = useState<Map<string, Item[]>>(new Map());
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
-  const [statusFilter, setStatusFilter] = useState<ShipmentStatus | 'all'>('all');
-  const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set());
-  const [isUpdating, setIsUpdating] = useState(false);
-  const [selectedItem, setSelectedItem] = useState<Item | null>(null);
-  const [showItemModal, setShowItemModal] = useState(false);
-  const [confirmModal, setConfirmModal] = useState<{isOpen: boolean, title: string, message: string, onConfirm: () => void}>({
-    isOpen: false,
-    title: '',
-    message: '',
-    onConfirm: () => {},
-  });
+  const [statusFilter, setStatusFilter] = useState<string>('arrived_ghana'); // Default to arrived containers
+  const [expandedContainers, setExpandedContainers] = useState<Set<string>>(new Set());
 
   useEffect(() => {
-    loadData();
+    loadContainers();
   }, []);
 
-  const loadData = async () => {
+  const loadContainers = async () => {
     try {
       setLoading(true);
-      const [itemsData, customersData] = await Promise.all([
-        getAllItems(),
-        getAllCustomers(),
-      ]);
-      // Sort items by date descending (newest first)
-      const sortedItems = itemsData.sort((a, b) => {
-        const dateA = new Date(a.createdAt || a.receivingDate).getTime();
-        const dateB = new Date(b.createdAt || b.receivingDate).getTime();
-        return dateB - dateA;
-      });
-      setItems(sortedItems);
-      setCustomers(customersData);
+      const containersData = await getAllContainers();
+      setContainers(containersData);
     } catch (error) {
-      console.error('Failed to load data:', error);
-      showToast('error', 'Error', 'Failed to load data. Please refresh the page.');
+      console.error('Failed to load containers:', error);
     } finally {
       setLoading(false);
     }
   };
 
-  const getCustomerName = (customerId: string) => {
-    // customerId might be an array (linked record from Airtable)
-    const actualId = Array.isArray(customerId) ? customerId[0] : customerId;
-    const customer = customers.find((c) => c.id === actualId);
-    return customer?.name || 'Unknown Customer';
+  const loadContainerItems = async (containerNumber: string) => {
+    try {
+      const items = await getItemsByContainerNumber(containerNumber);
+      setContainerItemsMap(prev => new Map(prev).set(containerNumber, items));
+    } catch (error) {
+      console.error('Failed to load container items:', error);
+    }
   };
 
-  const filteredItems = items.filter((item) => {
-    // Exclude ready and delivered items from main list
-    if (item.status === 'ready_for_pickup' || item.status === 'picked_up' || item.status === 'delivered') {
-      return false;
+  const toggleContainer = async (container: Container) => {
+    const newExpanded = new Set(expandedContainers);
+    if (newExpanded.has(container.id)) {
+      newExpanded.delete(container.id);
+    } else {
+      newExpanded.add(container.id);
+      // Load items when expanding if not already loaded
+      if (!containerItemsMap.has(container.containerNumber)) {
+        await loadContainerItems(container.containerNumber);
+      }
     }
+    setExpandedContainers(newExpanded);
+  };
 
-    // Status filter
-    if (statusFilter !== 'all' && item.status !== statusFilter) {
-      return false;
-    }
-
-    // Search filter
-    if (searchQuery) {
-      const query = searchQuery.toLowerCase();
-      const customerName = getCustomerName(item.customerId).toLowerCase();
-      return (
-        item.trackingNumber.toLowerCase().includes(query) ||
-        customerName.includes(query) ||
-        (item.name && item.name.toLowerCase().includes(query)) ||
-        (item.containerNumber && item.containerNumber.toLowerCase().includes(query)) ||
-        (item.cartonNumber && item.cartonNumber.toLowerCase().includes(query))
-      );
-    }
-
-    return true;
+  // Filter containers
+  const filteredContainers = containers.filter((container) => {
+    const matchesSearch = !searchQuery ||
+      container.containerNumber.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesStatus = !statusFilter || container.status === statusFilter;
+    return matchesSearch && matchesStatus;
   });
 
-  // Ready items - separate section
-  const readyItems = items.filter((item) => {
-    const isReady = item.status === 'ready_for_pickup' || item.status === 'picked_up' || item.status === 'delivered';
+  // Sort: Arrived Ghana first, then by expected arrival
+  const sortedContainers = [...filteredContainers].sort((a, b) => {
+    // Prioritize arrived_ghana containers
+    if (a.status === 'arrived_ghana' && b.status !== 'arrived_ghana') return -1;
+    if (a.status !== 'arrived_ghana' && b.status === 'arrived_ghana') return 1;
 
-    if (!isReady) return false;
-
-    // Search filter
-    if (searchQuery) {
-      const query = searchQuery.toLowerCase();
-      const customerName = getCustomerName(item.customerId).toLowerCase();
-      return (
-        item.trackingNumber.toLowerCase().includes(query) ||
-        customerName.includes(query) ||
-        (item.name && item.name.toLowerCase().includes(query)) ||
-        (item.containerNumber && item.containerNumber.toLowerCase().includes(query)) ||
-        (item.cartonNumber && item.cartonNumber.toLowerCase().includes(query))
-      );
-    }
-
-    return true;
+    // Then sort by expected arrival date
+    const dateA = new Date(a.expectedArrivalGhana || a.receivingDate).getTime();
+    const dateB = new Date(b.expectedArrivalGhana || b.receivingDate).getTime();
+    return dateB - dateA;
   });
-
-  const toggleItemSelection = (itemId: string) => {
-    const newSelection = new Set(selectedItems);
-    if (newSelection.has(itemId)) {
-      newSelection.delete(itemId);
-    } else {
-      newSelection.add(itemId);
-    }
-    setSelectedItems(newSelection);
-  };
-
-  const selectAll = () => {
-    if (selectedItems.size === filteredItems.length) {
-      setSelectedItems(new Set());
-    } else {
-      setSelectedItems(new Set(filteredItems.map((item) => item.id)));
-    }
-  };
-
-  const handleBulkStatusUpdate = (newStatus: ShipmentStatus) => {
-    if (selectedItems.size === 0) {
-      showToast('warning', 'No Items Selected', 'Please select at least one item.');
-      return;
-    }
-
-    setConfirmModal({
-      isOpen: true,
-      title: 'Update Status',
-      message: `Update ${selectedItems.size} item(s) to status: ${newStatus.replace(/_/g, ' ')}?`,
-      onConfirm: async () => {
-        setConfirmModal({ ...confirmModal, isOpen: false });
-        setIsUpdating(true);
-
-        try {
-          const updatePromises = Array.from(selectedItems).map((itemId) =>
-            updateItem(itemId, { status: newStatus })
-          );
-
-          await Promise.all(updatePromises);
-
-          showToast('success', 'Success', `Successfully updated ${selectedItems.size} item(s)!`);
-
-          await loadData();
-          setSelectedItems(new Set());
-        } catch (error) {
-          console.error('Failed to update items:', error);
-          showToast('error', 'Error', 'Failed to update items. Please try again.');
-        } finally {
-          setIsUpdating(false);
-        }
-      },
-    });
-  };
-
-  const handleMarkDamagedMissing = (itemId: string, type: 'damaged' | 'missing') => {
-    const item = items.find((i) => i.id === itemId);
-    if (!item) return;
-
-    const field = type === 'damaged' ? 'isDamaged' : 'isMissing';
-    const currentValue = item[field];
-
-    setConfirmModal({
-      isOpen: true,
-      title: `Mark as ${type}`,
-      message: `Mark item ${item.trackingNumber} as ${type}?`,
-      onConfirm: async () => {
-        setConfirmModal({ ...confirmModal, isOpen: false });
-        try {
-          await updateItem(itemId, { [field]: !currentValue });
-          showToast('success', 'Success', `Item marked as ${type}!`);
-          await loadData();
-        } catch (error) {
-          console.error(`Failed to mark item as ${type}:`, error);
-          showToast('error', 'Error', `Failed to mark item as ${type}. Please try again.`);
-        }
-      },
-    });
-  };
-
-  const handleItemClick = (item: Item) => {
-    setSelectedItem(item);
-    setShowItemModal(true);
-  };
-
-  const getStatusBadge = (status: ShipmentStatus) => {
-    const statusConfig: Record<ShipmentStatus, { class: string; label: string }> = {
-      china_warehouse: { class: 'badge-light-info', label: 'China Warehouse' },
-      in_transit: { class: 'badge-light-primary', label: 'In Transit' },
-      arrived_ghana: { class: 'badge-light-warning', label: 'Arrived Ghana' },
-      ready_for_pickup: { class: 'badge-light-success', label: 'Ready for Pickup' },
-      delivered: { class: 'badge-success', label: 'Delivered' },
-      picked_up: { class: 'badge-success', label: 'Picked Up' },
-    };
-
-    const config = statusConfig[status];
-    return <span className={`badge ${config.class}`}>{config.label}</span>;
-  };
-
-  const getStatusCounts = () => {
-    return {
-      total: items.length,
-      china_warehouse: items.filter((i) => i.status === 'china_warehouse').length,
-      in_transit: items.filter((i) => i.status === 'in_transit').length,
-      arrived_ghana: items.filter((i) => i.status === 'arrived_ghana').length,
-      ready_for_pickup: items.filter((i) => i.status === 'ready_for_pickup').length,
-      delivered: items.filter((i) => i.status === 'delivered').length,
-      damaged: items.filter((i) => i.isDamaged).length,
-      missing: items.filter((i) => i.isMissing).length,
-    };
-  };
-
-  const counts = getStatusCounts();
 
   return (
     <div className="d-flex flex-column flex-column-fluid">
@@ -225,7 +75,7 @@ export default function SortingPage() {
         <div id="kt_app_toolbar_container" className="app-container container-xxl d-flex flex-stack">
           <div className="page-title d-flex flex-column justify-content-center flex-wrap me-3">
             <h1 className="page-heading d-flex text-gray-900 fw-bold fs-3 flex-column justify-content-center my-0">
-              Sorting & Scanning
+              Container Sorting
             </h1>
             <ul className="breadcrumb breadcrumb-separatorless fw-semibold fs-7 my-0 pt-1">
               <li className="breadcrumb-item text-muted">Ghana Team</li>
@@ -235,419 +85,208 @@ export default function SortingPage() {
               <li className="breadcrumb-item text-muted">Sorting</li>
             </ul>
           </div>
-
-          {selectedItems.size > 0 && (
-            <div className="d-flex align-items-center gap-2">
-              <span className="badge badge-primary fs-6">
-                {selectedItems.size} item{selectedItems.size !== 1 ? 's' : ''} selected
-              </span>
-            </div>
-          )}
         </div>
       </div>
 
       <div id="kt_app_content" className="app-content flex-column-fluid">
         <div id="kt_app_content_container" className="app-container container-xxl">
-          {/* Stats Cards */}
-          <div className="row g-5 mb-5">
-            <div className="col-md-3">
-              <div className="card card-flush h-100">
-                <div className="card-body d-flex flex-column justify-content-between">
-                  <div className="fs-6 text-gray-400">Total Items</div>
-                  <div className="fs-2x fw-bold text-gray-800">{counts.total}</div>
-                </div>
-              </div>
-            </div>
-            <div className="col-md-3">
-              <div className="card card-flush h-100 bg-light-warning">
-                <div className="card-body d-flex flex-column justify-content-between">
-                  <div className="fs-6 text-warning">Arrived Ghana</div>
-                  <div className="fs-2x fw-bold text-warning">{counts.arrived_ghana}</div>
-                </div>
-              </div>
-            </div>
-            <div className="col-md-3">
-              <div className="card card-flush h-100 bg-light-danger">
-                <div className="card-body d-flex flex-column justify-content-between">
-                  <div className="fs-6 text-danger">Damaged</div>
-                  <div className="fs-2x fw-bold text-danger">{counts.damaged}</div>
-                </div>
-              </div>
-            </div>
-            <div className="col-md-3">
-              <div className="card card-flush h-100 bg-light-dark">
-                <div className="card-body d-flex flex-column justify-content-between">
-                  <div className="fs-6 text-dark">Missing</div>
-                  <div className="fs-2x fw-bold text-dark">{counts.missing}</div>
-                </div>
+
+          {/* Info Alert */}
+          <div className="alert alert-light-info mb-5">
+            <div className="d-flex align-items-center">
+              <i className="bi bi-info-circle fs-2 me-3"></i>
+              <div>
+                <strong>Container Sorting:</strong> View items organized by container. Expand containers to see their contents and verify items before individual scanning.
               </div>
             </div>
           </div>
 
-          {/* Filters and Search */}
+          {/* Search & Filter */}
           <div className="card mb-5">
             <div className="card-body">
-              <div className="row g-4">
-                <div className="col-md-6">
-                  <label className="form-label">Search</label>
-                  <input
-                    type="text"
-                    className="form-control"
-                    placeholder="Search by tracking number, customer, carton number..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                  />
+              <div className="row g-3">
+                <div className="col-md-8">
+                  <div className="d-flex align-items-center">
+                    <i className="bi bi-search fs-2 me-3 text-gray-600"></i>
+                    <input
+                      type="text"
+                      className="form-control form-control-lg form-control-solid"
+                      placeholder="Search by container number..."
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                    />
+                  </div>
                 </div>
-                <div className="col-md-3">
-                  <label className="form-label">Status Filter</label>
+                <div className="col-md-4">
                   <select
-                    className="form-select"
+                    className="form-select form-select-lg form-select-solid"
                     value={statusFilter}
-                    onChange={(e) => setStatusFilter(e.target.value as ShipmentStatus | 'all')}
+                    onChange={(e) => setStatusFilter(e.target.value)}
                   >
-                    <option value="all">All Statuses ({counts.total})</option>
-                    <option value="china_warehouse">China Warehouse ({counts.china_warehouse})</option>
-                    <option value="in_transit">In Transit ({counts.in_transit})</option>
-                    <option value="arrived_ghana">Arrived Ghana ({counts.arrived_ghana})</option>
-                    <option value="ready_for_pickup">Ready for Pickup ({counts.ready_for_pickup})</option>
-                    <option value="delivered">Delivered ({counts.delivered})</option>
+                    <option value="">All Statuses</option>
+                    <option value="china_warehouse">China Warehouse</option>
+                    <option value="in_transit">In Transit</option>
+                    <option value="arrived_ghana">Arrived Ghana</option>
                   </select>
-                </div>
-                <div className="col-md-3 d-flex align-items-end">
-                  <button className="btn btn-light w-100" onClick={() => loadData()}>
-                    <i className="bi bi-arrow-clockwise me-2"></i>
-                    Refresh
-                  </button>
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Bulk Actions */}
-          {selectedItems.size > 0 && (
-            <div className="card mb-5">
-              <div className="card-header">
-                <h3 className="card-title">Bulk Actions ({selectedItems.size} items selected)</h3>
-              </div>
-              <div className="card-body">
-                <div className="d-flex flex-wrap gap-3">
-                  <button
-                    className="btn btn-sm btn-primary"
-                    onClick={() => handleBulkStatusUpdate('in_transit')}
-                    disabled={isUpdating}
-                  >
-                    <i className="bi bi-truck me-1"></i>
-                    Mark as In Transit
-                  </button>
-                  <button
-                    className="btn btn-sm btn-warning"
-                    onClick={() => handleBulkStatusUpdate('arrived_ghana')}
-                    disabled={isUpdating}
-                  >
-                    <i className="bi bi-geo-alt me-1"></i>
-                    Mark as Arrived Ghana
-                  </button>
-                  <button
-                    className="btn btn-sm btn-success"
-                    onClick={() => handleBulkStatusUpdate('ready_for_pickup')}
-                    disabled={isUpdating}
-                  >
-                    <i className="bi bi-check-circle me-1"></i>
-                    Mark as Ready for Pickup
-                  </button>
-                  <button
-                    className="btn btn-sm btn-dark"
-                    onClick={() => handleBulkStatusUpdate('delivered')}
-                    disabled={isUpdating}
-                  >
-                    <i className="bi bi-box-seam me-1"></i>
-                    Mark as Delivered
-                  </button>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Items Table */}
+          {/* Containers List */}
           <div className="card">
             <div className="card-header">
               <h3 className="card-title">
-                Items ({filteredItems.length})
+                <i className="bi bi-box-seam me-2"></i>
+                Containers ({sortedContainers.length})
               </h3>
-              {filteredItems.length > 0 && (
-                <div className="card-toolbar">
-                  <button className="btn btn-sm btn-light" onClick={selectAll}>
-                    {selectedItems.size === filteredItems.length ? (
-                      <>
-                        <i className="bi bi-x-square me-1"></i>
-                        Deselect All
-                      </>
-                    ) : (
-                      <>
-                        <i className="bi bi-check-square me-1"></i>
-                        Select All
-                      </>
-                    )}
-                  </button>
-                </div>
-              )}
             </div>
             <div className="card-body">
               {loading ? (
                 <div className="text-center py-10">
                   <span className="spinner-border spinner-border-lg me-2"></span>
-                  <div className="mt-3 text-muted">Loading items...</div>
+                  <div className="mt-3 text-muted">Loading containers...</div>
                 </div>
-              ) : filteredItems.length === 0 ? (
-                <div className="alert alert-warning">
-                  <i className="bi bi-exclamation-triangle me-2"></i>
-                  No items found matching your filters.
+              ) : sortedContainers.length === 0 ? (
+                <div className="text-center py-10 text-muted">
+                  <i className="bi bi-inbox fs-3x"></i>
+                  <div className="mt-3">No containers found matching your criteria.</div>
                 </div>
               ) : (
-                <div className="table-responsive">
-                  <table className="table table-row-bordered table-row-gray-300 gy-4">
-                    <thead>
-                      <tr className="fw-bold text-muted bg-light">
-                        <th className="w-25px">
-                          <div className="form-check form-check-sm form-check-custom">
-                            <input
-                              className="form-check-input"
-                              type="checkbox"
-                              checked={selectedItems.size === filteredItems.length}
-                              onChange={selectAll}
-                            />
-                          </div>
-                        </th>
-                        <th>Photo</th>
-                        <th>Tracking #</th>
-                        <th>Customer</th>
-                        <th>Carton #</th>
-                        <th>Container #</th>
-                        <th>Status</th>
-                        <th>CBM</th>
-                        <th>Cost</th>
-                        <th>Flags</th>
-                        <th>Actions</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {filteredItems.map((item) => (
-                        <tr
-                          key={item.id}
-                          onClick={() => handleItemClick(item)}
-                          style={{ cursor: 'pointer' }}
-                          className="hover-bg-light-primary"
+                <div className="accordion" id="containerAccordion">
+                  {sortedContainers.map((container) => {
+                    const isExpanded = expandedContainers.has(container.id);
+                    const containerItems = containerItemsMap.get(container.containerNumber) || [];
+
+                    return (
+                      <div key={container.id} className="accordion-item mb-3 border rounded">
+                        {/* Container Header - Always visible */}
+                        <div
+                          className="accordion-header"
+                          id={`heading-${container.id}`}
                         >
-                          <td onClick={(e) => e.stopPropagation()}>
-                            <div className="form-check form-check-sm form-check-custom">
-                              <input
-                                className="form-check-input"
-                                type="checkbox"
-                                checked={selectedItems.has(item.id)}
-                                onChange={() => toggleItemSelection(item.id)}
-                              />
-                            </div>
-                          </td>
-                          <td>
-                            {item.photos && item.photos.length > 0 ? (
-                              <img
-                                src={getFirstPhotoUrl(item.photos) || ''}
-                                alt="Item"
-                                className="rounded"
-                                style={{
-                                  width: '50px',
-                                  height: '50px',
-                                  objectFit: 'cover',
-                                }}
-                              />
-                            ) : (
-                              <div
-                                className="bg-light rounded d-flex align-items-center justify-content-center"
-                                style={{ width: '50px', height: '50px' }}
-                              >
-                                <i className="bi bi-image text-muted"></i>
+                          <button
+                            className={`accordion-button ${isExpanded ? '' : 'collapsed'} bg-light-primary`}
+                            type="button"
+                            onClick={() => toggleContainer(container)}
+                            style={{ cursor: 'pointer' }}
+                          >
+                            <div className="d-flex align-items-center w-100">
+                              <div className="symbol symbol-50px me-4">
+                                <div className="symbol-label bg-primary">
+                                  <i className="bi bi-box-seam fs-2x text-white"></i>
+                                </div>
                               </div>
-                            )}
-                          </td>
-                          <td>
-                            <span className="fw-bold">{item.trackingNumber}</span>
-                            {item.name && (
-                              <div className="text-muted fs-7">{item.name}</div>
-                            )}
-                          </td>
-                          <td>{getCustomerName(item.customerId)}</td>
-                          <td>
-                            {item.cartonNumber ? (
-                              <span className="badge badge-light">{item.cartonNumber}</span>
-                            ) : (
-                              <span className="text-muted">-</span>
-                            )}
-                          </td>
-                          <td>
-                            {item.containerNumber ? (
-                              <span className="badge badge-light-info">{item.containerNumber}</span>
-                            ) : (
-                              <span className="text-muted">-</span>
-                            )}
-                          </td>
-                          <td>{getStatusBadge(item.status)}</td>
-                          <td>
-                            {item.cbm ? (
-                              <span className="badge badge-light">{item.cbm.toFixed(6)} m³</span>
-                            ) : (
-                              <span className="text-muted">-</span>
-                            )}
-                          </td>
-                          <td>
-                            <div>${item.costUSD ? item.costUSD.toFixed(2) : '0.00'}</div>
-                            <div className="text-muted fs-7">₵{item.costCedis ? item.costCedis.toFixed(2) : '0.00'}</div>
-                          </td>
-                          <td>
-                            <div className="d-flex flex-column gap-1">
-                              {item.isDamaged && (
-                                <span className="badge badge-danger">Damaged</span>
-                              )}
-                              {item.isMissing && (
-                                <span className="badge badge-dark">Missing</span>
-                              )}
-                              {!item.isDamaged && !item.isMissing && (
-                                <span className="text-muted">-</span>
-                              )}
-                            </div>
-                          </td>
-                          <td onClick={(e) => e.stopPropagation()}>
-                            <div className="dropdown">
-                              <button
-                                className="btn btn-sm btn-light btn-icon"
-                                data-bs-toggle="dropdown"
-                              >
-                                <i className="bi bi-three-dots-vertical"></i>
-                              </button>
-                              <div className="dropdown-menu">
-                                <button
-                                  className="dropdown-item"
-                                  onClick={() => handleMarkDamagedMissing(item.id, 'damaged')}
-                                >
-                                  <i className="bi bi-exclamation-triangle me-2 text-danger"></i>
-                                  {item.isDamaged ? 'Unmark' : 'Mark'} as Damaged
-                                </button>
-                                <button
-                                  className="dropdown-item"
-                                  onClick={() => handleMarkDamagedMissing(item.id, 'missing')}
-                                >
-                                  <i className="bi bi-x-circle me-2 text-dark"></i>
-                                  {item.isMissing ? 'Unmark' : 'Mark'} as Missing
-                                </button>
+                              <div className="flex-grow-1">
+                                <div className="d-flex justify-content-between align-items-center">
+                                  <div>
+                                    <div className="fw-bold fs-4 text-gray-900">{container.containerNumber}</div>
+                                    <div className="text-muted fs-7">
+                                      <i className="bi bi-box me-1"></i>
+                                      {container.itemCount} items
+                                      {container.expectedArrivalGhana && (
+                                        <>
+                                          {' • '}
+                                          <i className="bi bi-calendar me-1"></i>
+                                          Expected: {new Date(container.expectedArrivalGhana).toLocaleDateString()}
+                                        </>
+                                      )}
+                                    </div>
+                                  </div>
+                                  <div className="me-5">
+                                    <span className={`badge fs-6 ${
+                                      container.status === 'china_warehouse' ? 'badge-warning' :
+                                      container.status === 'in_transit' ? 'badge-info' :
+                                      container.status === 'arrived_ghana' ? 'badge-success' :
+                                      'badge-secondary'
+                                    }`}>
+                                      {container.status.replace(/_/g, ' ').toUpperCase()}
+                                    </span>
+                                  </div>
+                                </div>
                               </div>
                             </div>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
+                          </button>
+                        </div>
+
+                        {/* Container Body - Collapsible */}
+                        {isExpanded && (
+                          <div className="accordion-collapse show">
+                            <div className="accordion-body">
+                              {containerItems.length === 0 ? (
+                                <div className="text-center py-5">
+                                  <span className="spinner-border spinner-border-sm me-2"></span>
+                                  Loading items...
+                                </div>
+                              ) : (
+                                <div className="table-responsive">
+                                  <table className="table table-row-bordered table-hover align-middle">
+                                    <thead>
+                                      <tr className="fw-bold text-muted bg-light">
+                                        <th className="ps-4">Tracking Number</th>
+                                        <th>Item Name</th>
+                                        <th>Customer</th>
+                                        <th>Dimensions</th>
+                                        <th>Status</th>
+                                      </tr>
+                                    </thead>
+                                    <tbody>
+                                      {containerItems.map((item) => (
+                                        <tr key={item.id}>
+                                          <td className="ps-4">
+                                            <div className="fw-bold text-gray-800">{item.trackingNumber}</div>
+                                          </td>
+                                          <td>{item.name || <span className="text-muted">-</span>}</td>
+                                          <td>
+                                            {item.customerId ? (
+                                              <span className="badge badge-light-success">
+                                                <i className="bi bi-check-circle me-1"></i>
+                                                Assigned
+                                              </span>
+                                            ) : (
+                                              <span className="badge badge-light-warning">
+                                                <i className="bi bi-exclamation-circle me-1"></i>
+                                                Unassigned
+                                              </span>
+                                            )}
+                                          </td>
+                                          <td>
+                                            {item.length && item.width && item.height ? (
+                                              <span className="text-muted">
+                                                {item.length}×{item.width}×{item.height} {item.dimensionUnit}
+                                                <br />
+                                                <small className="text-gray-600">CBM: {item.cbm?.toFixed(4)}</small>
+                                              </span>
+                                            ) : (
+                                              <span className="text-muted">-</span>
+                                            )}
+                                          </td>
+                                          <td>
+                                            <span className={`badge ${
+                                              item.status === 'china_warehouse' ? 'badge-light-warning' :
+                                              item.status === 'in_transit' ? 'badge-light-info' :
+                                              item.status === 'arrived_ghana' ? 'badge-light-success' :
+                                              'badge-light-primary'
+                                            }`}>
+                                              {item.status.replace(/_/g, ' ').toUpperCase()}
+                                            </span>
+                                          </td>
+                                        </tr>
+                                      ))}
+                                    </tbody>
+                                  </table>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
                 </div>
               )}
             </div>
           </div>
-
-          {/* Ready for Pickup / Completed Items Section */}
-          {readyItems.length > 0 && (
-            <div className="card mt-5">
-              <div className="card-header bg-light-success">
-                <h3 className="card-title text-success">
-                  <i className="bi bi-check-circle me-2"></i>
-                  Ready for Pickup / Completed ({readyItems.length})
-                </h3>
-              </div>
-              <div className="card-body p-0">
-                <div className="table-responsive">
-                  <table className="table table-row-bordered table-row-gray-300 gy-4">
-                    <thead>
-                      <tr className="fw-bold text-muted bg-light">
-                        <th>Photo</th>
-                        <th>Tracking #</th>
-                        <th>Customer</th>
-                        <th>Container</th>
-                        <th>Status</th>
-                        <th>CBM</th>
-                        <th>Cost</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {readyItems.map((item) => (
-                        <tr
-                          key={item.id}
-                          onClick={() => handleItemClick(item)}
-                          style={{ cursor: 'pointer' }}
-                          className="hover-bg-light-success"
-                        >
-                          <td>
-                            {item.photos && item.photos.length > 0 ? (
-                              <img
-                                src={getFirstPhotoUrl(item.photos) || ''}
-                                alt="Item"
-                                className="rounded"
-                                style={{ width: '50px', height: '50px', objectFit: 'cover' }}
-                              />
-                            ) : (
-                              <div
-                                className="bg-light rounded d-flex align-items-center justify-content-center"
-                                style={{ width: '50px', height: '50px' }}
-                              >
-                                <i className="bi bi-image text-muted"></i>
-                              </div>
-                            )}
-                          </td>
-                          <td>
-                            <span className="fw-bold">{item.trackingNumber}</span>
-                            {item.name && <div className="text-muted fs-7">{item.name}</div>}
-                          </td>
-                          <td>
-                            <span className="badge badge-light-success">
-                              {getCustomerName(item.customerId)}
-                            </span>
-                          </td>
-                          <td>
-                            <span className="badge badge-light">{item.containerNumber || '-'}</span>
-                          </td>
-                          <td>
-                            {getStatusBadge(item.status)}
-                          </td>
-                          <td>
-                            {item.cbm ? (
-                              <span className="badge badge-light">{item.cbm.toFixed(6)} m³</span>
-                            ) : (
-                              <span className="text-muted">-</span>
-                            )}
-                          </td>
-                          <td>
-                            <div>${item.costUSD ? item.costUSD.toFixed(2) : '0.00'}</div>
-                            <div className="text-muted fs-7">₵{item.costCedis ? item.costCedis.toFixed(2) : '0.00'}</div>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Item Details Modal */}
-          <ItemDetailsModal
-            item={selectedItem}
-            isOpen={showItemModal}
-            onClose={() => setShowItemModal(false)}
-          />
-
-          {/* Confirm Modal */}
-          <ConfirmModal
-            isOpen={confirmModal.isOpen}
-            onClose={() => setConfirmModal({ ...confirmModal, isOpen: false })}
-            onConfirm={confirmModal.onConfirm}
-            title={confirmModal.title}
-            message={confirmModal.message}
-          />
         </div>
       </div>
     </div>
