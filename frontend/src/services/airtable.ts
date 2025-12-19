@@ -574,28 +574,34 @@ export async function getAllContainers(): Promise<Container[]> {
   try {
     console.log('[Airtable] getAllContainers - Fetching from table:', TABLES.CONTAINERS);
     const records = await base(TABLES.CONTAINERS)
-      .select({
-        sort: [{ field: 'receivingDate', direction: 'desc' }],
-      })
+      .select()
       .all();
 
     console.log('[Airtable] getAllContainers - Raw records count:', records.length);
-    console.log('[Airtable] getAllContainers - First record (if exists):', records[0]?.fields);
+    if (records.length > 0) {
+      console.log('[Airtable] getAllContainers - First record ID:', records[0].id);
+      console.log('[Airtable] getAllContainers - First record fields:', records[0].fields);
+      console.log('[Airtable] getAllContainers - All field keys:', Object.keys(records[0].fields));
+    }
 
     const containers = records.map((record) => {
       const obj = recordToObject(record) as any;
-      return {
+      console.log('[Airtable] Processing record:', record.id, 'Fields:', obj);
+      const container = {
         ...obj,
         estimatedArrival: obj.expectedArrivalGhana || obj.estimatedArrival, // Map expectedArrivalGhana to estimatedArrival
         shippingMethod: obj.shippingMethod || 'sea', // Default shipping method
         departureDate: obj.departureDate || undefined, // Optional departure date
       } as Container;
+      console.log('[Airtable] Mapped to container:', container);
+      return container;
     });
 
     console.log('[Airtable] getAllContainers - Processed containers:', containers);
     return containers;
   } catch (error) {
     console.error('[Airtable] Error fetching containers:', error);
+    console.error('[Airtable] Error details:', error);
     throw error;
   }
 }
