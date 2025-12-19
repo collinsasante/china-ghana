@@ -25,6 +25,8 @@ export default function InputModal({
 }: InputModalProps) {
   const [value, setValue] = useState(defaultValue);
 
+  console.log('[InputModal] Render - isOpen:', isOpen, 'title:', title);
+
   if (!isOpen) return null;
 
   const handleSubmit = () => {

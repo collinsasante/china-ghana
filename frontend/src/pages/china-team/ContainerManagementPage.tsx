@@ -703,17 +703,21 @@ export default function ContainerManagementPage() {
                     className="form-control form-control-lg"
                     value={containerNumber}
                     onChange={(e) => {
+                      console.log('[ContainerManagement] Dropdown changed:', e.target.value);
                       if (e.target.value === '__new__') {
+                        console.log('[ContainerManagement] Opening InputModal for new container');
                         setInputModal({
                           isOpen: true,
                           title: 'Create New Container',
                           message: 'Enter new container number (e.g., CONT-2024-001):',
                           onSubmit: (value) => {
+                            console.log('[ContainerManagement] InputModal submitted:', value);
                             setContainerNumber(value.toUpperCase());
                             setInputModal({ ...inputModal, isOpen: false });
                           },
                         });
                       } else {
+                        console.log('[ContainerManagement] Selected existing container:', e.target.value);
                         setContainerNumber(e.target.value);
                       }
                     }}
