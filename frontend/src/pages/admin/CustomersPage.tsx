@@ -6,6 +6,7 @@ export default function CustomersPage() {
   const [customers, setCustomers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
+  const [selectedCustomer, setSelectedCustomer] = useState<User | null>(null);
 
   useEffect(() => {
     loadCustomers();
@@ -95,48 +96,82 @@ export default function CustomersPage() {
                 </div>
               ) : (
                 <div className="table-responsive">
-                  <table className="table table-row-bordered table-row-gray-300 gy-4">
+                  <table className="table table-row-bordered table-row-gray-300 align-middle gy-5">
                     <thead>
                       <tr className="fw-bold text-muted bg-light">
-                        <th>Name</th>
-                        <th>Email</th>
-                        <th>Phone</th>
+                        <th className="ps-5">Customer</th>
+                        <th>Contact Info</th>
                         <th>Address</th>
-                        <th>First Login</th>
+                        <th>Account Status</th>
+                        <th className="text-end pe-5">Actions</th>
                       </tr>
                     </thead>
                     <tbody>
                       {filteredCustomers.map((customer) => (
-                        <tr key={customer.id}>
-                          <td>
+                        <tr
+                          key={customer.id}
+                          className="cursor-pointer hover-bg-light"
+                          onClick={() => setSelectedCustomer(customer)}
+                          style={{ cursor: 'pointer', transition: 'background-color 0.2s' }}
+                        >
+                          <td className="ps-5">
                             <div className="d-flex align-items-center">
                               <div className="symbol symbol-circle symbol-50px overflow-hidden me-3">
                                 <div className="symbol-label bg-light-primary">
-                                  <span className="text-primary fw-bold fs-4">
+                                  <span className="text-primary fw-bold fs-3">
                                     {customer.name.charAt(0).toUpperCase()}
                                   </span>
                                 </div>
                               </div>
                               <div>
-                                <span className="fw-bold">{customer.name}</span>
+                                <div className="fw-bold text-gray-800 fs-6">{customer.name}</div>
+                                <div className="text-muted fs-7">ID: {customer.id.substring(0, 8)}</div>
                               </div>
                             </div>
                           </td>
-                          <td>{customer.email}</td>
-                          <td>{customer.phone || '-'}</td>
-                          <td>{customer.address || '-'}</td>
+                          <td>
+                            <div className="mb-1">
+                              <i className="bi bi-envelope me-2 text-gray-600"></i>
+                              <span className="text-gray-800">{customer.email}</span>
+                            </div>
+                            {customer.phone && (
+                              <div>
+                                <i className="bi bi-telephone me-2 text-gray-600"></i>
+                                <span className="text-gray-800">{customer.phone}</span>
+                              </div>
+                            )}
+                          </td>
+                          <td>
+                            <div className="text-gray-800">
+                              {customer.address || (
+                                <span className="text-muted fst-italic">No address</span>
+                              )}
+                            </div>
+                          </td>
                           <td>
                             {customer.isFirstLogin ? (
-                              <span className="badge badge-light-warning">
+                              <span className="badge badge-warning fs-7 px-3 py-2">
                                 <i className="bi bi-exclamation-circle me-1"></i>
-                                Pending
+                                First Login Pending
                               </span>
                             ) : (
-                              <span className="badge badge-light-success">
+                              <span className="badge badge-success fs-7 px-3 py-2">
                                 <i className="bi bi-check-circle me-1"></i>
-                                Completed
+                                Active
                               </span>
                             )}
+                          </td>
+                          <td className="text-end pe-5">
+                            <button
+                              className="btn btn-sm btn-light-primary btn-active-light-primary"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setSelectedCustomer(customer);
+                              }}
+                            >
+                              <i className="bi bi-eye me-1"></i>
+                              View Details
+                            </button>
                           </td>
                         </tr>
                       ))}
@@ -149,6 +184,111 @@ export default function CustomersPage() {
 
         </div>
       </div>
+
+      {/* Customer Details Modal */}
+      {selectedCustomer && (
+        <div className="modal fade show d-block" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}>
+          <div className="modal-dialog modal-dialog-centered modal-lg">
+            <div className="modal-content">
+              <div className="modal-header bg-primary">
+                <h3 className="modal-title text-white">
+                  <i className="bi bi-person-circle me-2"></i>
+                  Customer Details
+                </h3>
+                <button
+                  type="button"
+                  className="btn-close btn-close-white"
+                  onClick={() => setSelectedCustomer(null)}
+                ></button>
+              </div>
+              <div className="modal-body">
+                <div className="d-flex align-items-center mb-5 pb-5 border-bottom">
+                  <div className="symbol symbol-circle symbol-75px overflow-hidden me-4">
+                    <div className="symbol-label bg-light-primary">
+                      <span className="text-primary fw-bold fs-2x">
+                        {selectedCustomer.name.charAt(0).toUpperCase()}
+                      </span>
+                    </div>
+                  </div>
+                  <div>
+                    <h2 className="fw-bold text-gray-800 mb-1">{selectedCustomer.name}</h2>
+                    <div className="text-muted">Customer ID: {selectedCustomer.id}</div>
+                  </div>
+                </div>
+
+                <div className="row g-5">
+                  <div className="col-md-6">
+                    <label className="fw-bold text-gray-700 mb-2">Email Address</label>
+                    <div className="d-flex align-items-center">
+                      <i className="bi bi-envelope fs-3 text-primary me-3"></i>
+                      <span className="text-gray-800">{selectedCustomer.email}</span>
+                    </div>
+                  </div>
+
+                  <div className="col-md-6">
+                    <label className="fw-bold text-gray-700 mb-2">Phone Number</label>
+                    <div className="d-flex align-items-center">
+                      <i className="bi bi-telephone fs-3 text-primary me-3"></i>
+                      <span className="text-gray-800">{selectedCustomer.phone || 'Not provided'}</span>
+                    </div>
+                  </div>
+
+                  <div className="col-12">
+                    <label className="fw-bold text-gray-700 mb-2">Address</label>
+                    <div className="d-flex align-items-start">
+                      <i className="bi bi-geo-alt fs-3 text-primary me-3 mt-1"></i>
+                      <span className="text-gray-800">{selectedCustomer.address || 'No address provided'}</span>
+                    </div>
+                  </div>
+
+                  <div className="col-md-6">
+                    <label className="fw-bold text-gray-700 mb-2">Account Status</label>
+                    <div>
+                      {selectedCustomer.isFirstLogin ? (
+                        <span className="badge badge-warning fs-6 px-4 py-3">
+                          <i className="bi bi-exclamation-circle me-2"></i>
+                          First Login Pending
+                        </span>
+                      ) : (
+                        <span className="badge badge-success fs-6 px-4 py-3">
+                          <i className="bi bi-check-circle me-2"></i>
+                          Active Account
+                        </span>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="col-md-6">
+                    <label className="fw-bold text-gray-700 mb-2">Role</label>
+                    <div>
+                      <span className="badge badge-light-info fs-6 px-4 py-3">
+                        <i className="bi bi-person-badge me-2"></i>
+                        {selectedCustomer.role.toUpperCase()}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                {selectedCustomer.isFirstLogin && (
+                  <div className="alert alert-warning mt-5">
+                    <i className="bi bi-info-circle me-2"></i>
+                    <strong>Note:</strong> This customer has not completed their first login. They will be required to change their password upon first login.
+                  </div>
+                )}
+              </div>
+              <div className="modal-footer">
+                <button
+                  type="button"
+                  className="btn btn-light"
+                  onClick={() => setSelectedCustomer(null)}
+                >
+                  Close
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

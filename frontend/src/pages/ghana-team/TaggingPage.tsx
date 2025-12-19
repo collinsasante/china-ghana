@@ -13,7 +13,8 @@ export default function TaggingPage() {
   const [containerFilter, setContainerFilter] = useState<string>(''); // Filter by container
   const [selectedItem, setSelectedItem] = useState<Item | null>(null);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
-  const [collapsedGroups, setCollapsedGroups] = useState<Set<string>>(new Set());
+  const [collapsedGroups, setCollapsedGroups] = useState<Set<string>>(new Set(['all'])); // Start with all groups collapsed
+  const [showTaggedItems, setShowTaggedItems] = useState(false); // Tagged items section collapsed by default
   const [notification, setNotification] = useState<{type: 'success'|'error'|'warning'|'info', title: string, message: string} | null>(null);
   const [confirmModal, setConfirmModal] = useState<{isOpen: boolean, title: string, message: string, onConfirm: () => void}>({
     isOpen: false,
@@ -132,6 +133,14 @@ export default function TaggingPage() {
   };
 
   const groupedUntaggedItems = groupItemsByDate(filteredUntaggedItems);
+
+  // Auto-collapse all groups on initial load
+  useEffect(() => {
+    if (groupedUntaggedItems.length > 0) {
+      const allLabels = groupedUntaggedItems.map(g => g.label);
+      setCollapsedGroups(new Set(allLabels));
+    }
+  }, [groupedUntaggedItems.length]);
 
   const toggleGroupCollapse = (label: string) => {
     const newCollapsed = new Set(collapsedGroups);
@@ -399,12 +408,20 @@ export default function TaggingPage() {
 
           {/* Tagged Items - For Reference */}
           <div className="card">
-            <div className="card-header">
-              <h3 className="card-title">
-                <i className="bi bi-check-circle me-2 text-success"></i>
-                Tagged Items ({filteredTaggedItems.length})
-              </h3>
+            <div
+              className="card-header cursor-pointer hover-bg-light"
+              onClick={() => setShowTaggedItems(!showTaggedItems)}
+              style={{ cursor: 'pointer', transition: 'all 0.2s' }}
+            >
+              <div className="d-flex align-items-center">
+                <i className={`bi ${showTaggedItems ? 'bi-chevron-down' : 'bi-chevron-right'} fs-3 text-success me-2`}></i>
+                <h3 className="card-title mb-0">
+                  <i className="bi bi-check-circle me-2 text-success"></i>
+                  Tagged Items ({filteredTaggedItems.length})
+                </h3>
+              </div>
             </div>
+            {showTaggedItems && (
             <div className="card-body">
               {loading ? (
                 <div className="text-center py-10">
@@ -504,6 +521,7 @@ export default function TaggingPage() {
                 </div>
               )}
             </div>
+            )}
           </div>
         </div>
       </div>
