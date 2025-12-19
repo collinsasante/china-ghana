@@ -573,6 +573,9 @@ export async function deleteItem(itemId: string): Promise<void> {
 export async function getAllContainers(): Promise<Container[]> {
   try {
     console.log('[Airtable] getAllContainers - Fetching from table:', TABLES.CONTAINERS);
+    console.log('[Airtable] Base ID:', config.airtable.baseId);
+    console.log('[Airtable] API Key exists:', !!config.airtable.apiKey);
+
     const records = await base(TABLES.CONTAINERS)
       .select()
       .all();
@@ -582,6 +585,12 @@ export async function getAllContainers(): Promise<Container[]> {
       console.log('[Airtable] getAllContainers - First record ID:', records[0].id);
       console.log('[Airtable] getAllContainers - First record fields:', records[0].fields);
       console.log('[Airtable] getAllContainers - All field keys:', Object.keys(records[0].fields));
+    } else {
+      console.warn('[Airtable] ⚠️ No records found in Containers table!');
+      console.warn('[Airtable] Please verify:');
+      console.warn('[Airtable]   1. Table name is exactly "Containers" (case-sensitive)');
+      console.warn('[Airtable]   2. Records exist in the table');
+      console.warn('[Airtable]   3. No view filters are hiding records');
     }
 
     const containers = records.map((record) => {
