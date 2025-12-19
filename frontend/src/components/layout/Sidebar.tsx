@@ -68,6 +68,14 @@ export default function Sidebar() {
         { path: '/admin/support-requests', label: 'Support Requests', roles: ['admin', 'ghana_team', 'china_team'] },
       ]
     },
+    {
+      label: 'System Settings',
+      icon: 'bi-gear',
+      roles: ['admin'],
+      subItems: [
+        { path: '/admin/settings', label: 'Settings', roles: ['admin'] },
+      ]
+    },
   ];
 
   // Customer menu items (no dropdowns)

@@ -158,3 +158,31 @@ export interface BulkUploadFolder {
     itemId?: string;
   }[];
 }
+
+export interface Warehouse {
+  id: string;
+  name: string;
+  country: string;
+  city: string;
+  address?: string;
+  isActive: boolean;
+  isOrigin: boolean; // True for warehouses that ship items (e.g., China)
+  isDestination: boolean; // True for warehouses that receive items (e.g., Ghana)
+  createdAt: string;
+  updatedAt?: string;
+}
+
+export interface SystemSettings {
+  id: string;
+  // Exchange Rates
+  usdToGhsRate: number; // USD to Ghana Cedis exchange rate
+  usdToCnyRate: number; // USD to Chinese Yuan exchange rate
+
+  // Shipping Rates
+  seaShippingRatePerCBM: number; // Rate per CBM for sea shipping (in USD)
+  airShippingRatePerKg: number; // Rate per kg for air shipping (in USD)
+
+  // Last Updated
+  updatedAt: string;
+  updatedBy?: string; // User ID who last updated
+}

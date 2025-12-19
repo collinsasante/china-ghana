@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import type { FormEvent } from 'react';
 import { calculateCBM } from '../../utils/calculations';
 import { createUser, getAllItems } from '../../services/airtable';
+import ConfirmModal from '../common/ConfirmModal';
 import type { Item, User } from '../../types/index';
 
 interface ItemDetailsModalProps {
@@ -47,10 +48,8 @@ export default function ItemDetailsModal({
   const [calculatedCostCedis, setCalculatedCostCedis] = useState<number>(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showCreateCustomerModal, setShowCreateCustomerModal] = useState(false);
-  const [showPasswordModal, setShowPasswordModal] = useState(false);
   const [showPhotoPickerModal, setShowPhotoPickerModal] = useState(false);
-  const [generatedPassword, setGeneratedPassword] = useState('');
-  const [newCustomerEmail, setNewCustomerEmail] = useState('');
+  const [previewPhotoUrl, setPreviewPhotoUrl] = useState<string | null>(null);
   const [newCustomerData, setNewCustomerData] = useState({
     name: '',
     email: '',
@@ -59,6 +58,12 @@ export default function ItemDetailsModal({
   const [notification, setNotification] = useState<Notification | null>(null);
   const [editablePhotos, setEditablePhotos] = useState<string[]>([]);
   const [availablePhotos, setAvailablePhotos] = useState<string[]>([]);
+  const [confirmModal, setConfirmModal] = useState<{isOpen: boolean, title: string, message: string, onConfirm: () => void}>({
+    isOpen: false,
+    title: '',
+    message: '',
+    onConfirm: () => {},
+  });
 
   const EXCHANGE_RATE = 15; // USD to GHS
   const CBM_RATE_SEA = 1000; // $1000 per CBM for sea shipping
@@ -169,10 +174,16 @@ export default function ItemDetailsModal({
   };
 
   const handleRemovePhoto = (index: number) => {
-    if (window.confirm('Are you sure you want to remove this photo?')) {
-      setEditablePhotos((prev) => prev.filter((_, i) => i !== index));
-      showNotification('success', 'Photo Removed', 'Photo has been removed from this item');
-    }
+    setConfirmModal({
+      isOpen: true,
+      title: 'Remove Photo',
+      message: 'Are you sure you want to remove this photo?',
+      onConfirm: () => {
+        setConfirmModal({ ...confirmModal, isOpen: false });
+        setEditablePhotos((prev) => prev.filter((_, i) => i !== index));
+        showNotification('success', 'Photo Removed', 'Photo has been removed from this item');
+      },
+    });
   };
 
   const handleAddPhoto = async () => {
@@ -274,16 +285,6 @@ export default function ItemDetailsModal({
     }
   };
 
-  const handleCopyPassword = async () => {
-    try {
-      await navigator.clipboard.writeText(generatedPassword);
-      showNotification('success', 'Copied!', 'Password copied to clipboard');
-    } catch (error) {
-      console.error('Failed to copy:', error);
-      showNotification('error', 'Copy Failed', 'Failed to copy password to clipboard');
-    }
-  };
-
   const handleCreateCustomer = async () => {
     // Validation
     if (!newCustomerData.name.trim()) {
@@ -319,13 +320,13 @@ export default function ItemDetailsModal({
 
       setShowCreateCustomerModal(false);
 
-      // Show password modal with copy button
-      setGeneratedPassword(tempPassword);
-      setNewCustomerEmail(newCustomer.email);
-      setShowPasswordModal(true);
-
-      // TODO: Send email to customer with login credentials
-      // In production, implement email sending service integration
+      // Show success notification - Airtable automation will send the email
+      showNotification(
+        'success',
+        'Customer Account Created!',
+        `Account created for ${newCustomer.name}. Login credentials have been sent to ${newCustomer.email} via email.`,
+        6000
+      );
     } catch (error: any) {
       console.error('Failed to create customer:', error);
       showNotification('error', 'Creation Failed', error.message || 'Failed to create customer account. Please try again.');
@@ -884,79 +885,6 @@ export default function ItemDetailsModal({
         </div>
       )}
 
-      {/* Password Display Modal */}
-      {showPasswordModal && (
-        <div className="modal fade show d-block" style={{ backgroundColor: 'rgba(0,0,0,0.7)', zIndex: 1070 }}>
-          <div className="modal-dialog modal-dialog-centered">
-            <div className="modal-content">
-              <div className="modal-header bg-success">
-                <h3 className="modal-title text-white">
-                  <i className="bi bi-check-circle me-2"></i>
-                  Customer Account Created!
-                </h3>
-                <button
-                  type="button"
-                  className="btn-close btn-close-white"
-                  onClick={() => setShowPasswordModal(false)}
-                ></button>
-              </div>
-              <div className="modal-body">
-                <div className="alert alert-light-success mb-5">
-                  <i className="bi bi-info-circle me-2"></i>
-                  <strong>Account created successfully!</strong> Copy the temporary password below and send it to the customer via email or SMS.
-                </div>
-
-                <div className="mb-4">
-                  <label className="form-label fw-bold">Customer Email</label>
-                  <div className="form-control form-control-lg bg-light">
-                    {newCustomerEmail}
-                  </div>
-                </div>
-
-                <div className="mb-4">
-                  <label className="form-label fw-bold">Temporary Password</label>
-                  <div className="input-group input-group-lg">
-                    <input
-                      type="text"
-                      className="form-control form-control-lg bg-light-warning fw-bold"
-                      value={generatedPassword}
-                      readOnly
-                    />
-                    <button
-                      type="button"
-                      className="btn btn-sm btn-light-primary"
-                      onClick={handleCopyPassword}
-                    >
-                      <i className="bi bi-clipboard me-1"></i>
-                      Copy
-                    </button>
-                  </div>
-                  <div className="form-text text-danger">
-                    <i className="bi bi-exclamation-triangle me-1"></i>
-                    Copy this password now! Customer will be required to change it on first login.
-                  </div>
-                </div>
-
-                <div className="alert alert-light-info">
-                  <i className="bi bi-envelope me-2"></i>
-                  <strong>Next Step:</strong> Send the login credentials to the customer via email or SMS. They will be prompted to change their password on first login.
-                </div>
-              </div>
-              <div className="modal-footer">
-                <button
-                  type="button"
-                  className="btn btn-primary"
-                  onClick={() => setShowPasswordModal(false)}
-                >
-                  <i className="bi bi-check-lg me-2"></i>
-                  Done
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
       {/* Photo Picker Modal */}
       {showPhotoPickerModal && (
         <div className="modal fade show d-block" style={{ backgroundColor: 'rgba(0,0,0,0.7)', zIndex: 1070 }}>
@@ -988,16 +916,12 @@ export default function ItemDetailsModal({
                     <div className="row g-3" style={{ maxHeight: '500px', overflowY: 'auto' }}>
                       {availablePhotos.map((photoUrl, index) => (
                         <div key={index} className="col-md-3 col-sm-4 col-6">
-                          <div
-                            className="card card-flush h-100 cursor-pointer hover-shadow"
-                            onClick={() => handleSelectPhoto(photoUrl)}
-                            style={{ cursor: 'pointer' }}
-                          >
+                          <div className="card card-flush h-100">
                             <div className="card-body p-2">
                               <img
                                 src={photoUrl}
                                 alt={`Photo ${index + 1}`}
-                                className="w-100 rounded"
+                                className="w-100 rounded mb-2"
                                 style={{ height: '120px', objectFit: 'cover' }}
                               />
                               {editablePhotos.includes(photoUrl) && (
@@ -1007,6 +931,24 @@ export default function ItemDetailsModal({
                                   </span>
                                 </div>
                               )}
+                              <div className="d-flex gap-1">
+                                <button
+                                  type="button"
+                                  className="btn btn-sm btn-light-primary flex-fill"
+                                  onClick={() => setPreviewPhotoUrl(photoUrl)}
+                                >
+                                  <i className="bi bi-eye me-1"></i>
+                                  Preview
+                                </button>
+                                <button
+                                  type="button"
+                                  className="btn btn-sm btn-primary flex-fill"
+                                  onClick={() => handleSelectPhoto(photoUrl)}
+                                  disabled={editablePhotos.includes(photoUrl)}
+                                >
+                                  <i className="bi bi-plus-lg"></i>
+                                </button>
+                              </div>
                             </div>
                           </div>
                         </div>
@@ -1028,6 +970,68 @@ export default function ItemDetailsModal({
           </div>
         </div>
       )}
+
+      {/* Photo Preview Modal */}
+      {previewPhotoUrl && (
+        <div className="modal fade show d-block" style={{ backgroundColor: 'rgba(0,0,0,0.9)', zIndex: 1080 }}>
+          <div className="modal-dialog modal-dialog-centered modal-xl">
+            <div className="modal-content bg-transparent border-0">
+              <div className="modal-header border-0">
+                <h3 className="modal-title text-white">
+                  <i className="bi bi-images me-2"></i>
+                  Photo Preview
+                </h3>
+                <button
+                  type="button"
+                  className="btn-close btn-close-white"
+                  onClick={() => setPreviewPhotoUrl(null)}
+                ></button>
+              </div>
+              <div className="modal-body text-center">
+                <img
+                  src={previewPhotoUrl}
+                  alt="Preview"
+                  className="img-fluid rounded"
+                  style={{ maxHeight: '70vh', objectFit: 'contain' }}
+                />
+              </div>
+              <div className="modal-footer border-0 justify-content-center">
+                <button
+                  type="button"
+                  className="btn btn-light me-2"
+                  onClick={() => setPreviewPhotoUrl(null)}
+                >
+                  <i className="bi bi-x-lg me-2"></i>
+                  Close
+                </button>
+                {!editablePhotos.includes(previewPhotoUrl) && (
+                  <button
+                    type="button"
+                    className="btn btn-primary"
+                    onClick={() => {
+                      handleSelectPhoto(previewPhotoUrl);
+                      setPreviewPhotoUrl(null);
+                    }}
+                  >
+                    <i className="bi bi-plus-circle me-2"></i>
+                    Add to Item
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Confirm Modal */}
+      <ConfirmModal
+        isOpen={confirmModal.isOpen}
+        onClose={() => setConfirmModal({ ...confirmModal, isOpen: false })}
+        onConfirm={confirmModal.onConfirm}
+        title={confirmModal.title}
+        message={confirmModal.message}
+        confirmButtonClass="btn-danger"
+      />
 
       {/* Notification Toast */}
       {notification && (

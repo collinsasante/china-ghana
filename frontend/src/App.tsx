@@ -11,6 +11,7 @@ import ForgotPassword from "./pages/auth/ForgotPassword";
 import DashboardPage from "./pages/admin/DashboardPage";
 import SupportRequestsPage from "./pages/admin/SupportRequestsPage";
 import CustomersPage from "./pages/admin/CustomersPage";
+import SettingsPage from "./pages/admin/SettingsPage";
 
 import CustomerDashboard from "./pages/user/CustomerDashboard";
 import StatusPage from "./pages/user/StatusPage";
@@ -185,6 +186,14 @@ function App() {
               element={
                 <ProtectedRoute allowedRoles={["admin"]}>
                   <CustomersPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="admin/settings"
+              element={
+                <ProtectedRoute allowedRoles={["admin"]}>
+                  <SettingsPage />
                 </ProtectedRoute>
               }
             />

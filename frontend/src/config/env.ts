@@ -17,6 +17,13 @@ export const config = {
     apiKey: import.meta.env.VITE_CLOUDINARY_API_KEY || '',
   },
 
+  // Email Configuration (Optional - for automatic email sending)
+  email: {
+    serviceId: import.meta.env.VITE_EMAIL_SERVICE_ID || '',
+    templateId: import.meta.env.VITE_EMAIL_TEMPLATE_ID || '',
+    publicKey: import.meta.env.VITE_EMAIL_PUBLIC_KEY || '',
+  },
+
   // App Configuration
   app: {
     isDevelopment: import.meta.env.DEV,

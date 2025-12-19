@@ -8,6 +8,8 @@ import type {
   Invoice,
   SupportRequest,
   Announcement,
+  Warehouse,
+  SystemSettings,
 } from '../types/index';
 
 // Initialize Airtable
@@ -24,6 +26,8 @@ export const TABLES = {
   INVOICES: 'Invoices',
   SUPPORT_REQUESTS: 'SupportRequests',
   ANNOUNCEMENTS: 'Announcements',
+  SETTINGS: 'Settings',
+  WAREHOUSES: 'Warehouses',
 } as const;
 
 /**
@@ -176,20 +180,29 @@ export async function createUser(userData: Omit<User, 'id'>, createdByTeam: bool
       passwordValue: userDataWithFirstLogin.password ? `${userDataWithFirstLogin.password.substring(0, 15)}...` : 'undefined',
       isFirstLogin: userDataWithFirstLogin.isFirstLogin,
       createdByTeam: createdByTeam,
+      tempPasswordValue: createdByTeam ? userData.password : 'not-set',
       allFields: Object.keys(userDataWithFirstLogin)
     });
 
     // Create the record - explicitly list all fields to ensure password is included
+    const fieldsToCreate: any = {
+      name: userDataWithFirstLogin.name,
+      email: userDataWithFirstLogin.email,
+      phone: userDataWithFirstLogin.phone || undefined,
+      role: userDataWithFirstLogin.role,
+      password: userDataWithFirstLogin.password, // Hashed password for authentication
+      isFirstLogin: userDataWithFirstLogin.isFirstLogin,
+      address: userDataWithFirstLogin.address || undefined,
+    };
+
+    // Only add tempPassword if created by team (for email automation)
+    if (createdByTeam && userData.password) {
+      fieldsToCreate.tempPassword = userData.password; // Plain text password for Airtable email automation
+      console.error('DEBUG - Adding tempPassword field:', userData.password);
+    }
+
     const record = await base(TABLES.USERS).create([{
-      fields: {
-        name: userDataWithFirstLogin.name,
-        email: userDataWithFirstLogin.email,
-        phone: userDataWithFirstLogin.phone || undefined,
-        role: userDataWithFirstLogin.role,
-        password: userDataWithFirstLogin.password,
-        isFirstLogin: userDataWithFirstLogin.isFirstLogin,
-        address: userDataWithFirstLogin.address || undefined,
-      }
+      fields: fieldsToCreate
     }]);
     const createdUser = recordToObject(record[0]) as User;
 
@@ -823,6 +836,164 @@ export async function createAnnouncement(announcementData: Omit<Announcement, 'i
     return recordToObject(record[0]) as Announcement;
   } catch (error) {
     console.error('Error creating announcement:', error);
+    throw error;
+  }
+}
+
+// ============================================
+// SETTINGS OPERATIONS
+// ============================================
+
+/**
+ * Get system settings (exchange rates, shipping costs)
+ * There should only be one settings record with id='default'
+ */
+export async function getSystemSettings(): Promise<SystemSettings | null> {
+  try {
+    const records = await base(TABLES.SETTINGS)
+      .select({
+        filterByFormula: `{id} = 'default'`,
+        maxRecords: 1,
+      })
+      .firstPage();
+
+    if (records.length === 0) return null;
+    return recordToObject(records[0]) as SystemSettings;
+  } catch (error) {
+    console.error('Error fetching settings:', error);
+    throw error;
+  }
+}
+
+/**
+ * Update system settings
+ * Updates the default settings record with new values
+ */
+export async function updateSystemSettings(settings: Partial<SystemSettings>): Promise<SystemSettings> {
+  try {
+    // Find the default settings record
+    const records = await base(TABLES.SETTINGS)
+      .select({
+        filterByFormula: `{id} = 'default'`,
+        maxRecords: 1,
+      })
+      .firstPage();
+
+    if (records.length === 0) {
+      throw new Error('Settings record not found');
+    }
+
+    const record = await base(TABLES.SETTINGS).update([
+      {
+        id: records[0].id,
+        fields: {
+          ...settings,
+          updatedAt: new Date().toISOString(),
+        },
+      },
+    ]);
+
+    return recordToObject(record[0]) as SystemSettings;
+  } catch (error) {
+    console.error('Error updating settings:', error);
+    throw error;
+  }
+}
+
+// ============================================
+// WAREHOUSE OPERATIONS
+// ============================================
+
+/**
+ * Get all warehouses (active and inactive)
+ */
+export async function getAllWarehouses(): Promise<Warehouse[]> {
+  try {
+    const records = await base(TABLES.WAREHOUSES)
+      .select({
+        sort: [{ field: 'name', direction: 'asc' }],
+      })
+      .all();
+
+    return records.map((record) => recordToObject(record) as Warehouse);
+  } catch (error) {
+    console.error('Error fetching warehouses:', error);
+    throw error;
+  }
+}
+
+/**
+ * Get active warehouses, optionally filtered by type
+ * @param type - Optional filter: 'origin' for shipping warehouses, 'destination' for receiving warehouses
+ */
+export async function getActiveWarehouses(type?: 'origin' | 'destination'): Promise<Warehouse[]> {
+  try {
+    let formula = '{isActive} = TRUE()';
+
+    if (type === 'origin') {
+      formula = 'AND({isActive} = TRUE(), {isOrigin} = TRUE())';
+    } else if (type === 'destination') {
+      formula = 'AND({isActive} = TRUE(), {isDestination} = TRUE())';
+    }
+
+    const records = await base(TABLES.WAREHOUSES)
+      .select({
+        filterByFormula: formula,
+        sort: [{ field: 'name', direction: 'asc' }],
+      })
+      .all();
+
+    return records.map((record) => recordToObject(record) as Warehouse);
+  } catch (error) {
+    console.error('Error fetching active warehouses:', error);
+    throw error;
+  }
+}
+
+/**
+ * Create a new warehouse
+ */
+export async function createWarehouse(warehouseData: Omit<Warehouse, 'id' | 'createdAt' | 'updatedAt'>): Promise<Warehouse> {
+  try {
+    const record = await base(TABLES.WAREHOUSES).create([{
+      fields: warehouseData
+    }]);
+    return recordToObject(record[0]) as Warehouse;
+  } catch (error) {
+    console.error('Error creating warehouse:', error);
+    throw error;
+  }
+}
+
+/**
+ * Update an existing warehouse
+ */
+export async function updateWarehouse(warehouseId: string, updates: Partial<Warehouse>): Promise<Warehouse> {
+  try {
+    const record = await base(TABLES.WAREHOUSES).update([
+      {
+        id: warehouseId,
+        fields: {
+          ...updates,
+          updatedAt: new Date().toISOString(),
+        },
+      },
+    ]);
+    return recordToObject(record[0]) as Warehouse;
+  } catch (error) {
+    console.error('Error updating warehouse:', error);
+    throw error;
+  }
+}
+
+/**
+ * Delete a warehouse
+ */
+export async function deleteWarehouse(warehouseId: string): Promise<void> {
+  try {
+    await base(TABLES.WAREHOUSES).destroy([warehouseId]);
+  } catch (error) {
+    console.error('Error deleting warehouse:', error);
     throw error;
   }
 }

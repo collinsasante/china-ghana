@@ -279,7 +279,11 @@ export default function ContainerManagementPage() {
           {/* Stats Cards */}
           <div className="row g-5 mb-5">
             <div className="col-md-3">
-              <div className="card card-flush h-100">
+              <div
+                className="card card-flush h-100 cursor-pointer hover-shadow"
+                onClick={() => document.getElementById('loaded-containers')?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
+                style={{ cursor: 'pointer', transition: 'all 0.2s' }}
+              >
                 <div className="card-body">
                   <div className="d-flex align-items-center">
                     <div className="symbol symbol-50px me-3">
@@ -287,9 +291,12 @@ export default function ContainerManagementPage() {
                         <i className="bi bi-box-seam fs-2x text-primary"></i>
                       </div>
                     </div>
-                    <div>
+                    <div className="flex-grow-1">
                       <div className="fs-6 text-gray-400">Total Containers</div>
                       <div className="fs-2x fw-bold text-gray-800">{containers.length}</div>
+                      <div className="text-primary fs-8 fw-bold mt-1">
+                        <i className="bi bi-arrow-down me-1"></i>View All
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -490,7 +497,7 @@ export default function ContainerManagementPage() {
           )}
 
           {/* Existing Containers */}
-          <div className="card">
+          <div className="card" id="loaded-containers">
             <div className="card-header">
               <h3 className="card-title">
                 <i className="bi bi-archive me-2 text-info"></i>

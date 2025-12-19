@@ -13,6 +13,7 @@ export default function TaggingPage() {
   const [containerFilter, setContainerFilter] = useState<string>(''); // Filter by container
   const [selectedItem, setSelectedItem] = useState<Item | null>(null);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
+  const [collapsedGroups, setCollapsedGroups] = useState<Set<string>>(new Set());
   const [notification, setNotification] = useState<{type: 'success'|'error'|'warning'|'info', title: string, message: string} | null>(null);
   const [confirmModal, setConfirmModal] = useState<{isOpen: boolean, title: string, message: string, onConfirm: () => void}>({
     isOpen: false,
@@ -46,10 +47,32 @@ export default function TaggingPage() {
   // Get unique container numbers for filter dropdown
   const uniqueContainers = Array.from(new Set(items.map(item => item.containerNumber).filter(Boolean))).sort();
 
-  // Get items without customer assignment (untagged) - no sorting, keep upload order
+  // Get items without customer assignment (untagged) - sorted by containers when not in Ghana
   const untaggedItems = items
     .filter((item) => !item.customerId)
-    .filter((item) => !containerFilter || item.containerNumber === containerFilter);
+    .filter((item) => !containerFilter || item.containerNumber === containerFilter)
+    .sort((a, b) => {
+      // If items are not yet in Ghana (china_warehouse or in_transit), sort by container
+      const aNotInGhana = a.status === 'china_warehouse' || a.status === 'in_transit';
+      const bNotInGhana = b.status === 'china_warehouse' || b.status === 'in_transit';
+
+      if (aNotInGhana && bNotInGhana) {
+        // Both not in Ghana - sort by container number, then by date
+        if (a.containerNumber && b.containerNumber) {
+          const containerCompare = a.containerNumber.localeCompare(b.containerNumber);
+          if (containerCompare !== 0) return containerCompare;
+        } else if (a.containerNumber) {
+          return -1; // Items with containers come first
+        } else if (b.containerNumber) {
+          return 1;
+        }
+      }
+
+      // Default: sort by creation date (newest first)
+      const dateA = new Date(a.createdAt || a.receivingDate).getTime();
+      const dateB = new Date(b.createdAt || b.receivingDate).getTime();
+      return dateB - dateA;
+    });
 
   // Get items with customer assignment (tagged) - sorted by most recently tagged
   const taggedItems = items
@@ -109,6 +132,16 @@ export default function TaggingPage() {
   };
 
   const groupedUntaggedItems = groupItemsByDate(filteredUntaggedItems);
+
+  const toggleGroupCollapse = (label: string) => {
+    const newCollapsed = new Set(collapsedGroups);
+    if (newCollapsed.has(label)) {
+      newCollapsed.delete(label);
+    } else {
+      newCollapsed.add(label);
+    }
+    setCollapsedGroups(newCollapsed);
+  };
 
   const filteredTaggedItems = taggedItems.filter((item) => {
     if (!searchQuery) return true;
@@ -264,13 +297,21 @@ export default function TaggingPage() {
                 </div>
               ) : (
                 <>
-                  {groupedUntaggedItems.map((group) => (
+                  {groupedUntaggedItems.map((group) => {
+                    const isCollapsed = collapsedGroups.has(group.label);
+                    return (
                     <div key={group.label} className="mb-5">
-                      <div className="d-flex align-items-center mb-4">
+                      <div
+                        className="d-flex align-items-center mb-4 cursor-pointer hover-bg-light p-3 rounded"
+                        onClick={() => toggleGroupCollapse(group.label)}
+                        style={{ cursor: 'pointer', transition: 'all 0.2s' }}
+                      >
+                        <i className={`bi ${isCollapsed ? 'bi-chevron-right' : 'bi-chevron-down'} fs-3 text-primary me-2`}></i>
                         <i className="bi bi-calendar3 fs-3 text-primary me-3"></i>
                         <h4 className="mb-0 text-primary">{group.label}</h4>
                         <span className="badge badge-light-primary ms-3">{group.items.length} items</span>
                       </div>
+                      {!isCollapsed && (
                       <div className="row g-5">
                         {group.items.map((item) => (
                     <div key={item.id} className="col-md-3 col-sm-6">
@@ -347,8 +388,10 @@ export default function TaggingPage() {
                     </div>
                         ))}
                       </div>
+                      )}
                     </div>
-                  ))}
+                    );
+                  })}
                 </>
               )}
             </div>
