@@ -618,6 +618,41 @@ export async function updateContainer(containerId: string, updates: Partial<Cont
   }
 }
 
+/**
+ * Update all items in a container with the given updates
+ * Useful for bulk status changes when container arrives
+ */
+export async function updateItemsByContainer(containerNumber: string, updates: Partial<Item>): Promise<number> {
+  try {
+    // Get all items in the container
+    const items = await getItemsByContainerNumber(containerNumber);
+
+    if (items.length === 0) {
+      return 0;
+    }
+
+    // Prepare bulk update - Airtable allows up to 10 records per batch
+    const batchSize = 10;
+    let updatedCount = 0;
+
+    for (let i = 0; i < items.length; i += batchSize) {
+      const batch = items.slice(i, i + batchSize);
+      const updateRecords = batch.map(item => ({
+        id: item.id,
+        fields: updates as any, // Type cast to avoid Airtable FieldSet issues
+      }));
+
+      await base(TABLES.ITEMS).update(updateRecords);
+      updatedCount += updateRecords.length;
+    }
+
+    return updatedCount;
+  } catch (error) {
+    console.error('Error updating items by container:', error);
+    throw error;
+  }
+}
+
 // ============================================
 // INVOICE OPERATIONS
 // ============================================

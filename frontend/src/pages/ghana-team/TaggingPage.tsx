@@ -163,6 +163,9 @@ export default function TaggingPage() {
     );
   });
 
+  // Group tagged items by date
+  const groupedTaggedItems = groupItemsByDate(filteredTaggedItems);
+
   const handleOpenDetailsModal = (item: Item) => {
     setSelectedItem(item);
     setShowDetailsModal(true);
@@ -359,6 +362,17 @@ export default function TaggingPage() {
                             <div className="text-muted fs-7 mb-1">Tracking Number</div>
                             <div className="fw-bold">{item.trackingNumber || 'Not set'}</div>
 
+                            {/* Container Number - Important for shipping flow */}
+                            {item.containerNumber && (
+                              <>
+                                <div className="text-muted fs-7 mt-2 mb-1">
+                                  <i className="bi bi-box-seam me-1"></i>
+                                  Container
+                                </div>
+                                <div className="fw-bold text-primary">{item.containerNumber}</div>
+                              </>
+                            )}
+
                             <div className="text-muted fs-7 mt-2 mb-1">Received</div>
                             <div className="fw-bold">{item.receivingDate || 'Unknown'}</div>
 
@@ -373,6 +387,16 @@ export default function TaggingPage() {
                                 {item.status.replace(/_/g, ' ').toUpperCase()}
                               </span>
                             </div>
+
+                            {/* Show container-based tracking notice */}
+                            {item.containerNumber && (item.status === 'china_warehouse' || item.status === 'in_transit') && (
+                              <div className="alert alert-light-info p-2 mt-2 mb-0">
+                                <small>
+                                  <i className="bi bi-info-circle me-1"></i>
+                                  Tracked by container
+                                </small>
+                              </div>
+                            )}
                           </div>
 
                           {/* Action Buttons */}
@@ -434,8 +458,24 @@ export default function TaggingPage() {
                   <div className="mt-3">No tagged items yet.</div>
                 </div>
               ) : (
-                <div className="row g-5">
-                  {filteredTaggedItems.map((item) => (
+                <>
+                  {groupedTaggedItems.map((group) => {
+                    const isCollapsed = collapsedGroups.has(`tagged-${group.label}`);
+                    return (
+                    <div key={`tagged-${group.label}`} className="mb-5">
+                      <div
+                        className="d-flex align-items-center mb-4 cursor-pointer hover-bg-light p-3 rounded"
+                        onClick={() => toggleGroupCollapse(`tagged-${group.label}`)}
+                        style={{ cursor: 'pointer', transition: 'all 0.2s' }}
+                      >
+                        <i className={`bi ${isCollapsed ? 'bi-chevron-right' : 'bi-chevron-down'} fs-3 text-success me-2`}></i>
+                        <i className="bi bi-calendar3 fs-3 text-success me-3"></i>
+                        <h4 className="mb-0 text-success">{group.label}</h4>
+                        <span className="badge badge-light-success ms-3">{group.items.length} items</span>
+                      </div>
+                      {!isCollapsed && (
+                      <div className="row g-5">
+                        {group.items.map((item) => (
                     <div key={item.id} className="col-md-3 col-sm-6">
                       <div className="card card-flush h-100 border border-success">
                         <div className="card-body p-3">
@@ -517,8 +557,13 @@ export default function TaggingPage() {
                         </div>
                       </div>
                     </div>
-                  ))}
-                </div>
+                        ))}
+                      </div>
+                      )}
+                    </div>
+                    );
+                  })}
+                </>
               )}
             </div>
             )}

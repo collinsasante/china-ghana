@@ -234,7 +234,9 @@ export default function ItemDetailsModal({
         costUSD: calculatedCostUSD,
         costCedis: calculatedCostCedis,
         photos: editablePhotos.map((url, index) => ({ url, order: index })), // Use edited photos
-        status: 'china_warehouse',
+        // Status logic: Items default to china_warehouse, but preserve existing status if already set
+        // This allows items to maintain their container-driven status
+        status: item.status || 'china_warehouse',
       };
 
       // Only include dimensions for sea shipping

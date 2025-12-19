@@ -28,6 +28,7 @@ import PackagingPage from "./pages/admin/PackagingPage";
 
 import SortingPage from "./pages/ghana-team/SortingPage";
 import TaggingPage from "./pages/ghana-team/TaggingPage";
+import ContainerArrivalPage from "./pages/ghana-team/ContainerArrivalPage";
 import CSVImportPage from "./pages/ghana-team/CSVImportPage";
 
 import MyPackagesPage from "./pages/customer/MyPackagesPage";
@@ -222,6 +223,14 @@ function App() {
               element={
                 <ProtectedRoute allowedRoles={["ghana_team", "admin"]}>
                   <TaggingPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="ghana/arrival"
+              element={
+                <ProtectedRoute allowedRoles={["ghana_team", "admin"]}>
+                  <ContainerArrivalPage />
                 </ProtectedRoute>
               }
             />
