@@ -1,19 +1,22 @@
 import { useState, useEffect } from 'react';
-import { getAllContainers, getItemsByContainerNumber, updateContainer, updateItemsByContainer } from '../../services/airtable';
+import { getAllItems, getItemsByContainerNumber, updateItemsByContainer } from '../../services/airtable';
 import ConfirmModal from '../../components/common/ConfirmModal';
 import type { Container, Item } from '../../types/index';
-import { config } from '../../config/env';
+
+// Virtual container interface built from items
+interface VirtualContainer {
+  id: string;
+  containerNumber: string;
+  receivingDate: string;
+  expectedArrivalGhana: string;
+  actualArrivalGhana?: string;
+  status: string;
+  itemCount: number;
+  items: Item[];
+}
 
 export default function ContainerArrivalPage() {
-  console.log('[ContainerArrival] Component mounted');
-  console.log('[ContainerArrival] Airtable config check:', {
-    hasApiKey: !!config.airtable.apiKey,
-    hasBaseId: !!config.airtable.baseId,
-    apiKeyPrefix: config.airtable.apiKey?.substring(0, 7),
-    baseId: config.airtable.baseId
-  });
-
-  const [containers, setContainers] = useState<Container[]>([]);
+  const [containers, setContainers] = useState<VirtualContainer[]>([]);
   const [selectedContainer, setSelectedContainer] = useState<Container | null>(null);
   const [containerItems, setContainerItems] = useState<Item[]>([]);
   const [loading, setLoading] = useState(true);
@@ -35,11 +38,51 @@ export default function ContainerArrivalPage() {
   const loadContainers = async () => {
     try {
       setLoading(true);
-      console.log('[ContainerArrival] Loading containers...');
-      const containersData = await getAllContainers();
-      console.log('[ContainerArrival] Containers loaded:', containersData);
-      console.log('[ContainerArrival] Number of containers:', containersData.length);
-      setContainers(containersData);
+      console.log('[ContainerArrival] Loading items to build containers...');
+
+      // Get all items
+      const allItems = await getAllItems();
+      console.log('[ContainerArrival] Total items:', allItems.length);
+
+      // Group items by container number
+      const containerMap = new Map<string, Item[]>();
+
+      allItems.forEach((item) => {
+        if (item.containerNumber) {
+          const existing = containerMap.get(item.containerNumber) || [];
+          containerMap.set(item.containerNumber, [...existing, item]);
+        }
+      });
+
+      console.log('[ContainerArrival] Unique containers found:', containerMap.size);
+
+      // Build virtual containers from grouped items
+      const virtualContainers: VirtualContainer[] = Array.from(containerMap.entries()).map(
+        ([containerNumber, items]) => {
+          // Determine container status from items (all items should have same status if container-driven)
+          const statuses = items.map(i => i.status);
+          const containerStatus = statuses[0] || 'china_warehouse';
+
+          // Get earliest receiving date
+          const receivingDates = items.map(i => i.receivingDate).filter(Boolean);
+          const earliestReceivingDate = receivingDates.length > 0
+            ? receivingDates.sort()[0]
+            : new Date().toISOString();
+
+          return {
+            id: containerNumber, // Use container number as ID
+            containerNumber,
+            receivingDate: earliestReceivingDate,
+            expectedArrivalGhana: '', // Not stored with items, would need separate Container table
+            status: containerStatus,
+            itemCount: items.length,
+            items,
+          };
+        }
+      );
+
+      console.log('[ContainerArrival] Virtual containers built:', virtualContainers.length);
+      setContainers(virtualContainers);
     } catch (error) {
       console.error('[ContainerArrival] Failed to load containers:', error);
       setNotification({type: 'error', title: 'Error', message: 'Failed to load containers. Please refresh the page.'});
@@ -63,12 +106,13 @@ export default function ContainerArrivalPage() {
     }
   };
 
-  const handleViewContainer = async (container: Container) => {
-    setSelectedContainer(container);
-    await loadContainerItems(container.containerNumber);
+  const handleViewContainer = async (container: VirtualContainer) => {
+    setSelectedContainer(container as any);
+    // Items are already loaded in the virtual container
+    setContainerItems(container.items);
   };
 
-  const handleMarkAsArrived = (container: Container) => {
+  const handleMarkAsArrived = (container: VirtualContainer) => {
     setConfirmModal({
       isOpen: true,
       title: 'Mark Container as Arrived',
@@ -76,20 +120,15 @@ export default function ContainerArrivalPage() {
       onConfirm: async () => {
         setConfirmModal({ ...confirmModal, isOpen: false });
         try {
-          // Update container status
-          await updateContainer(container.id, {
-            status: 'arrived_ghana',
-            actualArrivalGhana: new Date().toISOString(),
-          });
-
           // Update all items in container to arrived_ghana status
           const updatedCount = await updateItemsByContainer(container.containerNumber, {
             status: 'arrived_ghana',
           });
 
           await loadContainers();
-          if (selectedContainer?.id === container.id) {
-            await loadContainerItems(container.containerNumber);
+          if (selectedContainer?.containerNumber === container.containerNumber) {
+            const updatedItems = await getItemsByContainerNumber(container.containerNumber);
+            setContainerItems(updatedItems);
           }
 
           setNotification({
