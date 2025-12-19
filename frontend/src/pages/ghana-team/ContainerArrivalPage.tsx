@@ -2,15 +2,24 @@ import { useState, useEffect } from 'react';
 import { getAllContainers, getItemsByContainerNumber, updateContainer, updateItemsByContainer } from '../../services/airtable';
 import ConfirmModal from '../../components/common/ConfirmModal';
 import type { Container, Item } from '../../types/index';
+import { config } from '../../config/env';
 
 export default function ContainerArrivalPage() {
+  console.log('[ContainerArrival] Component mounted');
+  console.log('[ContainerArrival] Airtable config check:', {
+    hasApiKey: !!config.airtable.apiKey,
+    hasBaseId: !!config.airtable.baseId,
+    apiKeyPrefix: config.airtable.apiKey?.substring(0, 7),
+    baseId: config.airtable.baseId
+  });
+
   const [containers, setContainers] = useState<Container[]>([]);
   const [selectedContainer, setSelectedContainer] = useState<Container | null>(null);
   const [containerItems, setContainerItems] = useState<Item[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadingItems, setLoadingItems] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  const [statusFilter, setStatusFilter] = useState<string>('in_transit'); // Default to in_transit containers
+  const [statusFilter, setStatusFilter] = useState<string>(''); // Show all containers by default
   const [notification, setNotification] = useState<{type: 'success'|'error'|'warning'|'info', title: string, message: string} | null>(null);
   const [confirmModal, setConfirmModal] = useState<{isOpen: boolean, title: string, message: string, onConfirm: () => void}>({
     isOpen: false,
@@ -26,10 +35,13 @@ export default function ContainerArrivalPage() {
   const loadContainers = async () => {
     try {
       setLoading(true);
+      console.log('[ContainerArrival] Loading containers...');
       const containersData = await getAllContainers();
+      console.log('[ContainerArrival] Containers loaded:', containersData);
+      console.log('[ContainerArrival] Number of containers:', containersData.length);
       setContainers(containersData);
     } catch (error) {
-      console.error('Failed to load containers:', error);
+      console.error('[ContainerArrival] Failed to load containers:', error);
       setNotification({type: 'error', title: 'Error', message: 'Failed to load containers. Please refresh the page.'});
       setTimeout(() => setNotification(null), 3000);
     } finally {
@@ -102,6 +114,12 @@ export default function ContainerArrivalPage() {
     const matchesStatus = !statusFilter || container.status === statusFilter;
     return matchesSearch && matchesStatus;
   });
+
+  console.log('[ContainerArrival] Total containers:', containers.length);
+  console.log('[ContainerArrival] Search query:', searchQuery);
+  console.log('[ContainerArrival] Status filter:', statusFilter);
+  console.log('[ContainerArrival] Filtered containers:', filteredContainers.length);
+  console.log('[ContainerArrival] Container statuses:', containers.map(c => ({ id: c.containerNumber, status: c.status })));
 
   // Sort: In transit first, then by expected arrival
   const sortedContainers = [...filteredContainers].sort((a, b) => {

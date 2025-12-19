@@ -572,13 +572,17 @@ export async function deleteItem(itemId: string): Promise<void> {
 
 export async function getAllContainers(): Promise<Container[]> {
   try {
+    console.log('[Airtable] getAllContainers - Fetching from table:', TABLES.CONTAINERS);
     const records = await base(TABLES.CONTAINERS)
       .select({
         sort: [{ field: 'receivingDate', direction: 'desc' }],
       })
       .all();
 
-    return records.map((record) => {
+    console.log('[Airtable] getAllContainers - Raw records count:', records.length);
+    console.log('[Airtable] getAllContainers - First record (if exists):', records[0]?.fields);
+
+    const containers = records.map((record) => {
       const obj = recordToObject(record) as any;
       return {
         ...obj,
@@ -587,8 +591,11 @@ export async function getAllContainers(): Promise<Container[]> {
         departureDate: obj.departureDate || undefined, // Optional departure date
       } as Container;
     });
+
+    console.log('[Airtable] getAllContainers - Processed containers:', containers);
+    return containers;
   } catch (error) {
-    console.error('Error fetching containers:', error);
+    console.error('[Airtable] Error fetching containers:', error);
     throw error;
   }
 }
