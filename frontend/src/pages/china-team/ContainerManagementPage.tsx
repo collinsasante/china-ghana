@@ -42,9 +42,23 @@ export default function ContainerManagementPage() {
     onSubmit: () => {},
   });
 
+  // Log state changes
+  console.log('[ContainerManagement] State:', {
+    containerNumber,
+    showNewContainerModal,
+    inputModalOpen: inputModal.isOpen,
+    containersCount: containers.length,
+    selectedItemsCount: selectedItems.size
+  });
+
   useEffect(() => {
     loadData();
   }, []);
+
+  // Track containerNumber changes
+  useEffect(() => {
+    console.log('[ContainerManagement] containerNumber changed to:', containerNumber);
+  }, [containerNumber]);
 
   const loadData = async () => {
     try {
@@ -374,7 +388,10 @@ export default function ContainerManagementPage() {
                   {selectedItems.size > 0 && (
                     <button
                       className="btn btn-sm btn-primary"
-                      onClick={() => setShowNewContainerModal(true)}
+                      onClick={() => {
+                        console.log('[ContainerManagement] Load Container button clicked');
+                        setShowNewContainerModal(true);
+                      }}
                     >
                       <i className="bi bi-truck me-2"></i>
                       Load {selectedItems.size} Item{selectedItems.size > 1 ? 's' : ''}
