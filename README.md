@@ -41,7 +41,7 @@ This system provides two major interfaces:
 - **React Router 7.9.6** - Routing
 - **Bootstrap 5** - CSS Framework
 - **Popper.js** - Tooltip & Popover positioning
-- **Keen Template** - Bootstrap 5 based admin dashboard
+- **Template** - Bootstrap 5 based admin dashboard
 - **ESLint 9** - Code Quality
 
 **Backend & Storage:**
@@ -119,7 +119,7 @@ The application includes demo authentication for testing:
 ```
 frontend/
 ├── src/
-│   ├── assets/              # Keen template assets (CSS, JS, images)
+│   ├── assets/              # template assets (CSS, JS, images)
 │   │   ├── css/
 │   │   ├── js/
 │   │   ├── media/
@@ -145,13 +145,13 @@ frontend/
 │   │   └── helpers.ts       # Date formatting, status helpers
 │   ├── App.tsx              # Main app with routing
 │   └── main.tsx             # Application entry point
-├── index.html               # HTML template with Keen assets
+├── index.html               # HTML template with the template assets
 └── package.json
 ```
 
 ## 🎨 Styling
 
-**IMPORTANT:** All styling uses Keen template assets from the `src/assets/` folder:
+**IMPORTANT:** All styling uses template assets from the `src/assets/` folder:
 
 - Core styles: `assets/css/style.bundle.css`
 - Global plugins: `assets/plugins/global/plugins.bundle.{css,js}`
@@ -170,7 +170,7 @@ Do not use external CDNs or additional CSS frameworks.
 5. Main layout with sidebar and header
 6. Role-based navigation menu
 7. Utility functions for CBM calculation, currency formatting
-8. Demo login page with Keen styling
+8. Demo login page with the template styling
 9. Placeholder pages for all user roles
 
 ### 🚧 To Be Implemented
@@ -238,7 +238,7 @@ China Warehouse → In Transit → Arrived Ghana → Ready for Pickup → Delive
 - Follow the existing folder structure
 - Use TypeScript types from `src/types/`
 - Use utility functions from `src/utils/`
-- Use Keen template classes for styling
+- Use template classes for styling
 - Reference Keen HTML files in `src/` folders for UI patterns
 - Keep components focused and reusable
 - Use React hooks for state management
@@ -250,5 +250,4 @@ Refer to [CLAUDE.md](CLAUDE.md) for detailed architecture notes and development 
 
 ## 📄 License
 
-Keen Template: Commercial license from KeenThemes
 Application: Proprietary - AFREQ Logistics

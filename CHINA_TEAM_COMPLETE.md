@@ -185,7 +185,7 @@ Customer can see item!
 
 ## 🎨 UI Components Used
 
-### Keen Template Classes:
+### Template Classes:
 - Cards: `card`, `card-header`, `card-body`
 - Buttons: `btn btn-primary`, `btn-lg`, `btn-icon`
 - Forms: `form-control`, `form-label`, `form-select`

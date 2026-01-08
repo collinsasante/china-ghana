@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 **AFREQ Delivery Tracking System** - A comprehensive container shipping and delivery management web application for AFREQ Logistics handling China-to-Ghana shipments.
 
-This is a **React + TypeScript + Vite** frontend application built on top of the **Keen HTML Admin Dashboard Template** by KeenThemes. The system has two major interfaces:
+This is a **React + TypeScript + Vite** frontend application built with a **Bootstrap 5 Admin Dashboard Template**. The system has two major interfaces:
 
 ### 1. **User Side (Customers)**
 Customers can:
@@ -36,7 +36,7 @@ Internal staff can manage:
 **Status Management:**
 - Central dashboard for status updates across the entire shipping pipeline
 
-**Important**: This codebase contains Keen template HTML files in `frontend/src/` that serve as UI references. **All styles and JavaScript must use assets from `frontend/src/assets/` folder** (CSS in `assets/css/`, JS in `assets/js/`, plugins in `assets/plugins/`).
+**Important**: This codebase contains template HTML files in `frontend/src/` that serve as UI references. **All styles and JavaScript must use assets from `frontend/src/assets/` folder** (CSS in `assets/css/`, JS in `assets/js/`, plugins in `assets/plugins/`).
 
 ## Development Commands
 
@@ -63,7 +63,7 @@ frontend/
 ├── src/
 │   ├── main.tsx              # Application entry point
 │   ├── App.tsx               # Root component (currently minimal)
-│   ├── index.html            # Main HTML template (from Keen theme)
+│   ├── index.html            # Main HTML template (from the template)
 │   ├── apps/                 # Static HTML files for various app modules
 │   │   ├── calendar.html
 │   │   ├── chat/
@@ -121,13 +121,13 @@ frontend/
 - **TypeScript 5.9.3** with strict mode enabled
 - **Vite 7.2.4** as build tool
 - **ESLint 9** with TypeScript and React plugins
-- **Keen HTML Template** (Bootstrap 5 based admin dashboard)
+- **Bootstrap 5** based admin dashboard template
 
 ## Key Architecture Notes
 
 ### Static HTML Migration Strategy
 
-The codebase contains **540+ static HTML files** from the Keen template. These files include:
+The codebase contains **540+ static HTML files** from the template. These files include:
 - Complete page layouts with sidebar/header variations (dark/light themes)
 - Dashboard templates for different domains (e-commerce, logistics, marketing, etc.)
 - Application modules (chat, calendar, file manager, invoices, etc.)
@@ -146,15 +146,15 @@ The codebase contains **540+ static HTML files** from the Keen template. These f
 
 Currently, there is **no routing library** (React Router) or global state management (Redux, Zustand, etc.) configured. These will need to be added as the application grows.
 
-### Keen Template Assets
+### Template Assets
 
 **CRITICAL**: All styling and JavaScript MUST be loaded from the `frontend/src/assets/` folder:
 
 **Core Assets:**
-- `assets/css/style.bundle.css` - Main Keen styles (Bootstrap 5 based)
+- `assets/css/style.bundle.css` - Main styles (Bootstrap 5 based)
 - `assets/plugins/global/plugins.bundle.css` - Global plugin styles
 - `assets/plugins/global/plugins.bundle.js` - Global plugins bundle
-- `assets/js/scripts.bundle.js` - Core Keen JavaScript
+- `assets/js/scripts.bundle.js` - Core JavaScript
 - `assets/js/widgets.bundle.js` - Widget components
 
 **Plugin Assets (when needed):**
@@ -172,7 +172,7 @@ Currently, there is **no routing library** (React Router) or global state manage
 
 **Asset Loading in React:**
 1. Import CSS files in component files or main.tsx
-2. For Keen JavaScript bundles, load via `<script>` tags in index.html or use dynamic imports
+2. For JavaScript bundles, load via `<script>` tags in index.html or use dynamic imports
 3. Reference images using relative paths from components (e.g., `/src/assets/media/logos/logo.png`)
 4. DO NOT use CDN links or external sources - use local assets only
 
@@ -210,7 +210,7 @@ The project uses the modern flat config format (`eslint.config.js`). It includes
 
 ### Theme Mode Handling
 
-The Keen template includes theme mode switching logic (light/dark/system). When implementing theme support in React, consider:
+The template includes theme mode switching logic (light/dark/system). When implementing theme support in React, consider:
 - Using `localStorage.getItem("data-bs-theme")` for persistence
 - Setting `data-bs-theme` attribute on `document.documentElement`
 - System preference detection via `window.matchMedia("(prefers-color-scheme: dark)")`

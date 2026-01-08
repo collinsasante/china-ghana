@@ -295,7 +295,7 @@ Each page calculates real-time statistics:
 
 ## 🎨 UI Components
 
-All pages use Keen template components:
+All pages use template components:
 - **Cards** with flush design
 - **Tables** with row borders
 - **Badges** for status indicators

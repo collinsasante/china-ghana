@@ -7,7 +7,7 @@ export default function MainLayout() {
   useEffect(() => {
     // Small delay to ensure DOM is fully ready
     const timer = setTimeout(() => {
-      // Reinitialize Keen components after React renders
+      // Reinitialize Bootstrap components after React renders
       if (typeof window !== 'undefined' && (window as any).KTComponents) {
         try {
           (window as any).KTComponents.init();

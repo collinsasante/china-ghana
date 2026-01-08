@@ -17,7 +17,7 @@ export function getStatusLabel(status: ShipmentStatus): string {
 }
 
 /**
- * Get status badge class for Keen template
+ * Get status badge class for Bootstrap badge styling
  */
 export function getStatusBadgeClass(status: ShipmentStatus): string {
   const classes: Record<ShipmentStatus, string> = {

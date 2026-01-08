@@ -2,7 +2,7 @@
 
 ## Overview
 
-The AFREQ system now has a **complete authentication system** with sign-in, sign-up, and password reset functionality. All authentication pages are full-screen and use the Keen template's corporate layout.
+The AFREQ system now has a **complete authentication system** with sign-in, sign-up, and password reset functionality. All authentication pages are full-screen and use the template's corporate layout.
 
 ---
 
@@ -296,11 +296,11 @@ This ensures the root route requires authentication first, then redirects approp
 
 ## Styling
 
-All pages use the **Keen template's corporate layout** with:
+All pages use the **template's corporate layout** with:
 - Split-screen design (50/50)
 - Left side: AFREQ branding with background image
 - Right side: Form with white background
-- Consistent button styles from Keen template
+- Consistent button styles from template
 - Bootstrap icons for visual feedback
 
 **Key CSS Classes:**
@@ -472,7 +472,7 @@ frontend/src/
 ✅ **Role-based access control working**
 ✅ **Forgot password flow functional**
 ✅ **Demo mode and production mode supported**
-✅ **Clean, professional UI matching Keen template**
+✅ **Clean, professional UI matching template**
 
 **Next Steps:**
 1. Test all login flows with different roles

@@ -313,7 +313,7 @@ useEffect(() => {
 - All auth pages use same split-screen layout
 - AFREQ branding on left side
 - Form on right side with white background
-- Matching Keen template styling
+- Matching template styling
 
 ✅ **Visual Feedback:**
 - Password strength meter (4 green bars)

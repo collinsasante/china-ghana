@@ -34,7 +34,7 @@ Choose one of these demo accounts to test different user roles:
 
 ```
 frontend/src/
-├── assets/          # Keen template (CSS, JS, images) - DO NOT MODIFY
+├── assets/          # template (CSS, JS, images) - DO NOT MODIFY
 ├── components/      # Reusable React components
 │   ├── layout/      # Header, Sidebar, MainLayout
 │   └── common/      # Shared components
@@ -116,9 +116,9 @@ if (hasRole('admin')) {
 }
 ```
 
-## 🎨 Styling with Keen Template
+## 🎨 Styling with Template
 
-Use Bootstrap 5 classes and Keen-specific classes:
+Use Bootstrap 5 classes and template-specific classes:
 
 ```tsx
 // Cards
@@ -146,7 +146,7 @@ Use Bootstrap 5 classes and Keen-specific classes:
 
 ## 📝 Development Tips
 
-1. **Don't modify files in `src/assets/`** - These are Keen template files
+1. **Don't modify files in `src/assets/`** - These are template files
 2. **Use TypeScript types** from `src/types/` for all data structures
 3. **Reference HTML templates** in `src/` folders for UI inspiration
 4. **Keep components small** - Break down complex UIs into smaller components
@@ -171,7 +171,7 @@ Run `npm install` to ensure all dependencies are installed
 
 - [README.md](README.md) - Full project documentation
 - [CLAUDE.md](CLAUDE.md) - Architecture and development guidelines
-- [Keen Docs](https://preview.keenthemes.com/keen/docs) - Template documentation
+- [Bootstrap Docs](https://getbootstrap.com/docs/5.3/) - Template documentation
 
 ## 🆘 Need Help?
 

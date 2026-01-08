@@ -4,7 +4,7 @@
 
 - [x] Project setup with Vite + React + TypeScript
 - [x] Install dependencies (React Router, Bootstrap, Popper.js)
-- [x] Configure Keen template assets
+- [x] Configure template assets
 - [x] Create type definitions
 - [x] Build authentication system
 - [x] Create layout components (Header, Sidebar, MainLayout)
@@ -67,7 +67,7 @@
 - [ ] `src/components/common/PhotoGallery.tsx`
 
 **Assets:**
-- Use Keen's lightbox: `/src/assets/plugins/custom/fslightbox/fslightbox.bundle.js`
+- Use the lightbox: `/src/assets/plugins/custom/fslightbox/fslightbox.bundle.js`
 
 ---
 
@@ -341,7 +341,7 @@ Begin with one feature at a time. For example:
 2. Test it thoroughly
 3. Move to next feature
 
-### Use Keen Templates
+### Use Templates
 Reference HTML templates in `src/` folders:
 - Tables: `src/apps/customers/list.html`
 - Forms: `src/utilities/modals/forms/`

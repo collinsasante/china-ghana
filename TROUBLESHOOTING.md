@@ -31,7 +31,7 @@ import { User, UserRole } from '../types';
 npm install @popperjs/core bootstrap
 ```
 
-These are required by the Keen template's JavaScript bundles.
+These are required by the template's JavaScript bundles.
 
 ---
 

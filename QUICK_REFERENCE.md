@@ -221,7 +221,7 @@ isValidEmail(email)           // → true/false
 
 ---
 
-## 🎨 Styling with Keen
+## 🎨 Styling with the template
 
 ### **Common Classes**
 ```html
