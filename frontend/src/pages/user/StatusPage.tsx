@@ -12,6 +12,7 @@ export default function StatusPage() {
   const [selectedStatus, setSelectedStatus] = useState<'all' | ShipmentStatus>('all');
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
+  const [searchQuery, setSearchQuery] = useState('');
   const [selectedItem, setSelectedItem] = useState<Item | null>(null);
   const [showItemModal, setShowItemModal] = useState(false);
 
@@ -58,6 +59,15 @@ export default function StatusPage() {
   };
 
   const filteredItems = items.filter(item => {
+    // Search filter
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase();
+      const matchesSearch =
+        item.name?.toLowerCase().includes(query) ||
+        item.trackingNumber?.toLowerCase().includes(query);
+      if (!matchesSearch) return false;
+    }
+
     // Status filter
     if (selectedStatus !== 'all' && item.status !== selectedStatus) {
       return false;
@@ -122,7 +132,8 @@ export default function StatusPage() {
   }
 
   return (
-    <div className="d-flex flex-column flex-column-fluid">
+    <>
+      {/* Toolbar */}
       <div id="kt_app_toolbar" className="app-toolbar py-3 py-lg-6">
         <div id="kt_app_toolbar_container" className="app-container container-xxl d-flex flex-stack">
           <div className="page-title d-flex flex-column justify-content-center flex-wrap me-3">
@@ -142,6 +153,7 @@ export default function StatusPage() {
         </div>
       </div>
 
+      {/* Content */}
       <div id="kt_app_content" className="app-content flex-column-fluid">
         <div id="kt_app_content_container" className="app-container container-xxl">
           {/* Status Overview Cards */}
@@ -185,75 +197,94 @@ export default function StatusPage() {
             </div>
           </div>
 
-          {/* Date Filter */}
-          <div className="card mb-5">
-            <div className="card-body">
-              <div className="row g-4 align-items-end">
-                <div className="col-md-4">
-                  <label className="form-label fw-bold">Start Date</label>
+          {/* Shipments Table */}
+          <div className="card card-flush">
+            {/* Card Header */}
+            <div className="card-header align-items-center py-5 gap-2 gap-md-5">
+              {/* Card Title - Search */}
+              <div className="card-title">
+                <div className="d-flex align-items-center position-relative my-1">
+                  <i className="ki-duotone ki-magnifier fs-3 position-absolute ms-4">
+                    <span className="path1"></span>
+                    <span className="path2"></span>
+                  </i>
+                  <input
+                    type="text"
+                    className="form-control form-control-solid w-250px ps-12"
+                    placeholder="Search Shipments"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                  />
+                </div>
+              </div>
+              {/* end Card Title */}
+
+              {/* Card Toolbar */}
+              <div className="card-toolbar flex-row-fluid justify-content-end gap-5">
+                {/* Date Range Picker */}
+                <div className="input-group w-250px">
                   <input
                     type="date"
-                    className="form-control"
+                    className="form-control form-control-solid"
+                    placeholder="Start Date"
                     value={startDate}
                     onChange={(e) => setStartDate(e.target.value)}
                   />
-                </div>
-                <div className="col-md-4">
-                  <label className="form-label fw-bold">End Date</label>
                   <input
                     type="date"
-                    className="form-control"
+                    className="form-control form-control-solid"
+                    placeholder="End Date"
                     value={endDate}
                     onChange={(e) => setEndDate(e.target.value)}
                   />
-                </div>
-                <div className="col-md-4">
                   <button
-                    className="btn btn-light w-100"
+                    className="btn btn-icon btn-light"
                     onClick={() => {
                       setStartDate('');
                       setEndDate('');
                     }}
                   >
-                    <i className="bi bi-x-circle me-2"></i>
-                    Clear Dates
+                    <i className="ki-duotone ki-cross fs-2">
+                      <span className="path1"></span>
+                      <span className="path2"></span>
+                    </i>
                   </button>
                 </div>
-              </div>
-            </div>
-          </div>
+                {/* end Date Range Picker */}
 
-          {/* Filter Tabs */}
-          <div className="card mb-5">
-            <div className="card-header border-0 pt-5">
-              <h3 className="card-title align-items-start flex-column">
-                <span className="card-label fw-bold fs-3 mb-1">
-                  {selectedStatus === 'all' ? 'All Items' : statusSteps.find(s => s.key === selectedStatus)?.label}
-                </span>
-                <span className="text-muted mt-1 fw-semibold fs-7">
-                  {filteredItems.length} item{filteredItems.length !== 1 ? 's' : ''}
-                </span>
-              </h3>
-              <div className="card-toolbar">
-                <button
-                  className={`btn btn-sm ${selectedStatus === 'all' ? 'btn-primary' : 'btn-light'} me-2`}
-                  onClick={() => setSelectedStatus('all')}
-                >
-                  All Items
-                </button>
-                <button
-                  className="btn btn-sm btn-light"
-                  onClick={loadItems}
-                >
+                {/* Status Filter */}
+                <div className="w-100 mw-150px">
+                  <select
+                    className="form-select form-select-solid"
+                    value={selectedStatus}
+                    onChange={(e) => setSelectedStatus(e.target.value as any)}
+                  >
+                    <option value="all">All Status</option>
+                    {statusSteps.map((step) => (
+                      <option key={step.key} value={step.key}>
+                        {step.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                {/* end Status Filter */}
+
+                {/* Refresh Button */}
+                <button className="btn btn-light btn-sm" onClick={loadItems}>
+                  <i className="ki-duotone ki-arrows-circle fs-2">
+                    <span className="path1"></span>
+                    <span className="path2"></span>
+                  </i>
                   Refresh
                 </button>
+                {/* end Refresh Button */}
               </div>
+              {/* end Card Toolbar */}
             </div>
-          </div>
+            {/* end Card Header */}
 
-          {/* Items List */}
-          <div className="card">
-            <div className="card-body p-0">
+            {/* Card Body */}
+            <div className="card-body pt-0">
               {filteredItems.length === 0 ? (
                 <div className="text-center py-20">
                   <i className="ki-duotone ki-package fs-5x text-gray-400 mb-5">
@@ -270,27 +301,35 @@ export default function StatusPage() {
                 </div>
               ) : (
                 <div className="table-responsive">
-                  <table className="table table-row-bordered table-row-gray-100 align-middle gs-0 gy-3">
+                  {/* Table */}
+                  <table className="table align-middle table-row-dashed fs-6 gy-5">
                     <thead>
-                      <tr className="fw-bold text-muted">
+                      <tr className="text-start text-gray-500 fw-bold fs-7 text-uppercase gs-0">
+                        <th className="text-start w-10px pe-2">
+                          <div className="form-check form-check-sm form-check-custom form-check-solid me-3">
+                            <input className="form-check-input" type="checkbox" />
+                          </div>
+                        </th>
                         <th className="min-w-150px">Item</th>
                         <th className="min-w-140px">Tracking Number</th>
                         <th className="min-w-120px">Receiving Date</th>
-                        <th className="min-w-120px">Shipping Method</th>
-                        <th className="min-w-100px">Cost</th>
-                        <th className="min-w-400px">Status Timeline</th>
+                        <th className="text-end min-w-100px">Cost</th>
+                        <th className="text-end min-w-100px">Status</th>
+                        <th className="text-end min-w-100px">Actions</th>
                       </tr>
                     </thead>
-                    <tbody>
+                    <tbody className="fw-semibold text-gray-600">
                       {filteredItems.map((item) => {
-                        const currentStatusIndex = getStatusIndex(item.status);
                         return (
-                          <tr
-                            key={item.id}
-                            onClick={() => handleItemClick(item)}
-                            style={{ cursor: 'pointer' }}
-                            className="hover-bg-light-primary"
-                          >
+                          <tr key={item.id}>
+                            {/* Checkbox */}
+                            <td className="text-start">
+                              <div className="form-check form-check-sm form-check-custom form-check-solid">
+                                <input className="form-check-input" type="checkbox" />
+                              </div>
+                            </td>
+
+                            {/* Item with Photo */}
                             <td>
                               <div className="d-flex align-items-center">
                                 {item.photos && item.photos.length > 0 ? (
@@ -322,87 +361,74 @@ export default function StatusPage() {
                                 </div>
                               </div>
                             </td>
+
+                            {/* Tracking Number */}
                             <td>
-                              <span className="text-gray-900 fw-bold d-block fs-6">
+                              <a
+                                href="#"
+                                onClick={(e) => {
+                                  e.preventDefault();
+                                  handleItemClick(item);
+                                }}
+                                className="text-gray-800 text-hover-primary fw-bold"
+                              >
                                 {item.trackingNumber}
-                              </span>
+                              </a>
                             </td>
+
+                            {/* Receiving Date */}
                             <td>
-                              <span className="text-gray-900 fw-bold d-block fs-6">
+                              <span className="text-gray-600 fw-semibold">
                                 {new Date(item.receivingDate).toLocaleDateString()}
                               </span>
                             </td>
-                            <td>
-                              <span className="badge badge-light-primary text-capitalize">
-                                {item.shippingMethod}
-                              </span>
-                            </td>
-                            <td>
-                              <span className="text-gray-900 fw-bold d-block fs-6">
+
+                            {/* Cost */}
+                            <td className="text-end">
+                              <span className="text-gray-900 fw-bold d-block">
                                 ${item.costUSD.toFixed(2)}
                               </span>
                               <span className="text-gray-500 fw-semibold d-block fs-7">
                                 ₵{item.costCedis.toFixed(2)}
                               </span>
                             </td>
-                            <td>
-                              {/* Status Timeline */}
-                              <div className="d-flex align-items-center">
-                                {statusSteps.map((step, index) => {
-                                  const isCompleted = index <= currentStatusIndex;
-                                  const isCurrent = index === currentStatusIndex;
-                                  return (
-                                    <div key={step.key} className="d-flex align-items-center">
-                                      <div
-                                        className={`d-flex align-items-center justify-content-center rounded-circle ${
-                                          isCompleted
-                                            ? isCurrent
-                                              ? `bg-${getStatusColor(item.status)}`
-                                              : 'bg-success'
-                                            : 'bg-light'
-                                        }`}
-                                        style={{ width: '30px', height: '30px' }}
-                                        title={step.label}
-                                      >
-                                        {isCompleted ? (
-                                          <i className={`ki-duotone ki-check fs-3 text-white`}>
-                                            <span className="path1"></span>
-                                            <span className="path2"></span>
-                                          </i>
-                                        ) : (
-                                          <div
-                                            className="rounded-circle bg-gray-400"
-                                            style={{ width: '10px', height: '10px' }}
-                                          />
-                                        )}
-                                      </div>
-                                      {index < statusSteps.length - 1 && (
-                                        <div
-                                          className={`${
-                                            isCompleted ? 'bg-success' : 'bg-light'
-                                          }`}
-                                          style={{ width: '40px', height: '3px' }}
-                                        />
-                                      )}
-                                    </div>
-                                  );
-                                })}
-                              </div>
-                              <div className="text-gray-600 fw-semibold fs-7 mt-2">
-                                {statusSteps.find(s => s.key === item.status)?.label}
-                              </div>
+
+                            {/* Status */}
+                            <td className="text-end">
+                              <span className={`badge badge-light-${getStatusColor(item.status)}`}>
+                                {statusSteps.find((s) => s.key === item.status)?.label}
+                              </span>
+                            </td>
+
+                            {/* Actions */}
+                            <td className="text-end">
+                              <button
+                                className="btn btn-sm btn-icon btn-light btn-active-light-primary"
+                                onClick={() => handleItemClick(item)}
+                              >
+                                <i className="ki-duotone ki-eye fs-2">
+                                  <span className="path1"></span>
+                                  <span className="path2"></span>
+                                  <span className="path3"></span>
+                                </i>
+                              </button>
                             </td>
                           </tr>
                         );
                       })}
                     </tbody>
                   </table>
+                  {/* end Table */}
                 </div>
               )}
             </div>
+            {/* end Card Body */}
           </div>
+          {/* end Shipments Table */}
         </div>
+        {/* end Content container */}
       </div>
+      {/* end Content */}
 
       {/* Item Details Modal */}
       <ItemDetailsModal
@@ -410,6 +436,6 @@ export default function StatusPage() {
         isOpen={showItemModal}
         onClose={() => setShowItemModal(false)}
       />
-    </div>
+    </>
   );
 }
