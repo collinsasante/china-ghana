@@ -143,22 +143,28 @@ export default function ReceivingPage() {
   const uploadedCount = images.filter((img) => img.isUploaded).length;
 
   return (
-    <div className="d-flex flex-column flex-column-fluid">
+    <>
+      {/* Toolbar */}
       <div id="kt_app_toolbar" className="app-toolbar py-3 py-lg-6">
         <div id="kt_app_toolbar_container" className="app-container container-xxl d-flex flex-stack">
+          {/* Page title */}
           <div className="page-title d-flex flex-column justify-content-center flex-wrap me-3">
             <h1 className="page-heading d-flex text-gray-900 fw-bold fs-3 flex-column justify-content-center my-0">
               Upload Item Photos
             </h1>
             <ul className="breadcrumb breadcrumb-separatorless fw-semibold fs-7 my-0 pt-1">
-              <li className="breadcrumb-item text-muted">China Team</li>
+              <li className="breadcrumb-item text-muted">
+                <a href="/china/receiving" className="text-muted text-hover-primary">China Team</a>
+              </li>
               <li className="breadcrumb-item">
                 <span className="bullet bg-gray-500 w-5px h-2px"></span>
               </li>
               <li className="breadcrumb-item text-muted">Photo Upload</li>
             </ul>
           </div>
+          {/* end Page title */}
 
+          {/* Actions */}
           {images.length > 0 && (
             <div className="d-flex align-items-center gap-2">
               <span className="badge badge-light-success fs-6">
@@ -166,167 +172,294 @@ export default function ReceivingPage() {
               </span>
             </div>
           )}
+          {/* end Actions */}
         </div>
       </div>
+      {/* end Toolbar */}
 
+      {/* Content */}
       <div id="kt_app_content" className="app-content flex-column-fluid">
-        <div id="kt_app_content_container" className="app-container container-xxl">
 
-          {/* Step 1: Receiving Date */}
-          <div className="card mb-5">
-            <div className="card-header">
-              <h3 className="card-title">Step 1: Set Receiving Date</h3>
-            </div>
-            <div className="card-body">
-              <div className="row g-4">
-                <div className="col-md-6">
-                  <label className="form-label required">Receiving Date</label>
+        {/* Content container */}
+        <div id="kt_app_content_container" className="app-container container-xxl">
+          {/* Form */}
+          <form id="kt_ecommerce_add_product_form" className="form d-flex flex-column flex-lg-row">
+            {/* Aside column */}
+            <div className="d-flex flex-column gap-7 gap-lg-10 w-100 w-lg-300px mb-7 me-lg-10">
+              {/* Receiving Date */}
+              <div className="card card-flush py-4">
+                {/* Card header */}
+                <div className="card-header">
+                  <div className="card-title">
+                    <h2>Receiving Date</h2>
+                  </div>
+                </div>
+                {/* end Card header */}
+
+                {/* Card body */}
+                <div className="card-body pt-0">
+                  {/* Date Input */}
+                  <label className="form-label required">Date Received</label>
                   <input
                     type="date"
-                    className="form-control form-control-lg"
+                    className="form-control mb-2"
                     value={receivingDate}
                     onChange={(e) => setReceivingDate(e.target.value)}
                   />
-                  <div className="form-text">
+                  {/* end Date Input */}
+
+                  {/* Description */}
+                  <div className="text-muted fs-7">
                     Date when items arrived at China warehouse
                   </div>
+                  {/* end Description */}
                 </div>
+                {/* end Card body */}
               </div>
-            </div>
-          </div>
+              {/* end Receiving Date */}
 
-          {/* Step 2: Upload Photos */}
-          <div className="card mb-5">
-            <div className="card-header">
-              <h3 className="card-title">Step 2: Upload Item Photos</h3>
-            </div>
-            <FileUpload
-              onFilesSelected={handleFilesSelected}
-              accept="image/*"
-              multiple={true}
-              maxSize={10}
-              disabled={isUploading}
-            />
+              {/* Upload Status */}
+              {images.length > 0 && (
+                <div className="card card-flush py-4">
+                  {/* Card header */}
+                  <div className="card-header">
+                    <div className="card-title">
+                      <h2>Upload Progress</h2>
+                    </div>
+                    <div className="card-toolbar">
+                      <div className={`rounded-circle ${uploadedCount === images.length ? 'bg-success' : 'bg-warning'} w-15px h-15px`}></div>
+                    </div>
+                  </div>
+                  {/* end Card header */}
 
-            <div className="alert alert-light-primary mt-4 d-flex align-items-center mx-4">
-              <i className="bi bi-lightbulb fs-2x me-3"></i>
-              <div>
-                <div className="fw-bold mb-1">Tips for better photos:</div>
-                <ul className="mb-0">
-                  <li>Take clear photos showing the full item</li>
-                  <li>Include any tracking numbers or labels visible on packages</li>
-                  <li>You can upload multiple images at once</li>
-                </ul>
-              </div>
-            </div>
-
-            {isUploading && (
-              <div className="alert alert-info mt-5 mx-4 mb-4">
-                <div className="d-flex align-items-center">
-                  <span className="spinner-border spinner-border-sm me-3"></span>
-                  <span>Uploading images to Cloudinary...</span>
+                  {/* Card body */}
+                  <div className="card-body pt-0">
+                    <div className="fs-6 fw-bold mb-2">
+                      {uploadedCount} of {images.length} uploaded
+                    </div>
+                    <div className="progress h-6px">
+                      <div
+                        className="progress-bar bg-success"
+                        role="progressbar"
+                        style={{ width: `${(uploadedCount / images.length) * 100}%` }}
+                      ></div>
+                    </div>
+                    <div className="text-muted fs-7 mt-2">
+                      {uploadedCount === images.length
+                        ? 'All photos uploaded successfully!'
+                        : 'Upload in progress...'}
+                    </div>
+                  </div>
+                  {/* end Card body */}
                 </div>
-              </div>
-            )}
-          </div>
+              )}
+              {/* end Upload Status */}
+            </div>
+            {/* end Aside column */}
 
-          {/* Step 3: Uploaded Images Grid */}
-          {images.length > 0 && (
-            <div className="card">
-              <div className="card-header">
-                <h3 className="card-title">
-                  Uploaded Images ({uploadedCount} of {images.length})
-                </h3>
-              </div>
-              <div className="card-body">
-                <div className="row g-5">
-                  {images.map((image, index) => (
-                    <div key={index} className="col-md-3 col-sm-6">
-                      <div className="card card-flush h-100">
-                        <div className="card-body p-2">
-                          <div className="position-relative">
-                            <img
-                              src={image.preview}
-                              alt={`Upload ${index + 1}`}
-                              className="w-100 rounded"
-                              style={{ height: '200px', objectFit: 'cover' }}
-                            />
+            {/* Main column */}
+            <div className="d-flex flex-column flex-row-fluid gap-7 gap-lg-10">
+              {/* Media Upload */}
+              <div className="card card-flush py-4">
+                {/* Card header */}
+                <div className="card-header">
+                  <div className="card-title">
+                    <h2>Media</h2>
+                  </div>
+                </div>
+                {/* end Card header */}
 
-                            {/* Upload Progress */}
-                            {!image.isUploaded && image.uploadProgress > 0 && (
-                              <div
-                                className="position-absolute bottom-0 start-0 w-100 bg-light"
-                                style={{ height: '6px' }}
-                              >
-                                <div
-                                  className="bg-success h-100"
-                                  style={{ width: `${image.uploadProgress}%` }}
-                                ></div>
-                              </div>
-                            )}
+                {/* Card body */}
+                <div className="card-body pt-0">
+                  {/* File Upload */}
+                  <div className="fv-row mb-2">
+                    <FileUpload
+                      onFilesSelected={handleFilesSelected}
+                      accept="image/*"
+                      multiple={true}
+                      maxSize={10}
+                      disabled={isUploading}
+                    />
+                  </div>
+                  {/* end File Upload */}
 
-                            {/* Status Badge */}
-                            <div className="position-absolute top-0 end-0 m-2">
-                              {image.isUploaded ? (
-                                <span className="badge badge-success">
-                                  <i className="bi bi-check-circle"></i> Uploaded
-                                </span>
-                              ) : (
-                                <span className="badge badge-warning">
-                                  <i className="bi bi-clock"></i> Uploading...
-                                </span>
-                              )}
-                            </div>
+                  {/* Description */}
+                  <div className="text-muted fs-7">
+                    Upload item photos from the China warehouse. You can select multiple images at once.
+                  </div>
+                  {/* end Description */}
 
-                            {/* Remove Button */}
-                            {image.isUploaded && (
-                              <button
-                                className="btn btn-sm btn-icon btn-danger position-absolute top-0 start-0 m-2"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  handleRemoveImage(index);
-                                }}
-                              >
-                                <i className="bi bi-x"></i>
-                              </button>
-                            )}
-                          </div>
-
-                          <div className="mt-2">
-                            <div className="text-muted fs-7 text-center">
-                              {image.file.name.substring(0, 25)}
-                              {image.file.name.length > 25 ? '...' : ''}
-                            </div>
-                            {image.isUploaded && (
-                              <div className="text-center mt-1">
-                                <span className="badge badge-light-success">
-                                  Ready for Ghana Team
-                                </span>
-                              </div>
-                            )}
-                          </div>
+                  {/* Tips */}
+                  <div className="notice d-flex bg-light-primary rounded border-primary border border-dashed p-6 mt-6">
+                    <i className="ki-duotone ki-information fs-2tx text-primary me-4">
+                      <span className="path1"></span>
+                      <span className="path2"></span>
+                      <span className="path3"></span>
+                    </i>
+                    <div className="d-flex flex-stack flex-grow-1">
+                      <div className="fw-semibold">
+                        <h4 className="text-gray-900 fw-bold">Photo Upload Tips</h4>
+                        <div className="fs-6 text-gray-700">
+                          • Take clear photos showing the full item<br />
+                          • Include any tracking numbers or labels visible on packages<br />
+                          • Upload 2 photos per item (front and back views recommended)
                         </div>
                       </div>
                     </div>
-                  ))}
-                </div>
+                  </div>
+                  {/* end Tips */}
 
-                {uploadedCount === images.length && images.length > 0 && (
-                  <div className="alert alert-success mt-5 d-flex align-items-center">
-                    <i className="bi bi-check-circle fs-2x me-3"></i>
-                    <div>
-                      <div className="fw-bold">All photos uploaded successfully!</div>
-                      <div className="text-muted">
-                        The Ghana team can now view these photos and add item details in their Tagging portal.
+                  {/* Upload Status */}
+                  {isUploading && (
+                    <div className="alert alert-info d-flex align-items-center mt-5">
+                      <i className="ki-duotone ki-shield-tick fs-2hx text-info me-4">
+                        <span className="path1"></span>
+                        <span className="path2"></span>
+                      </i>
+                      <div className="d-flex flex-column">
+                        <span className="spinner-border spinner-border-sm me-2"></span>
+                        <span>Uploading images to Cloudinary...</span>
                       </div>
                     </div>
-                  </div>
-                )}
+                  )}
+                  {/* end Upload Status */}
+                </div>
+                {/* end Card body */}
               </div>
+              {/* end Media Upload */}
+
+              {/* Uploaded Images Gallery */}
+              {images.length > 0 && (
+                <div className="card card-flush py-4">
+                  {/* Card header */}
+                  <div className="card-header">
+                    <div className="card-title">
+                      <h2>Uploaded Images</h2>
+                      <span className="text-muted ms-3 fs-7">({uploadedCount} of {images.length})</span>
+                    </div>
+                  </div>
+                  {/* end Card header */}
+
+                  {/* Card body */}
+                  <div className="card-body pt-0">
+                    <div className="row g-6 g-xl-9">
+                      {images.map((image, index) => (
+                        <div key={index} className="col-md-6 col-lg-4 col-xl-3">
+                          {/* Image card */}
+                          <div className="card h-100 card-flush border-0 shadow-sm">
+                            <div className="card-body p-0">
+                              <div className="position-relative overflow-hidden rounded">
+                                <img
+                                  src={image.preview}
+                                  alt={`Upload ${index + 1}`}
+                                  className="w-100"
+                                  style={{ height: '200px', objectFit: 'cover' }}
+                                />
+
+                                {/* Upload Progress Bar */}
+                                {!image.isUploaded && image.uploadProgress > 0 && (
+                                  <div className="position-absolute bottom-0 start-0 w-100">
+                                    <div className="progress h-4px">
+                                      <div
+                                        className="progress-bar bg-success"
+                                        role="progressbar"
+                                        style={{ width: `${image.uploadProgress}%` }}
+                                      ></div>
+                                    </div>
+                                  </div>
+                                )}
+
+                                {/* Status Badge */}
+                                <div className="position-absolute top-0 end-0 m-3">
+                                  {image.isUploaded ? (
+                                    <span className="badge badge-success">
+                                      <i className="ki-duotone ki-check-circle fs-3">
+                                        <span className="path1"></span>
+                                        <span className="path2"></span>
+                                      </i>
+                                      Uploaded
+                                    </span>
+                                  ) : (
+                                    <span className="badge badge-warning">
+                                      <i className="ki-duotone ki-time fs-3">
+                                        <span className="path1"></span>
+                                        <span className="path2"></span>
+                                      </i>
+                                      Uploading...
+                                    </span>
+                                  )}
+                                </div>
+
+                                {/* Remove Button */}
+                                {image.isUploaded && (
+                                  <button
+                                    type="button"
+                                    className="btn btn-icon btn-sm btn-active-color-primary position-absolute top-0 start-0 m-3"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleRemoveImage(index);
+                                    }}
+                                  >
+                                    <i className="ki-duotone ki-cross fs-2">
+                                      <span className="path1"></span>
+                                      <span className="path2"></span>
+                                    </i>
+                                  </button>
+                                )}
+                              </div>
+
+                              {/* Image info */}
+                              <div className="p-4">
+                                <div className="text-gray-800 fw-bold fs-7 text-center text-truncate">
+                                  {image.file.name}
+                                </div>
+                                {image.isUploaded && (
+                                  <div className="text-center mt-2">
+                                    <span className="badge badge-light-success">
+                                      Ready for Ghana Team
+                                    </span>
+                                  </div>
+                                )}
+                              </div>
+                              {/* end Image info */}
+                            </div>
+                          </div>
+                          {/* end Image card */}
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* Success Notice */}
+                    {uploadedCount === images.length && images.length > 0 && (
+                      <div className="notice d-flex bg-light-success rounded border-success border border-dashed p-6 mt-6">
+                        <i className="ki-duotone ki-check-circle fs-2tx text-success me-4">
+                          <span className="path1"></span>
+                          <span className="path2"></span>
+                        </i>
+                        <div className="d-flex flex-stack flex-grow-1">
+                          <div className="fw-semibold">
+                            <h4 className="text-gray-900 fw-bold">All Photos Uploaded Successfully!</h4>
+                            <div className="fs-6 text-gray-700">
+                              The Ghana team can now view these photos and add item details in their Tagging portal.
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                    {/* end Success Notice */}
+                  </div>
+                  {/* end Card body */}
+                </div>
+              )}
+              {/* end Uploaded Images Gallery */}
             </div>
-          )}
+            {/* end Main column */}
+          </form>
+          {/* end Form */}
         </div>
+        {/* end Content container */}
       </div>
-    </div>
+      {/* end Content */}
+    </>
   );
 }
