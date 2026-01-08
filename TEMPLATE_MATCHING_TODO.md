@@ -61,31 +61,40 @@ This document outlines which React components need to be updated to match their 
 
 ### China Team Pages
 
-9. **Item Receiving** - [frontend/src/pages/china-team/ItemReceiving.tsx](frontend/src/pages/china-team/ItemReceiving.tsx)
-   - Template: [apps/ecommerce/catalog/add-product.html](frontend/src/apps/ecommerce/catalog/add-product.html)
-   - Needs: Form with image upload, dimension inputs, CBM calculation
+3. **Item Receiving** - [frontend/src/pages/china-team/ReceivingPage.tsx](frontend/src/pages/china-team/ReceivingPage.tsx)
+   - ✅ Now matches [apps/ecommerce/catalog/add-product.html](frontend/src/apps/ecommerce/catalog/add-product.html)
+   - Two-column layout (aside + main)
+   - Card flush styling with py-4
+   - Receiving date card in sidebar
+   - Upload progress card with status indicator
+   - Media upload with FileUpload component
+   - Ki-duotone icons (information, check-circle, time, cross)
+   - Notice boxes with dashed borders
+   - Image gallery grid with proper card structure
+   - Status badges with icons
+   - Bulk upload functionality maintained
 
-10. **Container Management** - [frontend/src/pages/china-team/ContainerManagement.tsx](frontend/src/pages/china-team/ContainerManagement.tsx)
+4. **Container Management** - [frontend/src/pages/china-team/ContainerManagement.tsx](frontend/src/pages/china-team/ContainerManagement.tsx)
     - Template: [apps/ecommerce/sales/listing.html](frontend/src/apps/ecommerce/sales/listing.html)
     - Needs: Container list with filtering and status updates
 
 ### Ghana Team Pages
 
-11. **Item Sorting** - [frontend/src/pages/ghana-team/ItemSorting.tsx](frontend/src/pages/ghana-team/ItemSorting.tsx)
+5. **Item Sorting** - [frontend/src/pages/ghana-team/ItemSorting.tsx](frontend/src/pages/ghana-team/ItemSorting.tsx)
     - Template: [apps/ecommerce/catalog/products.html](frontend/src/apps/ecommerce/catalog/products.html)
     - Needs: Grid/list view with scanning functionality
 
-12. **Delivery Management** - [frontend/src/pages/ghana-team/DeliveryManagement.tsx](frontend/src/pages/ghana-team/DeliveryManagement.tsx)
+6. **Delivery Management** - [frontend/src/pages/ghana-team/DeliveryManagement.tsx](frontend/src/pages/ghana-team/DeliveryManagement.tsx)
     - Template: [apps/ecommerce/sales/listing.html](frontend/src/apps/ecommerce/sales/listing.html)
     - Needs: Delivery tracking with customer assignment
 
 ### Layout Components
 
-13. **Header** - [frontend/src/components/layout/Header.tsx](frontend/src/components/layout/Header.tsx)
+7. **Header** - [frontend/src/components/layout/Header.tsx](frontend/src/components/layout/Header.tsx)
     - Template: Extract from [index.html](frontend/src/index.html) header section
     - Needs: Search, notifications, user menu, theme toggle
 
-14. **Sidebar** - [frontend/src/components/layout/Sidebar.tsx](frontend/src/components/layout/Sidebar.tsx)
+8. **Sidebar** - [frontend/src/components/layout/Sidebar.tsx](frontend/src/components/layout/Sidebar.tsx)
     - Template: Extract from [layouts/dark-sidebar.html](frontend/src/layouts/dark-sidebar.html)
     - Needs: Collapsible menu with icons, hover effects
 
@@ -161,8 +170,8 @@ All pages should use these assets:
 
 **High Priority** (Core functionality):
 1. Login ✅
-2. Status Tracking
-3. Item Receiving
+2. Status Tracking ✅
+3. Item Receiving ✅
 4. Container Management
 5. Dashboard
 
@@ -179,4 +188,4 @@ All pages should use these assets:
 
 ---
 
-**Next Step**: Update Status Tracking page to match the template layout!
+**Next Step**: Update Container Management page to match the listing template!
