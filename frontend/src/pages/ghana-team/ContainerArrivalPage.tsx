@@ -17,7 +17,7 @@ interface VirtualContainer {
 
 export default function ContainerArrivalPage() {
   const [containers, setContainers] = useState<VirtualContainer[]>([]);
-  const [selectedContainer, setSelectedContainer] = useState<Container | null>(null);
+  const [selectedContainer, setSelectedContainer] = useState<VirtualContainer | null>(null);
   const [containerItems, setContainerItems] = useState<Item[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadingItems, setLoadingItems] = useState(false);
@@ -92,19 +92,20 @@ export default function ContainerArrivalPage() {
     }
   };
 
-  const loadContainerItems = async (containerNumber: string) => {
-    try {
-      setLoadingItems(true);
-      const items = await getItemsByContainerNumber(containerNumber);
-      setContainerItems(items);
-    } catch (error) {
-      console.error('Failed to load container items:', error);
-      setNotification({type: 'error', title: 'Error', message: 'Failed to load container items.'});
-      setTimeout(() => setNotification(null), 3000);
-    } finally {
-      setLoadingItems(false);
-    }
-  };
+  // Removed unused function - container items are now built from getAllItems
+  // const loadContainerItems = async (containerNumber: string) => {
+  //   try {
+  //     setLoadingItems(true);
+  //     const items = await getItemsByContainerNumber(containerNumber);
+  //     setContainerItems(items);
+  //   } catch (error) {
+  //     console.error('Failed to load container items:', error);
+  //     setNotification({type: 'error', title: 'Error', message: 'Failed to load container items.'});
+  //     setTimeout(() => setNotification(null), 3000);
+  //   } finally {
+  //     setLoadingItems(false);
+  //   }
+  // };
 
   const handleViewContainer = async (container: VirtualContainer) => {
     setSelectedContainer(container as any);

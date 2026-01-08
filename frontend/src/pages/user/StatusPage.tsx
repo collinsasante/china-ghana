@@ -42,10 +42,6 @@ export default function StatusPage() {
     { key: 'delivered', label: 'Delivered', icon: 'package' },
   ];
 
-  const getStatusIndex = (status: ShipmentStatus): number => {
-    return statusSteps.findIndex(step => step.key === status);
-  };
-
   const getStatusColor = (status: ShipmentStatus): string => {
     const colors: Record<ShipmentStatus, string> = {
       china_warehouse: 'info',
