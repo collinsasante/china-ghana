@@ -45,42 +45,58 @@ export default function DashboardPage() {
   const totalContainers = containers.length;
 
   return (
-    <div className="d-flex flex-column flex-column-fluid">
+    <>
+      {/* Toolbar */}
       <div id="kt_app_toolbar" className="app-toolbar py-3 py-lg-6">
         <div id="kt_app_toolbar_container" className="app-container container-xxl d-flex flex-stack">
+          {/* Page title */}
           <div className="page-title d-flex flex-column justify-content-center flex-wrap me-3">
             <h1 className="page-heading d-flex text-gray-900 fw-bold fs-3 flex-column justify-content-center my-0">
               Admin Dashboard
             </h1>
             <ul className="breadcrumb breadcrumb-separatorless fw-semibold fs-7 my-0 pt-1">
-              <li className="breadcrumb-item text-muted">Admin</li>
+              <li className="breadcrumb-item text-muted">
+                <a href="/admin" className="text-muted text-hover-primary">Admin</a>
+              </li>
               <li className="breadcrumb-item">
                 <span className="bullet bg-gray-500 w-5px h-2px"></span>
               </li>
               <li className="breadcrumb-item text-muted">Dashboard</li>
             </ul>
           </div>
+          {/* end Page title */}
         </div>
       </div>
+      {/* end Toolbar */}
 
+      {/* Content */}
       <div id="kt_app_content" className="app-content flex-column-fluid">
+
+        {/* Content container */}
         <div id="kt_app_content_container" className="app-container container-xxl">
 
           {loading ? (
             <div className="text-center py-20">
-              <span className="spinner-border spinner-border-lg me-2"></span>
-              <div className="mt-3 text-muted">Loading dashboard...</div>
+              <div className="spinner-border text-primary" role="status">
+                <span className="visually-hidden">Loading...</span>
+              </div>
+              <p className="text-gray-600 mt-5">Loading dashboard...</p>
             </div>
           ) : (
             <>
               {/* Overview Stats */}
-              <div className="row g-5 g-xl-10 mb-5">
+              <div className="row g-5 g-xl-10 mb-5 mb-xl-10">
+                {/* Total Items Card */}
                 <div className="col-xl-3 col-md-6">
                   <a href="/ghana/tagging" className="card card-flush h-100 bg-primary hover-elevate-up" style={{ cursor: 'pointer', textDecoration: 'none' }}>
                     <div className="card-body p-5">
                       <div className="d-flex flex-column">
                         <div className="d-flex align-items-center mb-3">
-                          <i className="bi bi-box-seam fs-2x text-white me-3"></i>
+                          <i className="ki-duotone ki-package fs-2x text-white me-3">
+                            <span className="path1"></span>
+                            <span className="path2"></span>
+                            <span className="path3"></span>
+                          </i>
                           <div>
                             <div className="fs-7 text-white opacity-75">Total Items</div>
                             <div className="fs-2x fw-bold text-white">{totalItems}</div>
@@ -93,13 +109,20 @@ export default function DashboardPage() {
                     </div>
                   </a>
                 </div>
+                {/* end Total Items Card */}
 
                 <div className="col-xl-3 col-md-6">
                   <a href="/admin/customers" className="card card-flush h-100 bg-success hover-elevate-up" style={{ cursor: 'pointer', textDecoration: 'none' }}>
                     <div className="card-body p-5">
                       <div className="d-flex flex-column">
                         <div className="d-flex align-items-center mb-3">
-                          <i className="bi bi-people fs-2x text-white me-3"></i>
+                          <i className="ki-duotone ki-people fs-2x text-white me-3">
+                            <span className="path1"></span>
+                            <span className="path2"></span>
+                            <span className="path3"></span>
+                            <span className="path4"></span>
+                            <span className="path5"></span>
+                          </i>
                           <div>
                             <div className="fs-7 text-white opacity-75">Total Customers</div>
                             <div className="fs-2x fw-bold text-white">{totalCustomers}</div>
@@ -118,7 +141,12 @@ export default function DashboardPage() {
                     <div className="card-body p-5">
                       <div className="d-flex flex-column">
                         <div className="d-flex align-items-center mb-3">
-                          <i className="bi bi-stack fs-2x text-white me-3"></i>
+                          <i className="ki-duotone ki-category fs-2x text-white me-3">
+                            <span className="path1"></span>
+                            <span className="path2"></span>
+                            <span className="path3"></span>
+                            <span className="path4"></span>
+                          </i>
                           <div>
                             <div className="fs-7 text-white opacity-75">Total Containers</div>
                             <div className="fs-2x fw-bold text-white">{totalContainers}</div>
@@ -137,7 +165,10 @@ export default function DashboardPage() {
                     <div className="card-body p-5">
                       <div className="d-flex flex-column">
                         <div className="d-flex align-items-center mb-3">
-                          <i className="bi bi-check-circle fs-2x text-white me-3"></i>
+                          <i className="ki-duotone ki-check-circle fs-2x text-white me-3">
+                            <span className="path1"></span>
+                            <span className="path2"></span>
+                          </i>
                           <div>
                             <div className="fs-7 text-white opacity-75">Delivered</div>
                             <div className="fs-2x fw-bold text-white">{itemsDelivered}</div>
@@ -163,42 +194,67 @@ export default function DashboardPage() {
                       <div className="row g-4">
                         <div className="col-md-4">
                           <a href="/china/receiving" className="border border-gray-300 border-dashed rounded p-4 text-center d-block hover-elevate-up" style={{ cursor: 'pointer', textDecoration: 'none' }}>
-                            <i className="bi bi-warehouse fs-2x text-secondary mb-2"></i>
+                            <i className="ki-duotone ki-shop fs-2x text-secondary mb-2">
+                              <span className="path1"></span>
+                              <span className="path2"></span>
+                              <span className="path3"></span>
+                              <span className="path4"></span>
+                              <span className="path5"></span>
+                            </i>
                             <div className="fs-2x fw-bold text-gray-800">{itemsInChina}</div>
                             <div className="fs-7 text-muted">China Warehouse</div>
                           </a>
                         </div>
                         <div className="col-md-4">
                           <a href="/admin/containers" className="border border-gray-300 border-dashed rounded p-4 text-center d-block hover-elevate-up" style={{ cursor: 'pointer', textDecoration: 'none' }}>
-                            <i className="bi bi-truck fs-2x text-primary mb-2"></i>
+                            <i className="ki-duotone ki-delivery fs-2x text-primary mb-2">
+                              <span className="path1"></span>
+                              <span className="path2"></span>
+                              <span className="path3"></span>
+                              <span className="path4"></span>
+                              <span className="path5"></span>
+                            </i>
                             <div className="fs-2x fw-bold text-gray-800">{itemsInTransit}</div>
                             <div className="fs-7 text-muted">In Transit</div>
                           </a>
                         </div>
                         <div className="col-md-4">
                           <a href="/ghana/tagging" className="border border-gray-300 border-dashed rounded p-4 text-center d-block hover-elevate-up" style={{ cursor: 'pointer', textDecoration: 'none' }}>
-                            <i className="bi bi-geo-alt fs-2x text-warning mb-2"></i>
+                            <i className="ki-duotone ki-geolocation fs-2x text-warning mb-2">
+                              <span className="path1"></span>
+                              <span className="path2"></span>
+                            </i>
                             <div className="fs-2x fw-bold text-gray-800">{itemsInGhana}</div>
                             <div className="fs-7 text-muted">Arrived Ghana</div>
                           </a>
                         </div>
                         <div className="col-md-4">
                           <a href="/ghana/sorting" className="border border-gray-300 border-dashed rounded p-4 text-center d-block hover-elevate-up" style={{ cursor: 'pointer', textDecoration: 'none' }}>
-                            <i className="bi bi-clipboard-check fs-2x text-success mb-2"></i>
+                            <i className="ki-duotone ki-document fs-2x text-success mb-2">
+                              <span className="path1"></span>
+                              <span className="path2"></span>
+                            </i>
                             <div className="fs-2x fw-bold text-gray-800">{itemsReady}</div>
                             <div className="fs-7 text-muted">Ready for Pickup</div>
                           </a>
                         </div>
                         <div className="col-md-4">
                           <a href="/ghana/sorting" className="border border-gray-300 border-dashed rounded p-4 text-center d-block hover-elevate-up" style={{ cursor: 'pointer', textDecoration: 'none' }}>
-                            <i className="bi bi-exclamation-triangle fs-2x text-danger mb-2"></i>
+                            <i className="ki-duotone ki-information fs-2x text-danger mb-2">
+                              <span className="path1"></span>
+                              <span className="path2"></span>
+                              <span className="path3"></span>
+                            </i>
                             <div className="fs-2x fw-bold text-gray-800">{damagedItems}</div>
                             <div className="fs-7 text-muted">Damaged</div>
                           </a>
                         </div>
                         <div className="col-md-4">
                           <a href="/ghana/sorting" className="border border-gray-300 border-dashed rounded p-4 text-center d-block hover-elevate-up" style={{ cursor: 'pointer', textDecoration: 'none' }}>
-                            <i className="bi bi-x-circle fs-2x text-dark mb-2"></i>
+                            <i className="ki-duotone ki-cross-circle fs-2x text-dark mb-2">
+                              <span className="path1"></span>
+                              <span className="path2"></span>
+                            </i>
                             <div className="fs-2x fw-bold text-gray-800">{missingItems}</div>
                             <div className="fs-7 text-muted">Missing</div>
                           </a>
@@ -216,19 +272,43 @@ export default function DashboardPage() {
                     <div className="card-body">
                       <div className="d-flex flex-column gap-3">
                         <a href="/admin/containers" className="btn btn-primary">
-                          <i className="bi bi-stack me-2"></i>
+                          <i className="ki-duotone ki-category me-2">
+                            <span className="path1"></span>
+                            <span className="path2"></span>
+                            <span className="path3"></span>
+                            <span className="path4"></span>
+                          </i>
                           Manage Containers
                         </a>
                         <a href="/admin/packaging" className="btn btn-light-primary">
-                          <i className="bi bi-box-seam me-2"></i>
+                          <i className="ki-duotone ki-package me-2">
+                            <span className="path1"></span>
+                            <span className="path2"></span>
+                            <span className="path3"></span>
+                          </i>
                           Package Items
                         </a>
                         <a href="/admin/customers" className="btn btn-light-primary">
-                          <i className="bi bi-people me-2"></i>
+                          <i className="ki-duotone ki-people me-2">
+                            <span className="path1"></span>
+                            <span className="path2"></span>
+                            <span className="path3"></span>
+                            <span className="path4"></span>
+                            <span className="path5"></span>
+                          </i>
                           View Customers
                         </a>
                         <a href="/admin/support-requests" className="btn btn-light-primary">
-                          <i className="bi bi-headset me-2"></i>
+                          <i className="ki-duotone ki-call me-2">
+                            <span className="path1"></span>
+                            <span className="path2"></span>
+                            <span className="path3"></span>
+                            <span className="path4"></span>
+                            <span className="path5"></span>
+                            <span className="path6"></span>
+                            <span className="path7"></span>
+                            <span className="path8"></span>
+                          </i>
                           Support Requests
                         </a>
                       </div>
@@ -236,10 +316,13 @@ export default function DashboardPage() {
                   </div>
                 </div>
               </div>
+              {/* end Status Breakdown */}
             </>
           )}
         </div>
+        {/* end Content container */}
       </div>
-    </div>
+      {/* end Content */}
+    </>
   );
 }
