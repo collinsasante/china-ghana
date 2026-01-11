@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
-import { getAllItems, getItemsByContainerNumber, updateItemsByContainer } from '../../services/airtable';
+import { getAllItems, updateItemsByContainer } from '../../services/airtable';
 import ConfirmModal from '../../components/common/ConfirmModal';
-import type { Container, Item } from '../../types/index';
+import type { Item } from '../../types/index';
 
 // Virtual container interface built from items
 interface VirtualContainer {
@@ -20,7 +20,6 @@ export default function ContainerArrivalPage() {
   const [selectedContainer, setSelectedContainer] = useState<VirtualContainer | null>(null);
   const [containerItems, setContainerItems] = useState<Item[]>([]);
   const [loading, setLoading] = useState(true);
-  const [loadingItems, setLoadingItems] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>(''); // Show all containers by default
   const [notification, setNotification] = useState<{type: 'success'|'error'|'warning'|'info', title: string, message: string} | null>(null);
@@ -128,7 +127,9 @@ export default function ContainerArrivalPage() {
 
           await loadContainers();
           if (selectedContainer?.containerNumber === container.containerNumber) {
-            const updatedItems = await getItemsByContainerNumber(container.containerNumber);
+            // Reload container items from updated containers
+            const allItems = await getAllItems();
+            const updatedItems = allItems.filter(item => item.containerNumber === container.containerNumber);
             setContainerItems(updatedItems);
           }
 
@@ -418,7 +419,7 @@ export default function ContainerArrivalPage() {
                     <h4 className="card-title mb-0">Items in Container</h4>
                   </div>
                   <div className="card-body">
-                    {loadingItems ? (
+                    {loading ? (
                       <div className="text-center py-5">
                         <span className="spinner-border spinner-border-sm me-2"></span>
                         Loading items...
