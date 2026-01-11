@@ -60,7 +60,7 @@ export default function Login() {
         {/* Aside */}
         <div
           className="d-flex flex-lg-row-fluid w-lg-50 bgi-size-cover bgi-position-center"
-          style={{ backgroundImage: 'url(/src/assets/media/misc/auth-bg.png)' }}
+          style={{ backgroundImage: 'url(/assets/media/misc/auth-bg.png)' }}
         >
           {/* Content */}
           <div className="d-flex flex-column flex-center p-6 p-lg-10 w-100">
@@ -68,7 +68,7 @@ export default function Login() {
             <Link to="/" className="mb-0 mb-lg-20">
               <img
                 alt="AFREQ Logistics"
-                src="/src/assets/media/logos/default-white.svg"
+                src="/assets/media/logos/default-white.svg"
                 className="h-40px h-lg-50px"
               />
             </Link>
@@ -77,7 +77,7 @@ export default function Login() {
             {/* Image */}
             <img
               className="d-none d-lg-block mx-auto w-300px w-lg-75 w-xl-500px mb-10 mb-lg-20"
-              src="/src/assets/media/misc/auth-screens.png"
+              src="/assets/media/misc/auth-screens.png"
               alt=""
             />
             {/* end Image */}
@@ -149,7 +149,7 @@ export default function Login() {
                     >
                       <img
                         alt="Google"
-                        src="/src/assets/media/svg/brand-logos/google-icon.svg"
+                        src="/assets/media/svg/brand-logos/google-icon.svg"
                         className="h-15px me-3"
                       />
                       Sign in with Google
@@ -166,12 +166,12 @@ export default function Login() {
                     >
                       <img
                         alt="Apple"
-                        src="/src/assets/media/svg/brand-logos/apple-black.svg"
+                        src="/assets/media/svg/brand-logos/apple-black.svg"
                         className="theme-light-show h-15px me-3"
                       />
                       <img
                         alt="Apple"
-                        src="/src/assets/media/svg/brand-logos/apple-black-dark.svg"
+                        src="/assets/media/svg/brand-logos/apple-black-dark.svg"
                         className="theme-dark-show h-15px me-3"
                       />
                       Sign in with Apple
