@@ -94,9 +94,18 @@ This document outlines which React components need to be updated to match their 
 
 ### Ghana Team Pages
 
-5. **Item Sorting** - [frontend/src/pages/ghana-team/ItemSorting.tsx](frontend/src/pages/ghana-team/ItemSorting.tsx)
-    - Template: [apps/ecommerce/catalog/products.html](frontend/src/apps/ecommerce/catalog/products.html)
-    - Needs: Grid/list view with scanning functionality
+5. **Item Sorting** - [frontend/src/pages/ghana-team/SortingPage.tsx](frontend/src/pages/ghana-team/SortingPage.tsx)
+    - ✅ Now matches [apps/ecommerce/catalog/products.html](frontend/src/apps/ecommerce/catalog/products.html)
+    - Toolbar with breadcrumbs and page title
+    - Info notice with Ki-duotone information icon
+    - Search with magnifier icon in card header
+    - Status filter dropdown in toolbar
+    - Accordion containers with expand/collapse
+    - Ki-duotone icons (package, cube-3, calendar, check-circle, information, up/down)
+    - DataTable structure (table align-middle table-row-dashed fs-6 gy-5)
+    - Badge styling (badge-light-success, badge-light-warning, etc.)
+    - Proper HTML comments matching template
+    - Loading state with centered spinner
 
 6. **Delivery Management** - [frontend/src/pages/ghana-team/DeliveryManagement.tsx](frontend/src/pages/ghana-team/DeliveryManagement.tsx)
     - Template: [apps/ecommerce/sales/listing.html](frontend/src/apps/ecommerce/sales/listing.html)
@@ -190,9 +199,9 @@ All pages should use these assets:
 5. Dashboard ✅
 
 **Medium Priority**:
-6. Item Details
+6. Item Details (file doesn't exist yet)
 7. Invoices
-8. Item Sorting
+8. Item Sorting ✅
 9. Delivery Management
 
 **Low Priority**:

@@ -70,87 +70,122 @@ export default function SortingPage() {
   });
 
   return (
-    <div className="d-flex flex-column flex-column-fluid">
+    <>
+      {/* Toolbar */}
       <div id="kt_app_toolbar" className="app-toolbar py-3 py-lg-6">
         <div id="kt_app_toolbar_container" className="app-container container-xxl d-flex flex-stack">
+          {/* Page title */}
           <div className="page-title d-flex flex-column justify-content-center flex-wrap me-3">
             <h1 className="page-heading d-flex text-gray-900 fw-bold fs-3 flex-column justify-content-center my-0">
               Container Sorting
             </h1>
             <ul className="breadcrumb breadcrumb-separatorless fw-semibold fs-7 my-0 pt-1">
-              <li className="breadcrumb-item text-muted">Ghana Team</li>
+              <li className="breadcrumb-item text-muted">
+                <a href="/ghana" className="text-muted text-hover-primary">Ghana Team</a>
+              </li>
               <li className="breadcrumb-item">
                 <span className="bullet bg-gray-500 w-5px h-2px"></span>
               </li>
               <li className="breadcrumb-item text-muted">Sorting</li>
             </ul>
           </div>
+          {/* end Page title */}
         </div>
       </div>
+      {/* end Toolbar */}
 
+      {/* Content */}
       <div id="kt_app_content" className="app-content flex-column-fluid">
+
+        {/* Content container */}
         <div id="kt_app_content_container" className="app-container container-xxl">
 
           {/* Info Alert */}
-          <div className="alert alert-light-info mb-5">
-            <div className="d-flex align-items-center">
-              <i className="bi bi-info-circle fs-2 me-3"></i>
-              <div>
-                <strong>Container Sorting:</strong> View items organized by container. Expand containers to see their contents and verify items before individual scanning.
+          <div className="notice d-flex bg-light-info rounded border-info border border-dashed p-6 mb-5">
+            <i className="ki-duotone ki-information fs-2tx text-info me-4">
+              <span className="path1"></span>
+              <span className="path2"></span>
+              <span className="path3"></span>
+            </i>
+            <div className="d-flex flex-stack flex-grow-1">
+              <div className="fw-semibold">
+                <h4 className="text-gray-900 fw-bold">Container Sorting</h4>
+                <div className="fs-6 text-gray-700">
+                  View items organized by container. Expand containers to see their contents and verify items before individual scanning.
+                </div>
               </div>
             </div>
           </div>
+          {/* end Info Alert */}
 
           {/* Search & Filter */}
-          <div className="card mb-5">
-            <div className="card-body">
-              <div className="row g-3">
-                <div className="col-md-8">
-                  <div className="d-flex align-items-center">
-                    <i className="bi bi-search fs-2 me-3 text-gray-600"></i>
-                    <input
-                      type="text"
-                      className="form-control form-control-lg form-control-solid"
-                      placeholder="Search by container number..."
-                      value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                    />
-                  </div>
+          <div className="card card-flush mb-5">
+            <div className="card-header align-items-center py-5 gap-2 gap-md-5">
+              <div className="card-title">
+                <div className="d-flex align-items-center position-relative my-1">
+                  <i className="ki-duotone ki-magnifier fs-3 position-absolute ms-4">
+                    <span className="path1"></span>
+                    <span className="path2"></span>
+                  </i>
+                  <input
+                    type="text"
+                    className="form-control form-control-solid w-250px ps-12"
+                    placeholder="Search containers..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                  />
                 </div>
-                <div className="col-md-4">
-                  <select
-                    className="form-select form-select-lg form-select-solid"
-                    value={statusFilter}
-                    onChange={(e) => setStatusFilter(e.target.value)}
-                  >
-                    <option value="">All Statuses</option>
-                    <option value="china_warehouse">China Warehouse</option>
-                    <option value="in_transit">In Transit</option>
-                    <option value="arrived_ghana">Arrived Ghana</option>
-                  </select>
-                </div>
+              </div>
+              <div className="card-toolbar">
+                <select
+                  className="form-select form-select-solid w-150px"
+                  value={statusFilter}
+                  onChange={(e) => setStatusFilter(e.target.value)}
+                >
+                  <option value="">All Statuses</option>
+                  <option value="china_warehouse">China Warehouse</option>
+                  <option value="in_transit">In Transit</option>
+                  <option value="arrived_ghana">Arrived Ghana</option>
+                </select>
               </div>
             </div>
           </div>
+          {/* end Search & Filter */}
 
           {/* Containers List */}
-          <div className="card">
-            <div className="card-header">
-              <h3 className="card-title">
-                <i className="bi bi-box-seam me-2"></i>
-                Containers ({sortedContainers.length})
-              </h3>
+          <div className="card card-flush">
+            <div className="card-header align-items-center py-5 gap-2 gap-md-5">
+              <div className="card-title">
+                <h3 className="card-title align-items-start flex-column">
+                  <span className="card-label fw-bold text-gray-800">
+                    <i className="ki-duotone ki-package me-2">
+                      <span className="path1"></span>
+                      <span className="path2"></span>
+                      <span className="path3"></span>
+                    </i>
+                    Containers ({sortedContainers.length})
+                  </span>
+                  <span className="text-gray-500 mt-1 fw-semibold fs-6">Expand to view container contents</span>
+                </h3>
+              </div>
             </div>
-            <div className="card-body">
+            <div className="card-body pt-0">
               {loading ? (
-                <div className="text-center py-10">
-                  <span className="spinner-border spinner-border-lg me-2"></span>
-                  <div className="mt-3 text-muted">Loading containers...</div>
+                <div className="text-center py-20">
+                  <div className="spinner-border text-primary" role="status">
+                    <span className="visually-hidden">Loading...</span>
+                  </div>
+                  <p className="text-gray-600 mt-5">Loading containers...</p>
                 </div>
               ) : sortedContainers.length === 0 ? (
-                <div className="text-center py-10 text-muted">
-                  <i className="bi bi-inbox fs-3x"></i>
-                  <div className="mt-3">No containers found matching your criteria.</div>
+                <div className="text-center py-20">
+                  <i className="ki-duotone ki-package fs-5x text-gray-400 mb-5">
+                    <span className="path1"></span>
+                    <span className="path2"></span>
+                    <span className="path3"></span>
+                  </i>
+                  <p className="text-gray-600 fs-5">No containers found</p>
+                  <p className="text-gray-500">No containers match your search criteria.</p>
                 </div>
               ) : (
                 <div className="accordion" id="containerAccordion">
@@ -159,109 +194,125 @@ export default function SortingPage() {
                     const containerItems = containerItemsMap.get(container.containerNumber) || [];
 
                     return (
-                      <div key={container.id} className="accordion-item mb-3 border rounded">
+                      <div key={container.id} className="accordion-item mb-3">
                         {/* Container Header - Always visible */}
                         <div
-                          className="accordion-header"
-                          id={`heading-${container.id}`}
+                          className="accordion-header cursor-pointer"
+                          onClick={() => toggleContainer(container)}
                         >
-                          <button
-                            className={`accordion-button ${isExpanded ? '' : 'collapsed'} bg-light-primary`}
-                            type="button"
-                            onClick={() => toggleContainer(container)}
-                            style={{ cursor: 'pointer' }}
-                          >
-                            <div className="d-flex align-items-center w-100">
-                              <div className="symbol symbol-50px me-4">
-                                <div className="symbol-label bg-primary">
-                                  <i className="bi bi-box-seam fs-2x text-white"></i>
+                          <div className="accordion-button collapsed p-5" style={{ cursor: 'pointer' }}>
+                            <div className="d-flex justify-content-between align-items-center w-100">
+                              <div className="d-flex align-items-center">
+                                <i className="ki-duotone ki-package fs-2x text-primary me-4">
+                                  <span className="path1"></span>
+                                  <span className="path2"></span>
+                                  <span className="path3"></span>
+                                </i>
+                                <div>
+                                  <h4 className="mb-1 fw-bold">{container.containerNumber}</h4>
+                                  <div className="d-flex gap-3 text-muted fs-7 fw-semibold">
+                                    <span>
+                                      <i className="ki-duotone ki-cube-3 fs-3 me-1">
+                                        <span className="path1"></span>
+                                        <span className="path2"></span>
+                                      </i>
+                                      {container.itemCount} items
+                                    </span>
+                                    {container.expectedArrivalGhana && (
+                                      <span>
+                                        <i className="ki-duotone ki-calendar fs-3 me-1">
+                                          <span className="path1"></span>
+                                          <span className="path2"></span>
+                                        </i>
+                                        Expected: {new Date(container.expectedArrivalGhana).toLocaleDateString()}
+                                      </span>
+                                    )}
+                                  </div>
                                 </div>
                               </div>
-                              <div className="flex-grow-1">
-                                <div className="d-flex justify-content-between align-items-center">
-                                  <div>
-                                    <div className="fw-bold fs-4 text-gray-900">{container.containerNumber}</div>
-                                    <div className="text-muted fs-7">
-                                      <i className="bi bi-box me-1"></i>
-                                      {container.itemCount} items
-                                      {container.expectedArrivalGhana && (
-                                        <>
-                                          {' • '}
-                                          <i className="bi bi-calendar me-1"></i>
-                                          Expected: {new Date(container.expectedArrivalGhana).toLocaleDateString()}
-                                        </>
-                                      )}
-                                    </div>
-                                  </div>
-                                  <div className="me-5">
-                                    <span className={`badge fs-6 ${
-                                      container.status === 'china_warehouse' ? 'badge-warning' :
-                                      container.status === 'in_transit' ? 'badge-info' :
-                                      container.status === 'arrived_ghana' ? 'badge-success' :
-                                      'badge-secondary'
-                                    }`}>
-                                      {container.status.replace(/_/g, ' ').toUpperCase()}
-                                    </span>
-                                  </div>
-                                </div>
+                              <div className="d-flex align-items-center gap-3">
+                                <span className={`badge ${
+                                  container.status === 'china_warehouse' ? 'badge-light-warning' :
+                                  container.status === 'in_transit' ? 'badge-light-info' :
+                                  container.status === 'arrived_ghana' ? 'badge-light-success' :
+                                  'badge-light-secondary'
+                                }`}>
+                                  {container.status.replace(/_/g, ' ').toUpperCase()}
+                                </span>
+                                <i className={`ki-duotone ki-${isExpanded ? 'up' : 'down'} fs-1`}>
+                                  <span className="path1"></span>
+                                  <span className="path2"></span>
+                                </i>
                               </div>
                             </div>
-                          </button>
+                          </div>
                         </div>
 
                         {/* Container Body - Collapsible */}
                         {isExpanded && (
                           <div className="accordion-collapse show">
-                            <div className="accordion-body">
+                            <div className="accordion-body p-5">
                               {containerItems.length === 0 ? (
                                 <div className="text-center py-5">
-                                  <span className="spinner-border spinner-border-sm me-2"></span>
-                                  Loading items...
+                                  <div className="spinner-border text-primary" role="status">
+                                    <span className="visually-hidden">Loading...</span>
+                                  </div>
+                                  <p className="text-gray-600 mt-3">Loading items...</p>
                                 </div>
                               ) : (
                                 <div className="table-responsive">
-                                  <table className="table table-row-bordered table-hover align-middle">
+                                  <table className="table align-middle table-row-dashed fs-6 gy-5">
                                     <thead>
-                                      <tr className="fw-bold text-muted bg-light">
-                                        <th className="ps-4">Tracking Number</th>
-                                        <th>Item Name</th>
-                                        <th>Customer</th>
-                                        <th>Dimensions</th>
-                                        <th>Status</th>
+                                      <tr className="text-start text-gray-500 fw-bold fs-7 text-uppercase gs-0">
+                                        <th className="min-w-125px">Tracking Number</th>
+                                        <th className="min-w-100px">Item Name</th>
+                                        <th className="min-w-100px">Customer</th>
+                                        <th className="min-w-100px">Dimensions</th>
+                                        <th className="text-end min-w-100px">Status</th>
                                       </tr>
                                     </thead>
-                                    <tbody>
+                                    <tbody className="fw-semibold text-gray-600">
                                       {containerItems.map((item) => (
                                         <tr key={item.id}>
-                                          <td className="ps-4">
-                                            <div className="fw-bold text-gray-800">{item.trackingNumber}</div>
+                                          <td>
+                                            <span className="text-gray-800 fw-bold">{item.trackingNumber}</span>
                                           </td>
-                                          <td>{item.name || <span className="text-muted">-</span>}</td>
+                                          <td>
+                                            <span className="text-gray-700">{item.name || <span className="text-muted">-</span>}</span>
+                                          </td>
                                           <td>
                                             {item.customerId ? (
                                               <span className="badge badge-light-success">
-                                                <i className="bi bi-check-circle me-1"></i>
+                                                <i className="ki-duotone ki-check-circle fs-3 me-1">
+                                                  <span className="path1"></span>
+                                                  <span className="path2"></span>
+                                                </i>
                                                 Assigned
                                               </span>
                                             ) : (
                                               <span className="badge badge-light-warning">
-                                                <i className="bi bi-exclamation-circle me-1"></i>
+                                                <i className="ki-duotone ki-information fs-3 me-1">
+                                                  <span className="path1"></span>
+                                                  <span className="path2"></span>
+                                                  <span className="path3"></span>
+                                                </i>
                                                 Unassigned
                                               </span>
                                             )}
                                           </td>
                                           <td>
                                             {item.length && item.width && item.height ? (
-                                              <span className="text-muted">
-                                                {item.length}×{item.width}×{item.height} {item.dimensionUnit}
-                                                <br />
-                                                <small className="text-gray-600">CBM: {item.cbm?.toFixed(4)}</small>
-                                              </span>
+                                              <div>
+                                                <div className="text-gray-800 fw-semibold">
+                                                  {item.length}×{item.width}×{item.height} {item.dimensionUnit}
+                                                </div>
+                                                <div className="text-gray-500 fs-7">CBM: {item.cbm?.toFixed(4)}</div>
+                                              </div>
                                             ) : (
                                               <span className="text-muted">-</span>
                                             )}
                                           </td>
-                                          <td>
+                                          <td className="text-end">
                                             <span className={`badge ${
                                               item.status === 'china_warehouse' ? 'badge-light-warning' :
                                               item.status === 'in_transit' ? 'badge-light-info' :
@@ -287,8 +338,11 @@ export default function SortingPage() {
               )}
             </div>
           </div>
+          {/* end Containers List */}
         </div>
+        {/* end Content container */}
       </div>
-    </div>
+      {/* end Content */}
+    </>
   );
 }
